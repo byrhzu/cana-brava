@@ -16,7 +16,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="styles.css?v=20260819d">
+	<link rel="stylesheet" href="styles.css?v=20260819f">
 	<script type="application/ld+json">
 	{
 		"@context": "https://schema.org",
@@ -32,7 +32,7 @@
 			"@type": "OpeningHoursSpecification",
 			"dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
 			"opens": "12:00",
-			"closes": "22:00"
+			"closes": "21:30"
 		},
 		"location": [
 			{
@@ -102,15 +102,15 @@
 
 	<section class="hero">
 		<div class="hero-bg">
-			<img src="assets/img/hero-parrilla.webp?v=20260818b" alt="Parrillada Caña Brava" class="hero-img">
+			<img src="assets/img/hero-parrilla.webp?v=20260819e" alt="Parrillada Caña Brava" class="hero-img">
 			<div class="hero-bg-tint"></div>
 		</div>
 		<div class="hero-mesh"></div>
 		<div class="hero-grain"></div>
 		<div class="hero-inner">
-			<div class="hero-meta">
-				<span class="dot"></span>
-				<span>Guácimo & Guápiles · Abierto Ahora</span>
+			<div class="hero-meta" id="hero-meta">
+				<span class="dot" id="status-dot"></span>
+				<span id="open-status">Guácimo &amp; Guápiles</span>
 			</div>
 			<h1 class="hero-title">
 				<span>Experiencia gastronómica</span>
@@ -141,7 +141,7 @@
 			<div class="showcase-scroll">
 				<div class="showcase-card">
 					<div class="card-image">
-						<img src="assets/img/cat-hamburguesas.webp?v=20260818b" alt="Hamburguesas Caña Brava" loading="lazy">
+						<img src="assets/img/cat-hamburguesas.webp?v=20260819e" alt="Hamburguesas Caña Brava" loading="lazy">
 					</div>
 					<div class="card-content">
 						<h3>Hamburguesas</h3>
@@ -152,7 +152,7 @@
 
 				<div class="showcase-card">
 					<div class="card-image">
-						<img src="assets/img/cat-antojitos.webp?v=20260818b" alt="Antojitos Mexicanos" loading="lazy">
+						<img src="assets/img/cat-antojitos.webp?v=20260819e" alt="Antojitos Mexicanos" loading="lazy">
 					</div>
 					<div class="card-content">
 						<h3>Antojitos Mexicanos</h3>
@@ -163,7 +163,7 @@
 
 				<div class="showcase-card">
 					<div class="card-image">
-						<img src="assets/img/cat-cortes.webp?v=20260818b" alt="Cortes de Carne" loading="lazy">
+						<img src="assets/img/cat-cortes.webp?v=20260819e" alt="Cortes de Carne" loading="lazy">
 					</div>
 					<div class="card-content">
 						<h3>Cortes de Carne</h3>
@@ -174,7 +174,7 @@
 
 				<div class="showcase-card">
 					<div class="card-image">
-						<img src="assets/img/cat-papas.webp?v=20260818b" alt="Papas y Patacones" loading="lazy">
+						<img src="assets/img/cat-papas.webp?v=20260819e" alt="Papas y Patacones" loading="lazy">
 					</div>
 					<div class="card-content">
 						<h3>Papas, Alas &amp; Patacones</h3>
@@ -185,7 +185,7 @@
 
 				<div class="showcase-card">
 					<div class="card-image">
-						<img src="assets/img/cat-strips.webp?v=20260818b" alt="Strips de Pollo y Entradas" loading="lazy">
+						<img src="assets/img/cat-strips.webp?v=20260819e" alt="Strips de Pollo y Entradas" loading="lazy">
 					</div>
 					<div class="card-content">
 						<h3>Strips &amp; Entradas</h3>
@@ -196,12 +196,23 @@
 
 				<div class="showcase-card">
 					<div class="card-image">
-						<img src="assets/img/cat-postres.webp?v=20260818b" alt="Postres y Batidos" loading="lazy">
+						<img src="assets/img/cat-postres.webp?v=20260819e" alt="Postres y Batidos" loading="lazy">
 					</div>
 					<div class="card-content">
 						<h3>Postres &amp; Batidos</h3>
-						<p>Brownie con helado, cheesecake, nacho dulce, copas y batidos frescos.</p>
+						<p>Batidos elaborados, brownie con helado, cheesecake, nacho dulce y copas de helado.</p>
 						<div class="card-price">desde ₡2,300</div>
+					</div>
+				</div>
+
+				<div class="showcase-card">
+					<div class="card-image">
+						<img src="assets/img/cat-bebidas.webp?v=20260819e" alt="Bebidas y Cócteles" loading="lazy">
+					</div>
+					<div class="card-content">
+						<h3>Bebidas &amp; Cócteles</h3>
+						<p>Cócteles como el Blue Guaro Sour, piña colada, mojitos, limonadas y frescos naturales.</p>
+						<div class="card-price">Refrescate</div>
 					</div>
 				</div>
 			</div>
@@ -222,7 +233,7 @@
 					<h3>Guácimo</h3>
 					<p class="ubicacion-dir">50 m sur de Correos de Costa Rica, Guácimo, Limón.</p>
 					<div class="ubicacion-meta">
-						<span class="dot dot-green"></span> Abierto todos los días · 12:00 PM – 10:00 PM
+						<span class="dot dot-green"></span> Abierto todos los días · 12:00 PM – 9:30 PM
 					</div>
 					<a class="ubicacion-tel" href="tel:+50663018863">+506 6301-8863</a>
 					<div class="ubicacion-servicios">
@@ -251,7 +262,7 @@
 					<h3>Guápiles</h3>
 					<p class="ubicacion-dir">150 m oeste de la iglesia católica, Guápiles, Limón.</p>
 					<div class="ubicacion-meta">
-						<span class="dot dot-green"></span> Abierto todos los días · 12:00 PM – 10:00 PM
+						<span class="dot dot-green"></span> Abierto todos los días · 12:00 PM – 9:30 PM
 					</div>
 					<a class="ubicacion-tel" href="tel:+50663528533">+506 6352-8533</a>
 					<div class="ubicacion-servicios">
@@ -371,15 +382,20 @@
 			<h2>Galería</h2>
 			<p class="section-sub">Un vistazo a lo que te espera en Caña Brava.</p>
 		</div>
-		<div class="galeria-grid">
-			<figure class="galeria-item"><img src="assets/img/gal-1.webp?v=20260818b" alt="Hamburguesa Caña Brava" loading="lazy"></figure>
-			<figure class="galeria-item"><img src="assets/img/gal-2.webp?v=20260818b" alt="Hamburguesa premium con aros de cebolla" loading="lazy"></figure>
-			<figure class="galeria-item"><img src="assets/img/gal-7.webp?v=20260818b" alt="Papas arregladas con queso" loading="lazy"></figure>
-			<figure class="galeria-item"><img src="assets/img/gal-3.webp?v=20260818b" alt="Hamburguesa con papas" loading="lazy"></figure>
-			<figure class="galeria-item"><img src="assets/img/gal-4.webp?v=20260818b" alt="Hamburguesa con coleslaw" loading="lazy"></figure>
-			<figure class="galeria-item"><img src="assets/img/gal-5.webp?v=20260818b" alt="Hamburguesa a la parrilla" loading="lazy"></figure>
-			<figure class="galeria-item"><img src="assets/img/gal-6.webp?v=20260818b" alt="Hamburguesa premium doble" loading="lazy"></figure>
-			<figure class="galeria-item"><img src="assets/img/cat-entradas.webp?v=20260818b" alt="Chilli beans con chips de plátano" loading="lazy"></figure>
+		<p class="galeria-hint">Tocá una foto para verla en grande.</p>
+		<div class="galeria-grid" id="galeria-grid">
+			<button class="galeria-item" type="button"><img src="assets/img/gal-1.webp?v=20260819e" alt="Hamburguesa con papas Caña Brava" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-2.webp?v=20260819e" alt="Tabla surtida para compartir" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-3.webp?v=20260819e" alt="Brownie de chocolate" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-4.webp?v=20260819e" alt="Batido de chocolate y oreo" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-5.webp?v=20260819e" alt="Nachos Caña Brava" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-6.webp?v=20260819e" alt="Piña colada" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-7.webp?v=20260819e" alt="Plato de tacos y antojitos" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-8.webp?v=20260819e" alt="Hamburguesa premium" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-9.webp?v=20260819e" alt="Combo con bebidas" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-10.webp?v=20260819e" alt="Batido de fresa y chocolate" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-11.webp?v=20260819e" alt="Fajitas para compartir" loading="lazy"></button>
+			<button class="galeria-item" type="button"><img src="assets/img/gal-12.webp?v=20260819e" alt="Mojitos y limonadas" loading="lazy"></button>
 		</div>
 	</section>
 
@@ -423,7 +439,7 @@
 					</span>
 					<h3>Visitanos</h3>
 					<p>Guácimo &amp; Guápiles, Limón</p>
-					<p>12:00 PM – 10:00 PM · Todos los días</p>
+					<p>12:00 PM – 9:30 PM · Todos los días</p>
 				</div>
 			</div>
 
@@ -448,7 +464,7 @@
 		<div class="footer-container">
 			<div class="footer-content">
 				<img src="assets/img/logo-canabrava.png?v=20260818" alt="Caña Brava" class="footer-logo">
-				<p>Guácimo &amp; Guápiles, Costa Rica · 12:00 PM – 10:00 PM</p>
+				<p>Guácimo &amp; Guápiles, Costa Rica · 12:00 PM – 9:30 PM</p>
 				<p class="footer-legal">&copy; 2026 Caña Brava. Todos los derechos reservados.</p>
 			</div>
 		</div>
@@ -506,11 +522,26 @@
 		</div>
 	</div>
 
+	<div class="lightbox" id="lightbox" aria-hidden="true">
+		<button class="lightbox-close" id="lightbox-close" type="button" aria-label="Cerrar">&times;</button>
+		<button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="Anterior">&#8249;</button>
+		<div class="lightbox-stage" id="lightbox-stage">
+			<img class="lightbox-img" id="lightbox-img" src="" alt="">
+		</div>
+		<button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="Siguiente">&#8250;</button>
+		<p class="lightbox-hint" id="lightbox-hint">Tocá la imagen para acercar</p>
+	</div>
+
 	<button class="reserva-fab" data-open-reserva type="button">
 		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
 		Reservar
 	</button>
 
-	<script defer src="script.js?v=20260819e"></script>
+	<div class="mobile-actionbar">
+		<button class="btn btn-ghost" data-open-reserva type="button">Reservar</button>
+		<button class="btn btn-primary" data-open-pedir type="button">Pedir</button>
+	</div>
+
+	<script defer src="script.js?v=20260819f"></script>
 </body>
 </html>

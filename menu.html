@@ -12,7 +12,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="styles.css?v=20260819d">
+	<link rel="stylesheet" href="styles.css?v=20260819f">
 </head>
 <body>
 	<nav class="nav-main scrolled">
@@ -293,14 +293,50 @@
 
 	</main>
 
-	<a href="index.html#pedir" class="btn btn-primary menu-order-cta">
-		<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="vertical-align:-3px;margin-right:6px" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-4-3.4-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3ZM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/></svg>Pedir</a>
+	<button class="cart-fab" id="cart-fab" type="button" aria-label="Ver tu pedido">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.3a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.2L22 7H6"/></svg>
+		<span class="cart-fab-label">Armar pedido</span>
+		<span class="cart-count" id="cart-count">0</span>
+	</button>
+
+	<!-- Ventana del pedido (carrito) -->
+	<div class="modal-overlay" id="cart-modal" aria-hidden="true">
+		<div class="modal-box modal-box-sm" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+			<button class="modal-close" id="cart-close" type="button" aria-label="Cerrar">&times;</button>
+			<h2 id="cart-title">Tu Pedido</h2>
+
+			<div id="cart-view">
+				<div class="cart-empty" id="cart-empty">Tu pedido está vacío.<br>Tocá <strong>“＋”</strong> en los platos del menú para agregarlos.</div>
+				<div class="cart-items" id="cart-items"></div>
+				<div class="cart-summary" id="cart-summary" hidden>
+					<div class="cart-total-row"><span>Subtotal aprox.</span><span id="cart-total">₡0</span></div>
+					<p class="cart-note">Precios de referencia. El local confirma el total final; no incluye el 10% de servicio ni el costo de envío.</p>
+					<button class="btn btn-primary btn-large" id="cart-checkout" type="button" style="width:100%">Enviar pedido por WhatsApp</button>
+				</div>
+			</div>
+
+			<div id="cart-location" hidden>
+				<p class="modal-sub">¿Desde cuál local hacés el pedido?</p>
+				<div class="pedir-opciones">
+					<a class="pedir-local" id="cart-wa-guacimo" target="_blank" rel="noopener">
+						<span class="pedir-local-head"><span class="pedir-local-name">Guácimo</span></span>
+						<span class="pedir-local-sub">50 m sur de Correos de Costa Rica</span>
+					</a>
+					<a class="pedir-local" id="cart-wa-guapiles" target="_blank" rel="noopener">
+						<span class="pedir-local-head"><span class="pedir-local-name">Guápiles</span></span>
+						<span class="pedir-local-sub">150 m oeste de la iglesia católica</span>
+					</a>
+				</div>
+				<button class="btn btn-ghost" id="cart-back" type="button" style="width:100%;margin-top:0.5rem">Volver</button>
+			</div>
+		</div>
+	</div>
 
 	<footer class="footer">
 		<div class="footer-container">
 			<div class="footer-content">
 				<p>&copy; 2026 Caña Brava · Guácimo &amp; Guápiles, Costa Rica</p>
-				<p>Horario: 12:00 PM – 10:00 PM · Lunes a Domingo</p>
+				<p>Horario: 12:00 PM – 9:30 PM · Lunes a Domingo</p>
 			</div>
 		</div>
 	</footer>
@@ -351,6 +387,137 @@
 			mnav.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeM); });
 			document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
 		}
+
+		/* ==========================================================
+		   ARMADOR DE PEDIDO (mini-carrito → WhatsApp)
+		   ========================================================== */
+		(function () {
+			var WA = { guacimo: '50663018863', guapiles: '50663528533' };
+			var cart = {};
+			try { cart = JSON.parse(localStorage.getItem('cb_cart') || '{}') || {}; } catch (e) { cart = {}; }
+
+			var fab = document.getElementById('cart-fab');
+			var countEl = document.getElementById('cart-count');
+			var modal = document.getElementById('cart-modal');
+			var itemsEl = document.getElementById('cart-items');
+			var emptyEl = document.getElementById('cart-empty');
+			var summaryEl = document.getElementById('cart-summary');
+			var totalEl = document.getElementById('cart-total');
+			var viewEl = document.getElementById('cart-view');
+			var locEl = document.getElementById('cart-location');
+			if (!fab || !modal) return;
+
+			function fmt(n) { return '₡' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+			function save() { try { localStorage.setItem('cb_cart', JSON.stringify(cart)); } catch (e) {} }
+			function parsePrice(txt) {
+				var m = (txt || '').replace(/\./g, '').match(/₡\s*([0-9,]+)/);
+				return m ? parseInt(m[1].replace(/,/g, ''), 10) : 0;
+			}
+
+			function counts() {
+				var n = 0, total = 0;
+				Object.keys(cart).forEach(function (k) { n += cart[k].qty; total += cart[k].qty * cart[k].price; });
+				return { n: n, total: total };
+			}
+
+			function refreshFab() {
+				var c = counts();
+				countEl.textContent = c.n;
+				countEl.style.display = c.n > 0 ? 'flex' : 'none';
+				fab.classList.toggle('has-items', c.n > 0);
+			}
+
+			function add(name, price) {
+				if (!cart[name]) cart[name] = { name: name, price: price, qty: 0 };
+				cart[name].qty++;
+				save(); refreshFab(); render();
+			}
+			function dec(name) {
+				if (!cart[name]) return;
+				cart[name].qty--;
+				if (cart[name].qty <= 0) delete cart[name];
+				save(); refreshFab(); render();
+			}
+
+			function render() {
+				var keys = Object.keys(cart);
+				itemsEl.innerHTML = '';
+				if (keys.length === 0) {
+					emptyEl.style.display = 'block';
+					summaryEl.hidden = true;
+					return;
+				}
+				emptyEl.style.display = 'none';
+				summaryEl.hidden = false;
+				keys.forEach(function (k) {
+					var it = cart[k];
+					var row = document.createElement('div');
+					row.className = 'cart-row';
+					row.innerHTML =
+						'<div class="cart-row-info"><span class="cart-row-name"></span>' +
+						'<span class="cart-row-price">' + fmt(it.price) + ' c/u</span></div>' +
+						'<div class="cart-qty"><button type="button" class="qty-btn" data-dec>−</button>' +
+						'<span class="qty-n">' + it.qty + '</span>' +
+						'<button type="button" class="qty-btn" data-inc>＋</button></div>';
+					row.querySelector('.cart-row-name').textContent = it.name;
+					row.querySelector('[data-dec]').addEventListener('click', function () { dec(k); });
+					row.querySelector('[data-inc]').addEventListener('click', function () { add(it.name, it.price); });
+					itemsEl.appendChild(row);
+				});
+				totalEl.textContent = fmt(counts().total);
+			}
+
+			/* Inyecta el botón "＋ Agregar" en cada plato */
+			document.querySelectorAll('.menu-item').forEach(function (item) {
+				var head = item.querySelector('.menu-item-head');
+				var nameEl = item.querySelector('.menu-item-name');
+				var priceEl = item.querySelector('.menu-item-price');
+				if (!head || !nameEl) return;
+				var price = parsePrice(priceEl ? priceEl.textContent : '');
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'add-btn';
+				btn.setAttribute('aria-label', 'Agregar ' + nameEl.textContent);
+				btn.textContent = '＋';
+				btn.addEventListener('click', function () {
+					add(nameEl.textContent.trim(), price);
+					btn.classList.add('added');
+					setTimeout(function () { btn.classList.remove('added'); }, 400);
+				});
+				item.appendChild(btn);
+			});
+
+			/* Abrir / cerrar el carrito */
+			function open() { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; locEl.hidden = true; viewEl.hidden = false; render(); }
+			function close() { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
+			fab.addEventListener('click', open);
+			document.getElementById('cart-close').addEventListener('click', close);
+			modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+			document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+
+			/* Construir mensaje y pasar a elegir local */
+			function buildMessage() {
+				var lines = ['Hola Caña Brava, quiero hacer este pedido:', ''];
+				Object.keys(cart).forEach(function (k) {
+					var it = cart[k];
+					lines.push('• ' + it.qty + 'x ' + it.name + ' — ' + fmt(it.qty * it.price));
+				});
+				lines.push('', 'Subtotal aprox: ' + fmt(counts().total));
+				lines.push('(Confirmo detalles, forma de entrega y total final.)');
+				return lines.join('\n');
+			}
+
+			document.getElementById('cart-checkout').addEventListener('click', function () {
+				if (counts().n === 0) return;
+				var msg = encodeURIComponent(buildMessage());
+				document.getElementById('cart-wa-guacimo').href = 'https://wa.me/' + WA.guacimo + '?text=' + msg;
+				document.getElementById('cart-wa-guapiles').href = 'https://wa.me/' + WA.guapiles + '?text=' + msg;
+				viewEl.hidden = true; locEl.hidden = false;
+			});
+			document.getElementById('cart-back').addEventListener('click', function () { locEl.hidden = true; viewEl.hidden = false; });
+
+			refreshFab();
+		})();
 	})();
 	</script>
 </body>

@@ -34,6 +34,117 @@
 		setupModal('pedir');
 		setupModal('whatsapp');
 		setupMobileNav();
+		setupLightbox();
+		setupOpenStatus();
+	}
+
+	/* ============================================================
+	   INDICADOR ABIERTO / CERRADO (12:00 PM – 9:30 PM)
+	   ============================================================ */
+
+	function setupOpenStatus() {
+		var el = document.getElementById('open-status');
+		var dot = document.getElementById('status-dot');
+		if (!el) return;
+
+		function update() {
+			var now = new Date();
+			var mins = now.getHours() * 60 + now.getMinutes();
+			var abierto = mins >= 12 * 60 && mins <= 21 * 60 + 30; /* 12:00 a 21:30 */
+			if (abierto) {
+				el.textContent = 'Guácimo & Guápiles · Abierto ahora';
+				if (dot) dot.style.background = 'var(--accent)';
+			} else {
+				el.textContent = 'Guácimo & Guápiles · Cerrado · Abrimos 12:00 PM';
+				if (dot) dot.style.background = '#c0392b';
+			}
+		}
+		update();
+		setInterval(update, 60000);
+	}
+
+	/* ============================================================
+	   LIGHTBOX DE GALERÍA (ampliar + zoom + navegar)
+	   ============================================================ */
+
+	function setupLightbox() {
+		var lb = document.getElementById('lightbox');
+		var grid = document.getElementById('galeria-grid');
+		if (!lb || !grid) return;
+
+		var img = document.getElementById('lightbox-img');
+		var items = Array.prototype.slice.call(grid.querySelectorAll('.galeria-item img'));
+		var current = 0;
+
+		var scale = 1, tx = 0, ty = 0, dragging = false, moved = false, sx = 0, sy = 0;
+
+		function apply() { img.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')'; }
+		function resetZoom() { scale = 1; tx = 0; ty = 0; img.classList.remove('zoomed'); img.style.transform = ''; }
+
+		function show(i) {
+			current = (i + items.length) % items.length;
+			resetZoom();
+			img.src = items[current].src;
+			img.alt = items[current].alt || '';
+		}
+
+		function open(i) {
+			show(i);
+			lb.classList.add('open');
+			lb.setAttribute('aria-hidden', 'false');
+			document.body.style.overflow = 'hidden';
+		}
+		function close() {
+			lb.classList.remove('open');
+			lb.setAttribute('aria-hidden', 'true');
+			document.body.style.overflow = '';
+		}
+
+		/* Abrir al tocar una foto */
+		items.forEach(function (im, i) {
+			im.parentElement.addEventListener('click', function () { open(i); });
+		});
+
+		document.getElementById('lightbox-close').addEventListener('click', close);
+		document.getElementById('lightbox-prev').addEventListener('click', function (e) { e.stopPropagation(); show(current - 1); });
+		document.getElementById('lightbox-next').addEventListener('click', function (e) { e.stopPropagation(); show(current + 1); });
+
+		/* Clic en el fondo (no en la imagen) cierra */
+		lb.addEventListener('click', function (e) {
+			if (e.target === lb || e.target.id === 'lightbox-stage') close();
+		});
+
+		/* Teclado */
+		document.addEventListener('keydown', function (e) {
+			if (!lb.classList.contains('open')) return;
+			if (e.key === 'Escape') close();
+			else if (e.key === 'ArrowLeft') show(current - 1);
+			else if (e.key === 'ArrowRight') show(current + 1);
+		});
+
+		/* Zoom + arrastre (mouse y táctil unificados con Pointer Events) */
+		img.addEventListener('pointerdown', function (e) {
+			if (scale === 1) return;
+			dragging = true; moved = false;
+			sx = e.clientX - tx; sy = e.clientY - ty;
+			img.setPointerCapture(e.pointerId);
+		});
+		img.addEventListener('pointermove', function (e) {
+			if (!dragging) return;
+			tx = e.clientX - sx; ty = e.clientY - sy; moved = true; apply();
+		});
+		img.addEventListener('pointerup', function (e) {
+			var wasDrag = moved;
+			dragging = false;
+			try { img.releasePointerCapture(e.pointerId); } catch (err) {}
+			/* Un toque simple (sin arrastrar) alterna el zoom */
+			if (!wasDrag) {
+				if (scale > 1) { resetZoom(); }
+				else { scale = 2.4; tx = 0; ty = 0; img.classList.add('zoomed'); apply(); }
+			}
+		});
+
+		window.__openLightbox = open;
 	}
 
 	/* ============================================================

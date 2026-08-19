@@ -1,0 +1,10 @@
+# Sistema
+.DS_Store
+.claude/
+
+# Archivos que no forman parte del sitio publicado
+crear-web-como-servicio.zip
+assets/fotos-originales/
+assets/menu-real/
+assets/marca/
+assets/credits*.json

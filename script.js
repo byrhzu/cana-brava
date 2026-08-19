@@ -303,27 +303,42 @@ Gracias.
 	   ============================================================ */
 
 	function setupSmoothScroll() {
-		/* Optional: Add custom scroll behavior enhancements */
-		const sections = document.querySelectorAll('section');
-		const observerOptions = {
-			threshold: 0.1,
-		};
+		/* Aparición suave de secciones al hacer scroll — con red de seguridad:
+		   el contenido SIEMPRE termina visible aunque el observer no dispare. */
+		const sections = Array.prototype.slice.call(document.querySelectorAll('section'));
 
-		const sectionObserver = new IntersectionObserver((entries) => {
-			entries.forEach(entry => {
+		function reveal(el) {
+			el.style.opacity = '1';
+			el.style.transform = 'none';
+		}
+
+		/* El hero (primera sección) nunca se oculta: debe verse de inmediato. */
+		const toAnimate = sections.filter(function (s) { return !s.classList.contains('hero'); });
+
+		/* Sin soporte de IntersectionObserver → mostrar todo y salir. */
+		if (!('IntersectionObserver' in window)) {
+			sections.forEach(reveal);
+			return;
+		}
+
+		const sectionObserver = new IntersectionObserver(function (entries, obs) {
+			entries.forEach(function (entry) {
 				if (entry.isIntersecting) {
-					entry.target.style.opacity = '1';
-					entry.target.style.transform = 'translateY(0)';
+					reveal(entry.target);
+					obs.unobserve(entry.target);
 				}
 			});
-		}, observerOptions);
+		}, { threshold: 0.02, rootMargin: '0px 0px -5% 0px' });
 
-		sections.forEach(section => {
+		toAnimate.forEach(function (section) {
 			section.style.opacity = '0';
 			section.style.transform = 'translateY(20px)';
-			section.style.transition = 'all 0.6s ease-out';
+			section.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
 			sectionObserver.observe(section);
 		});
+
+		/* Red de seguridad: pase lo que pase, todo visible al segundo. */
+		setTimeout(function () { sections.forEach(reveal); }, 1000);
 	}
 
 	/* ============================================================

@@ -12,7 +12,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="styles.css?v=20260819g">
+	<link rel="stylesheet" href="styles.css?v=20260819h">
 </head>
 <body>
 	<nav class="nav-main scrolled">
@@ -21,14 +21,15 @@
 				<img src="assets/img/logo-canabrava.png?v=20260818" alt="Caña Brava" class="logo-img">
 			</a>
 			<ul class="nav-menu" id="nav-menu">
-				<li><a href="index.html">Inicio</a></li>
-				<li><a href="index.html#ubicaciones">Ubicaciones</a></li>
-				<li><a href="index.html#reservar">Reservar</a></li>
-				<li><a href="index.html#contacto">Contacto</a></li>
-				<li class="nav-menu-cta"><a href="index.html#pedir">Pedir Ahora</a></li>
+				<li><a href="index.html" data-en="Home">Inicio</a></li>
+				<li><a href="index.html#ubicaciones" data-en="Locations">Ubicaciones</a></li>
+				<li><a href="index.html#galeria" data-en="Gallery">Galería</a></li>
+				<li><a href="index.html#contacto" data-en="Contact">Contacto</a></li>
+				<li class="nav-menu-cta"><a href="index.html#pedir" data-en="Order Now">Pedir Ahora</a></li>
 			</ul>
 			<div class="nav-actions">
-				<a href="index.html#pedir" class="btn btn-primary nav-pedir">Pedir</a>
+				<button class="lang-toggle" id="lang-toggle" type="button" aria-label="Change to English">EN</button>
+				<a href="index.html#pedir" class="btn btn-primary nav-pedir" data-en="Order">Pedir</a>
 				<button class="nav-toggle" id="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">
 					<span></span><span></span><span></span>
 				</button>
@@ -38,25 +39,25 @@
 	<div class="nav-backdrop" id="nav-backdrop"></div>
 
 	<header class="menu-hero">
-		<h1>Nuestro Menú</h1>
-		<p>Más que comidas rápidas: hamburguesas, antojitos mexicanos, cortes de carne a la parrilla, alas, patacones y postres.</p>
-		<p class="menu-note">Precios en colones</p>
+		<h1 data-en="Our Menu">Nuestro Menú</h1>
+		<p data-en="More than fast food: burgers, Mexican antojitos, grilled steaks, wings, patacones and desserts.">Más que comidas rápidas: hamburguesas, antojitos mexicanos, cortes de carne a la parrilla, alas, patacones y postres.</p>
+		<p class="menu-note" data-en="Prices in colones">Precios en colones</p>
 	</header>
 
 	<nav class="menu-nav" id="menu-nav">
 		<div class="menu-nav-inner">
-			<a href="#entradas">Entradas</a>
-			<a href="#ensaladas">Ensaladas</a>
-			<a href="#hamburguesas">Hamburguesas</a>
+			<a href="#entradas" data-en="Starters">Entradas</a>
+			<a href="#ensaladas" data-en="Salads">Ensaladas</a>
+			<a href="#hamburguesas" data-en="Burgers">Hamburguesas</a>
 			<a href="#premium">Premium</a>
-			<a href="#mexicanos">Antojitos Mexicanos</a>
-			<a href="#tacos">Tacos &amp; Papas</a>
+			<a href="#mexicanos" data-en="Mexican Antojitos">Antojitos Mexicanos</a>
+			<a href="#tacos" data-en="Tacos &amp; Fries">Tacos &amp; Papas</a>
 			<a href="#dogs">Big Dogs</a>
-			<a href="#patacones">Patacones &amp; Alas</a>
-			<a href="#surtidos">Surtidos</a>
-			<a href="#carne">Cortes de Carne</a>
-			<a href="#infantil">Infantil</a>
-			<a href="#postres">Postres</a>
+			<a href="#patacones" data-en="Patacones &amp; Wings">Patacones &amp; Alas</a>
+			<a href="#surtidos" data-en="Combos">Surtidos</a>
+			<a href="#carne" data-en="Steaks">Cortes de Carne</a>
+			<a href="#infantil" data-en="Kids">Infantil</a>
+			<a href="#postres" data-en="Desserts">Postres</a>
 		</div>
 	</nav>
 
@@ -64,7 +65,7 @@
 
 		<!-- ENTRADAS -->
 		<section class="menu-cat" id="entradas">
-			<h2 class="menu-cat-title">Entradas</h2>
+			<h2 class="menu-cat-title" data-en="Starters">Entradas</h2>
 			<div class="menu-items">
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Aros de Cebolla</span><span class="menu-item-price">₡2,800</span></div></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Chilli Beans</span><span class="menu-item-price">₡3,500</span></div></div>
@@ -78,7 +79,7 @@
 
 		<!-- ENSALADAS -->
 		<section class="menu-cat" id="ensaladas">
-			<h2 class="menu-cat-title">Ensaladas</h2>
+			<h2 class="menu-cat-title" data-en="Salads">Ensaladas</h2>
 			<div class="menu-items">
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Ensalada Caña Brava</span><span class="menu-item-price">₡4,500</span></div><p class="menu-item-desc">Tocineta, pollo parrillado, maíz dulce, cebolla morada, tomate, repollo morado y blanco, pepino, huevo, chips de tortilla y aderezo Caña Brava.</p></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Ensalada Lomo de Res</span><span class="menu-item-price">₡4,500</span></div><p class="menu-item-desc">Lomo de res parrillado, lechuga, cebolla morada, maíz dulce, pepino, chips de tortilla, tomate y aderezo Caña Brava.</p></div>
@@ -89,8 +90,8 @@
 
 		<!-- HAMBURGUESAS -->
 		<section class="menu-cat" id="hamburguesas">
-			<h2 class="menu-cat-title">Hamburguesas</h2>
-			<p class="menu-cat-sub">Toda hamburguesa incluye papas</p>
+			<h2 class="menu-cat-title" data-en="Burgers">Hamburguesas</h2>
+			<p class="menu-cat-sub" data-en="Every burger includes fries">Toda hamburguesa incluye papas</p>
 			<div class="menu-items">
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">La Torre</span><span class="menu-item-price">₡8,000</span></div><p class="menu-item-desc">Cuatro tortas de carne con queso, aderezo, tomate, lechuga, pepino y cebolla.</p></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Jalapeño Bacon Burger</span><span class="menu-item-price">₡4,500</span></div><p class="menu-item-desc">Torta de carne ¼ lb, queso, pepino, lechuga, cebolla, tocineta, jalapeños, aderezos y tomate.</p></div>
@@ -111,8 +112,8 @@
 
 		<!-- HAMBURGUESAS PREMIUM -->
 		<section class="menu-cat" id="premium">
-			<h2 class="menu-cat-title">Hamburguesas Premium</h2>
-			<p class="menu-cat-sub">¡Todas incluyen papas gajo!</p>
+			<h2 class="menu-cat-title" data-en="Premium Burgers">Hamburguesas Premium</h2>
+			<p class="menu-cat-sub" data-en="All include wedge fries!">¡Todas incluyen papas gajo!</p>
 			<div class="menu-items">
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">La Marinera</span><span class="menu-item-price">₡9,500</span></div><p class="menu-item-desc">Torta de camarón y pescado, salsa tártara, guacamole, chipotle, cebolla, tomate, pepino y lechuga.</p></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">La Media Libra</span><span class="menu-item-price">₡8,600</span></div><p class="menu-item-desc">Torta de carne angus (250 g), cebolla crispy, BBQ de la casa, chipotle, queso provolone y queso cheddar.</p></div>
@@ -127,7 +128,7 @@
 
 		<!-- ANTOJITOS MEXICANOS -->
 		<section class="menu-cat" id="mexicanos">
-			<h2 class="menu-cat-title">Antojitos Mexicanos</h2>
+			<h2 class="menu-cat-title" data-en="Mexican Antojitos">Antojitos Mexicanos</h2>
 			<div class="menu-items">
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Sopa Azteca</span><span class="menu-item-price">₡4,500</span></div><p class="menu-item-desc">Sopa a base de tomate con pollo, chips, queso mozzarella y guacamole (ligeramente picante).</p></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Cartucho de Birria</span><span class="menu-item-price">₡8,500</span></div><p class="menu-item-desc">5 cartuchos de tortilla de harina frita, rellenos de carne birria y queso mozzarella, cubiertos con salsa chipotle de la casa, guacamole y natilla. Acompañados de salsa verde.</p></div>
@@ -152,7 +153,7 @@
 
 		<!-- TACOS, PAPAS, NACHOS, FAJITAS -->
 		<section class="menu-cat" id="tacos">
-			<h2 class="menu-cat-title">Tacos, Papas &amp; Más</h2>
+			<h2 class="menu-cat-title" data-en="Tacos, Fries &amp; More">Tacos, Papas &amp; Más</h2>
 			<div class="menu-items">
 				<div class="menu-subgroup">Tacos <span style="text-transform:none;font-weight:400;color:var(--cream-3)">· incluye papas</span></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Taco Grande</span><span class="menu-item-price">₡2,600</span></div></div>
@@ -196,7 +197,7 @@
 		<!-- BIG DOGS -->
 		<section class="menu-cat" id="dogs">
 			<h2 class="menu-cat-title">Big Dogs</h2>
-			<p class="menu-cat-sub">Todos los hot dogs incluyen papas</p>
+			<p class="menu-cat-sub" data-en="All hot dogs include fries">Todos los hot dogs incluyen papas</p>
 			<div class="menu-items">
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Chilli Dog</span><span class="menu-item-price">₡4,900</span></div><p class="menu-item-desc">Salchicha, carne molida picante, queso gratinado, pico de gallo y aderezos.</p></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Mole Dog</span><span class="menu-item-price">₡4,100</span></div><p class="menu-item-desc">Salchicha, guacamole, pico de gallo y aderezos.</p></div>
@@ -207,7 +208,7 @@
 
 		<!-- PATACONES & ALAS -->
 		<section class="menu-cat" id="patacones">
-			<h2 class="menu-cat-title">Patacones &amp; Alas</h2>
+			<h2 class="menu-cat-title" data-en="Patacones &amp; Wings">Patacones &amp; Alas</h2>
 			<div class="menu-items">
 				<div class="menu-subgroup">Patacones Arreglados</div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Pollo o Carne</span><span class="menu-item-price">₡4,300</span></div></div>
@@ -231,7 +232,7 @@
 
 		<!-- SURTIDOS -->
 		<section class="menu-cat" id="surtidos">
-			<h2 class="menu-cat-title">Surtidos para Compartir</h2>
+			<h2 class="menu-cat-title" data-en="Combos to Share">Surtidos para Compartir</h2>
 			<div class="menu-items single">
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Surtido #1</span><span class="menu-item-price">₡15,900</span></div><p class="menu-item-desc">4 tacos pequeños · 1 porción de papas Caña Brava · 4 hamburguesas pequeñas · 4 patacones con frijoles, pico de gallo y aderezo.</p></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Surtido #2</span><span class="menu-item-price">₡12,900</span></div><p class="menu-item-desc">10 alitas · papas fritas · fajitas de pollo empanizadas · salsas y aderezos.</p></div>
@@ -241,7 +242,7 @@
 
 		<!-- CORTES DE CARNE -->
 		<section class="menu-cat" id="carne">
-			<h2 class="menu-cat-title">Cortes de Carne</h2>
+			<h2 class="menu-cat-title" data-en="Steaks &amp; Cuts">Cortes de Carne</h2>
 			<div class="menu-items">
 				<div class="menu-subgroup">Res <span style="text-transform:none;font-weight:400;color:var(--cream-3)">· con papa gajo, ensalada y vegetales</span></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Churrasco 300 g</span><span class="menu-item-price">₡10,500</span></div></div>
@@ -267,7 +268,7 @@
 
 		<!-- INFANTIL -->
 		<section class="menu-cat" id="infantil">
-			<h2 class="menu-cat-title">Menú Infantil</h2>
+			<h2 class="menu-cat-title" data-en="Kids Menu">Menú Infantil</h2>
 			<div class="menu-items">
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Deditos de Pollo</span><span class="menu-item-price">₡3,000</span></div><p class="menu-item-desc">Fajitas, papas fritas, queso cheddar, salsa de tomate y mayonesa.</p></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Kids Burger</span><span class="menu-item-price">₡2,500</span></div><p class="menu-item-desc">Pan brioche, torta de carne, queso cheddar, papas fritas, salsa de tomate y mayonesa.</p></div>
@@ -280,7 +281,7 @@
 
 		<!-- POSTRES -->
 		<section class="menu-cat" id="postres">
-			<h2 class="menu-cat-title">Postres</h2>
+			<h2 class="menu-cat-title" data-en="Desserts">Postres</h2>
 			<div class="menu-items single">
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Nacho Dulce</span><span class="menu-item-price">₡3,100</span></div></div>
 				<div class="menu-item"><div class="menu-item-head"><span class="menu-item-name">Brownie con Helado</span><span class="menu-item-price">₡2,700</span></div></div>
@@ -295,7 +296,7 @@
 
 	<button class="cart-fab" id="cart-fab" type="button" aria-label="Ver tu pedido">
 		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.3a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.2L22 7H6"/></svg>
-		<span class="cart-fab-label">Armar pedido</span>
+		<span class="cart-fab-label" data-en="Build order">Armar pedido</span>
 		<span class="cart-count" id="cart-count">0</span>
 	</button>
 
@@ -305,11 +306,11 @@
 			<button class="modal-close" id="additem-close" type="button" aria-label="Cerrar">&times;</button>
 			<h2 id="additem-title">Agregar</h2>
 			<div id="additem-variants" class="additem-variants" hidden>
-				<p class="additem-label">Elegí una opción</p>
+				<p class="additem-label" data-en="Choose an option">Elegí una opción</p>
 				<div id="additem-variant-opts" class="opt-group"></div>
 			</div>
-			<label class="additem-label" for="additem-note">Nota (opcional)</label>
-			<textarea id="additem-note" rows="2" placeholder="Ej: sin cebolla, alergias, término de la carne…"></textarea>
+			<label class="additem-label" for="additem-note" data-en="Note (optional)">Nota (opcional)</label>
+			<textarea id="additem-note" rows="2" placeholder="Ej: sin cebolla, alergias, término de la carne…" data-en-ph="E.g. no onion, allergies, meat doneness…"></textarea>
 			<div class="additem-row">
 				<div class="cart-qty">
 					<button type="button" class="qty-btn" id="additem-minus" aria-label="Quitar uno">−</button>
@@ -318,7 +319,7 @@
 				</div>
 				<span class="additem-price" id="additem-price">₡0</span>
 			</div>
-			<button class="btn btn-primary btn-large" id="additem-add" type="button" style="width:100%">Agregar al pedido</button>
+			<button class="btn btn-primary btn-large" id="additem-add" type="button" style="width:100%" data-en="Add to order">Agregar al pedido</button>
 		</div>
 	</div>
 
@@ -326,46 +327,46 @@
 	<div class="modal-overlay" id="cart-modal" aria-hidden="true">
 		<div class="modal-box modal-box-sm" role="dialog" aria-modal="true" aria-labelledby="cart-title">
 			<button class="modal-close" id="cart-close" type="button" aria-label="Cerrar">&times;</button>
-			<h2 id="cart-title">Tu Pedido</h2>
+			<h2 id="cart-title" data-en="Your Order">Tu Pedido</h2>
 
 			<!-- Paso 1: platos -->
 			<div id="cart-view">
-				<div class="cart-empty" id="cart-empty">Tu pedido está vacío.<br>Tocá <strong>“＋”</strong> en los platos del menú para agregarlos.</div>
+				<div class="cart-empty" id="cart-empty"><span data-en="Your order is empty.">Tu pedido está vacío.</span><br><span data-en="Tap ">Tocá </span><strong>“＋”</strong><span data-en=" on the menu items to add them."> en los platos del menú para agregarlos.</span></div>
 				<div class="cart-items" id="cart-items"></div>
 				<div class="cart-summary" id="cart-summary" hidden>
-					<div class="cart-total-row"><span>Subtotal aprox.</span><span id="cart-total">₡0</span></div>
-					<p class="cart-note">Precios de referencia. El local confirma el total final y el costo de envío (si es express).</p>
-					<button class="btn btn-primary btn-large" id="cart-continue" type="button" style="width:100%">Continuar</button>
+					<div class="cart-total-row"><span data-en="Approx. subtotal">Subtotal aprox.</span><span id="cart-total">₡0</span></div>
+					<p class="cart-note" data-en="Reference prices. The location confirms the final total and delivery cost (if express).">Precios de referencia. El local confirma el total final y el costo de envío (si es express).</p>
+					<button class="btn btn-primary btn-large" id="cart-continue" type="button" style="width:100%" data-en="Continue">Continuar</button>
 				</div>
 			</div>
 
 			<!-- Paso 2: tipo de pedido + pago -->
 			<div id="cart-details" hidden>
-				<p class="modal-sub">¿Cómo querés tu pedido?</p>
+				<p class="modal-sub" data-en="How would you like your order?">¿Cómo querés tu pedido?</p>
 				<div class="opt-group" id="order-type">
-					<button type="button" class="opt-btn" data-type="express">Express (a domicilio)</button>
-					<button type="button" class="opt-btn" data-type="retiro">Paso a retirar</button>
+					<button type="button" class="opt-btn" data-type="express" data-en="Express (delivery)">Express (a domicilio)</button>
+					<button type="button" class="opt-btn" data-type="retiro" data-en="Pickup">Paso a retirar</button>
 				</div>
-				<p class="modal-sub" style="margin-top:1.2rem">Método de pago</p>
-				<div class="opt-group" id="pay-method"><span class="pay-hint">Elegí primero el tipo de pedido.</span></div>
-				<button class="btn btn-primary btn-large" id="cart-topay" type="button" style="width:100%;margin-top:1rem" disabled>Elegir local y enviar</button>
-				<button class="btn btn-ghost" id="cart-back1" type="button" style="width:100%;margin-top:0.5rem">Volver</button>
+				<p class="modal-sub" style="margin-top:1.2rem" data-en="Payment method">Método de pago</p>
+				<div class="opt-group" id="pay-method"><span class="pay-hint" data-en="Choose the order type first.">Elegí primero el tipo de pedido.</span></div>
+				<button class="btn btn-primary btn-large" id="cart-topay" type="button" style="width:100%;margin-top:1rem" disabled data-en="Choose location &amp; send">Elegir local y enviar</button>
+				<button class="btn btn-ghost" id="cart-back1" type="button" style="width:100%;margin-top:0.5rem" data-en="Back">Volver</button>
 			</div>
 
 			<!-- Paso 3: local -->
 			<div id="cart-location" hidden>
-				<p class="modal-sub">¿Desde cuál local hacés el pedido?</p>
+				<p class="modal-sub" data-en="Which location are you ordering from?">¿Desde cuál local hacés el pedido?</p>
 				<div class="pedir-opciones">
 					<a class="pedir-local" id="cart-wa-guacimo" target="_blank" rel="noopener">
 						<span class="pedir-local-head"><span class="pedir-local-name">Guácimo</span></span>
-						<span class="pedir-local-sub">50 m sur de Correos de Costa Rica</span>
+						<span class="pedir-local-sub" data-en="50 m south of Correos de Costa Rica">50 m sur de Correos de Costa Rica</span>
 					</a>
 					<a class="pedir-local" id="cart-wa-guapiles" target="_blank" rel="noopener">
 						<span class="pedir-local-head"><span class="pedir-local-name">Guápiles</span></span>
-						<span class="pedir-local-sub">150 m oeste de la iglesia católica</span>
+						<span class="pedir-local-sub" data-en="150 m west of the Catholic church">150 m oeste de la iglesia católica</span>
 					</a>
 				</div>
-				<button class="btn btn-ghost" id="cart-back2" type="button" style="width:100%;margin-top:0.5rem">Volver</button>
+				<button class="btn btn-ghost" id="cart-back2" type="button" style="width:100%;margin-top:0.5rem" data-en="Back">Volver</button>
 			</div>
 		</div>
 	</div>
@@ -373,8 +374,8 @@
 	<footer class="footer">
 		<div class="footer-container">
 			<div class="footer-content">
-				<p>&copy; 2026 Caña Brava · Guácimo &amp; Guápiles, Costa Rica</p>
-				<p>Horario: 12:00 PM – 9:30 PM · Lunes a Domingo</p>
+				<p data-en="© 2026 Caña Brava · Guácimo &amp; Guápiles, Costa Rica">&copy; 2026 Caña Brava · Guácimo &amp; Guápiles, Costa Rica</p>
+				<p data-en="Hours: 12:00 PM – 9:30 PM · Monday to Sunday">Horario: 12:00 PM – 9:30 PM · Lunes a Domingo</p>
 			</div>
 		</div>
 	</footer>
@@ -425,6 +426,29 @@
 			mnav.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeM); });
 			document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
 		}
+
+		/* Idioma (Español por defecto · botón para Inglés) */
+		(function () {
+			var toggle = document.getElementById('lang-toggle');
+			function apply(lang) {
+				document.documentElement.lang = lang;
+				document.querySelectorAll('[data-en]').forEach(function (el) {
+					if (!el.hasAttribute('data-es')) el.setAttribute('data-es', el.textContent);
+					el.textContent = (lang === 'en') ? el.getAttribute('data-en') : el.getAttribute('data-es');
+				});
+				document.querySelectorAll('[data-en-ph]').forEach(function (el) {
+					if (!el.hasAttribute('data-es-ph')) el.setAttribute('data-es-ph', el.getAttribute('placeholder') || '');
+					el.setAttribute('placeholder', (lang === 'en') ? el.getAttribute('data-en-ph') : el.getAttribute('data-es-ph'));
+				});
+				if (toggle) toggle.textContent = (lang === 'en') ? 'ES' : 'EN';
+				window.__lang = lang;
+				try { localStorage.setItem('cb_lang', lang); } catch (e) {}
+			}
+			var saved = 'es';
+			try { saved = localStorage.getItem('cb_lang') || 'es'; } catch (e) {}
+			apply(saved);
+			if (toggle) toggle.addEventListener('click', function () { apply(window.__lang === 'en' ? 'es' : 'en'); });
+		})();
 
 		/* ==========================================================
 		   ARMADOR DE PEDIDO (mini-carrito → WhatsApp)

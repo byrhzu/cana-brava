@@ -2178,3 +2178,30 @@ button, input, select, textarea {
 	font-size: 0.78rem;
 	margin-top: 0.2rem;
 }
+
+/* ============================================================
+   BOTÓN DE IDIOMA (ES / EN)
+   ============================================================ */
+
+.lang-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 38px;
+	height: 34px;
+	padding: 0 0.6rem;
+	border-radius: 999px;
+	border: 1px solid var(--line);
+	background: transparent;
+	color: var(--cream);
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	cursor: pointer;
+	transition: all 0.25s ease;
+}
+
+.lang-toggle:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}

@@ -27,14 +27,13 @@
 		hideSplash();
 		setupNavigation();
 		setupCounter();
-		setupFormValidation();
 		setupScrollEffects();
 		setupSmoothScroll();
-		setupModal('reserva');
 		setupModal('pedir');
 		setupModal('whatsapp');
 		setupMobileNav();
 		setupLightbox();
+		setupLang();
 		setupOpenStatus();
 	}
 
@@ -48,17 +47,19 @@
 		if (!el) return;
 
 		function update() {
+			var en = window.__lang === 'en';
 			var now = new Date();
 			var mins = now.getHours() * 60 + now.getMinutes();
 			var abierto = mins >= 12 * 60 && mins <= 21 * 60 + 30; /* 12:00 a 21:30 */
 			if (abierto) {
-				el.textContent = 'Guácimo & Guápiles · Abierto ahora';
+				el.textContent = 'Guácimo & Guápiles · ' + (en ? 'Open now' : 'Abierto ahora');
 				if (dot) dot.style.background = 'var(--accent)';
 			} else {
-				el.textContent = 'Guácimo & Guápiles · Cerrado · Abrimos 12:00 PM';
+				el.textContent = 'Guácimo & Guápiles · ' + (en ? 'Closed · Open at 12:00 PM' : 'Cerrado · Abrimos 12:00 PM');
 				if (dot) dot.style.background = '#c0392b';
 			}
 		}
+		window.__refreshStatus = update;
 		update();
 		setInterval(update, 60000);
 	}
@@ -145,6 +146,38 @@
 		});
 
 		window.__openLightbox = open;
+	}
+
+	/* ============================================================
+	   IDIOMA (Español por defecto · botón para Inglés)
+	   ============================================================ */
+
+	function setupLang() {
+		var toggle = document.getElementById('lang-toggle');
+
+		function apply(lang) {
+			document.documentElement.lang = lang;
+			document.querySelectorAll('[data-en]').forEach(function (el) {
+				if (!el.hasAttribute('data-es')) el.setAttribute('data-es', el.textContent);
+				el.textContent = (lang === 'en') ? el.getAttribute('data-en') : el.getAttribute('data-es');
+			});
+			document.querySelectorAll('[data-en-ph]').forEach(function (el) {
+				if (!el.hasAttribute('data-es-ph')) el.setAttribute('data-es-ph', el.getAttribute('placeholder') || '');
+				el.setAttribute('placeholder', (lang === 'en') ? el.getAttribute('data-en-ph') : el.getAttribute('data-es-ph'));
+			});
+			if (toggle) toggle.textContent = (lang === 'en') ? 'ES' : 'EN';
+			window.__lang = lang;
+			if (window.__refreshStatus) window.__refreshStatus();
+			try { localStorage.setItem('cb_lang', lang); } catch (e) {}
+		}
+
+		var saved = 'es';
+		try { saved = localStorage.getItem('cb_lang') || 'es'; } catch (e) {}
+		apply(saved);
+
+		if (toggle) toggle.addEventListener('click', function () {
+			apply(window.__lang === 'en' ? 'es' : 'en');
+		});
 	}
 
 	/* ============================================================

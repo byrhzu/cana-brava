@@ -3,15 +3,27 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="Caña Brava - Experiencia gastronómica deliciosa y rápida. Comida costarricense, mexicana, carnes premium, postres y más. Pedidos por WhatsApp y delivery en Guácimo y Guápiles.">
-	<meta name="keywords" content="restaurante, comida costa rica, guácimo, guápiles, delivery, pedidos en línea">
+	<meta name="description" content="Restaurante en Guácimo y Guápiles: hamburguesas, cortes de carne a la parrilla, antojitos mexicanos, alas y postres. Abierto todos los días. Pedí por WhatsApp o visitanos.">
 	<meta name="author" content="Caña Brava">
-	<meta property="og:title" content="Caña Brava - Restaurante Premium">
-	<meta property="og:description" content="Experiencia gastronómica deliciosa y rápida. ¡Somos más que comidas rápidas!">
-	<meta property="og:type" content="business.business">
+	<meta name="theme-color" content="#0f1110">
+	<link rel="canonical" href="https://canabravacr.com/">
+	<meta name="geo.region" content="CR-7">
+	<meta name="geo.placename" content="Guácimo, Guápiles, Limón">
+	<meta name="geo.position" content="10.2119891;-83.6809293">
+	<meta name="ICBM" content="10.2119891, -83.6809293">
+	<meta property="og:site_name" content="Caña Brava">
+	<meta property="og:locale" content="es_CR">
+	<meta property="og:title" content="Caña Brava | Restaurante en Guácimo y Guápiles">
+	<meta property="og:description" content="Hamburguesas, cortes a la parrilla, antojitos mexicanos y postres. Dos restaurantes en Guácimo y Guápiles. Pedí por WhatsApp.">
+	<meta property="og:type" content="website">
 	<meta property="og:image" content="https://canabravacr.com/assets/img/hero-parrilla.webp">
-	<meta property="og:url" content="https://canabravacr.com">
-	<title>Caña Brava | Restaurante Premium Costa Rica</title>
+	<meta property="og:image:alt" content="Parrillada de Caña Brava">
+	<meta property="og:url" content="https://canabravacr.com/">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Caña Brava | Restaurante en Guácimo y Guápiles">
+	<meta name="twitter:description" content="Hamburguesas, cortes a la parrilla, antojitos mexicanos y postres. Pedí por WhatsApp.">
+	<meta name="twitter:image" content="https://canabravacr.com/assets/img/hero-parrilla.webp">
+	<title>Caña Brava | Restaurante en Guácimo y Guápiles, Limón</title>
 	<link rel="icon" href="assets/img/logo-canabrava.png?v=20260818b">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,24 +32,48 @@
 	<script type="application/ld+json">
 	{
 		"@context": "https://schema.org",
-		"@type": "Restaurant",
-		"name": "Caña Brava",
-		"description": "Experiencia gastronómica deliciosa y rápida. Comida costarricense, mexicana, carnes premium, postres y batidos.",
-		"servesCuisine": ["Costarricense", "Mexicana", "Carnes", "Comida Rápida"],
-		"priceRange": "$$",
-		"url": "https://canabravacr.com",
-		"telephone": "+506-6352-8533",
-		"email": "canabravaguacimo@gmail.com",
-		"openingHoursSpecification": {
-			"@type": "OpeningHoursSpecification",
-			"dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-			"opens": "12:00",
-			"closes": "21:30"
-		},
-		"location": [
+		"@graph": [
+			{
+				"@type": "Organization",
+				"@id": "https://canabravacr.com/#organizacion",
+				"name": "Caña Brava",
+				"url": "https://canabravacr.com/",
+				"logo": {
+					"@type": "ImageObject",
+					"url": "https://canabravacr.com/assets/img/logo-canabrava.png"
+				},
+				"email": "canabravaguacimo@gmail.com",
+				"sameAs": [
+					"https://www.facebook.com/canabrava21/",
+					"https://www.instagram.com/cana_bravacr/",
+					"https://www.tiktok.com/@canabravacr"
+				]
+			},
+			{
+				"@type": "WebSite",
+				"@id": "https://canabravacr.com/#sitio",
+				"url": "https://canabravacr.com/",
+				"name": "Caña Brava",
+				"inLanguage": "es-CR",
+				"publisher": { "@id": "https://canabravacr.com/#organizacion" }
+			},
 			{
 				"@type": "Restaurant",
+				"@id": "https://canabravacr.com/#guacimo",
 				"name": "Caña Brava Guácimo",
+				"description": "Restaurante en Guácimo, Limón: hamburguesas, cortes de carne a la parrilla, antojitos mexicanos, alas, patacones y postres.",
+				"parentOrganization": { "@id": "https://canabravacr.com/#organizacion" },
+				"url": "https://canabravacr.com/",
+				"image": [
+					"https://canabravacr.com/assets/img/loc-guacimo.webp",
+					"https://canabravacr.com/assets/img/hero-parrilla.webp"
+				],
+				"telephone": "+506-6301-8863",
+				"email": "canabravaguacimo@gmail.com",
+				"priceRange": "₡₡",
+				"currenciesAccepted": "CRC",
+				"paymentAccepted": "Efectivo, SINPE Móvil, Tarjeta",
+				"servesCuisine": ["Costarricense", "Mexicana", "Carnes a la parrilla", "Hamburguesas"],
 				"address": {
 					"@type": "PostalAddress",
 					"streetAddress": "50 m sur de Correos de Costa Rica",
@@ -45,11 +81,57 @@
 					"addressRegion": "Limón",
 					"addressCountry": "CR"
 				},
-				"telephone": "+506-6301-8863"
+				"geo": {
+					"@type": "GeoCoordinates",
+					"latitude": 10.2119891,
+					"longitude": -83.6809293
+				},
+				"hasMap": "https://maps.app.goo.gl/e9tdLMWy73DtVU9y7",
+				"areaServed": [
+					{ "@type": "City", "name": "Guácimo" },
+					{ "@type": "City", "name": "Pocora" },
+					{ "@type": "City", "name": "Río Jiménez" }
+				],
+				"openingHoursSpecification": [
+					{
+						"@type": "OpeningHoursSpecification",
+						"dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+						"opens": "12:00",
+						"closes": "21:30"
+					}
+				],
+				"hasMenu": "https://canabravacr.com/menu.html",
+				"acceptsReservations": "False",
+				"smokingAllowed": false,
+				"publicAccess": true,
+				"sameAs": [
+					"https://www.facebook.com/canabrava21/",
+					"https://www.instagram.com/cana_bravacr/",
+					"https://www.tiktok.com/@canabravacr"
+				],
+				"potentialAction": {
+					"@type": "OrderAction",
+					"target": "https://wa.me/50663018863",
+					"deliveryMethod": ["http://purl.org/goodrelations/v1#DeliveryModeOwnFleet", "http://purl.org/goodrelations/v1#DeliveryModePickUp"]
+				}
 			},
 			{
 				"@type": "Restaurant",
+				"@id": "https://canabravacr.com/#guapiles",
 				"name": "Caña Brava Guápiles",
+				"description": "Restaurante en Guápiles, Limón: hamburguesas, cortes de carne a la parrilla, antojitos mexicanos, alas, patacones y postres.",
+				"parentOrganization": { "@id": "https://canabravacr.com/#organizacion" },
+				"url": "https://canabravacr.com/",
+				"image": [
+					"https://canabravacr.com/assets/img/loc-guapiles.webp",
+					"https://canabravacr.com/assets/img/hero-parrilla.webp"
+				],
+				"telephone": "+506-6352-8533",
+				"email": "canabravaguacimo@gmail.com",
+				"priceRange": "₡₡",
+				"currenciesAccepted": "CRC",
+				"paymentAccepted": "Efectivo, SINPE Móvil, Tarjeta",
+				"servesCuisine": ["Costarricense", "Mexicana", "Carnes a la parrilla", "Hamburguesas"],
 				"address": {
 					"@type": "PostalAddress",
 					"streetAddress": "150 m oeste de la iglesia católica",
@@ -57,15 +139,41 @@
 					"addressRegion": "Limón",
 					"addressCountry": "CR"
 				},
-				"telephone": "+506-6352-8533"
+				"geo": {
+					"@type": "GeoCoordinates",
+					"latitude": 10.2136035,
+					"longitude": -83.7913044
+				},
+				"hasMap": "https://maps.app.goo.gl/uXAKy3wGvK2rcT4v7",
+				"areaServed": [
+					{ "@type": "City", "name": "Guápiles" },
+					{ "@type": "City", "name": "La Rita" },
+					{ "@type": "City", "name": "Cariari" },
+					{ "@type": "City", "name": "Roxana" }
+				],
+				"openingHoursSpecification": [
+					{
+						"@type": "OpeningHoursSpecification",
+						"dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+						"opens": "12:00",
+						"closes": "21:30"
+					}
+				],
+				"hasMenu": "https://canabravacr.com/menu.html",
+				"acceptsReservations": "False",
+				"smokingAllowed": false,
+				"publicAccess": true,
+				"sameAs": [
+					"https://www.facebook.com/canabrava21/",
+					"https://www.instagram.com/cana_bravacr/",
+					"https://www.tiktok.com/@canabravacr"
+				],
+				"potentialAction": {
+					"@type": "OrderAction",
+					"target": "https://wa.me/50663528533",
+					"deliveryMethod": ["http://purl.org/goodrelations/v1#DeliveryModeOwnFleet", "http://purl.org/goodrelations/v1#DeliveryModePickUp"]
+				}
 			}
-		],
-		"hasMenu": "https://canabravacr.com/menu.html",
-		"image": "https://canabravacr.com/assets/img/hero-parrilla.webp",
-		"sameAs": [
-			"https://www.facebook.com/canabrava21/",
-			"https://www.instagram.com/cana_bravacr/",
-			"https://www.tiktok.com/@canabravacr"
 		]
 	}
 	</script>

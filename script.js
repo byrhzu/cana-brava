@@ -427,19 +427,7 @@ Gracias.
 	   ============================================================ */
 
 	function setupScrollEffects() {
-		window.addEventListener('scroll', updateScrollProgress);
-	}
-
-	function updateScrollProgress() {
-		const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-		state.scrollProgress = window.scrollY / docHeight;
-
-		/* Add smooth parallax to showcase cards */
-		const cards = document.querySelectorAll('.showcase-card');
-		cards.forEach((card, index) => {
-			const offset = (state.scrollProgress * 10) + (index % 2 ? -5 : 5);
-			card.style.transform = `translateY(${offset}px)`;
-		});
+		/* Sin parallax en las tarjetas: deben quedar todas alineadas. */
 	}
 
 	/* ============================================================

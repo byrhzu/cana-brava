@@ -9,3 +9,7 @@ assets/menu-real/
 assets/marca/
 assets/credits*.json
 assets/Fotos Nuevas/
+
+# Fotos originales de locales (ya optimizadas en assets/img/)
+assets/Guacimo/
+assets/Guapiles/

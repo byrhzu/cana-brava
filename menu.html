@@ -12,7 +12,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="styles.css?v=20260819j">
+	<link rel="stylesheet" href="styles.css?v=20260819k">
 </head>
 <body>
 	<nav class="nav-main scrolled">
@@ -309,6 +309,7 @@
 				<p class="additem-label" data-en="Choose an option">Elegí una opción</p>
 				<div id="additem-variant-opts" class="opt-group"></div>
 			</div>
+			<div id="additem-options"></div>
 			<label class="additem-label" for="additem-note" data-en="Note (optional)">Nota (opcional)</label>
 			<textarea id="additem-note" rows="2" placeholder="Ej: sin cebolla, alergias, término de la carne…" data-en-ph="E.g. no onion, allergies, meat doneness…"></textarea>
 			<div class="additem-row">
@@ -464,6 +465,19 @@
 				'Tacos al Pastor': [{ l: '4 unidades', p: 5000 }, { l: '8 unidades', p: 9800 }, { l: '12 unidades', p: 14500 }]
 			};
 
+			/* Opciones que NO cambian el precio (salsa, acompañamiento, preparación…) */
+			var SALSAS = ['Mostaza miel', 'Barbacoa', 'Aderezo de hierbas', 'Búfalo', 'Chipotle', 'Mango chipotle', 'Mango panameño ahumado', 'Mostaza miel panameño'];
+			var ACOMP = ['Ensalada', 'Frijoles molidos', 'Papas', 'Patacones'];
+			var alasOpts = [{ l: 'Salsa', o: SALSAS }, { l: 'Acompañamiento', o: ['Patacones', 'Papas fritas'] }];
+			var fajitaOpts = [{ l: 'Acompañamiento', o: ACOMP }];
+			var OPTIONS = {
+				'6 Alas': alasOpts, '10 Alas': alasOpts, '20 Alas': alasOpts, '30 Alas': alasOpts,
+				'Strips de Pollo': [{ l: 'Aderezo 1', o: SALSAS }, { l: 'Aderezo 2', o: SALSAS }],
+				'Hamburguesa de Pollo': [{ l: 'Preparación', o: ['A la plancha', 'Empanizado'] }],
+				'Pollo o Carne': [{ l: 'Proteína', o: ['Pollo', 'Carne'] }],
+				'Pollo': fajitaOpts, 'Cerdo': fajitaOpts, 'Mixtas': fajitaOpts, 'Lomo de Res': fajitaOpts
+			};
+
 			var cart = [];
 			try { cart = JSON.parse(localStorage.getItem('cb_cart2') || '[]') || []; } catch (e) { cart = []; }
 
@@ -485,9 +499,15 @@
 			function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 			function totals() { var n = 0, t = 0; cart.forEach(function (it) { n += it.qty; t += it.qty * it.price; }); return { n: n, total: t }; }
 			function refreshFab() { var c = totals(); countEl.textContent = c.n; countEl.style.display = c.n > 0 ? 'flex' : 'none'; }
+			function optionsStr(it) {
+				if (!it.options) return '';
+				var keys = Object.keys(it.options);
+				if (!keys.length) return '';
+				return keys.map(function (k) { return k + ': ' + it.options[k]; }).join(' · ');
+			}
 			function lineLabel(it) { return it.name + (it.variant ? ' (' + it.variant + ')' : ''); }
 
-			/* ---------- Agregar plato (variante + nota + cantidad) ---------- */
+			/* ---------- Agregar plato (variante + opciones + nota + cantidad) ---------- */
 			var addModal = document.getElementById('additem-modal');
 			var adding = null, addQty = 1;
 			var addQtyEl = document.getElementById('additem-qty');
@@ -495,11 +515,12 @@
 			var addNoteEl = document.getElementById('additem-note');
 			var addVariantsWrap = document.getElementById('additem-variants');
 			var addVariantOpts = document.getElementById('additem-variant-opts');
+			var addOptionsWrap = document.getElementById('additem-options');
 
 			function addPreview() { addPriceEl.textContent = fmt(adding.price * addQty); }
 
 			function openAdd(name, basePrice) {
-				adding = { name: name, price: basePrice, variant: null };
+				adding = { name: name, price: basePrice, variant: null, options: {} };
 				addQty = 1; addQtyEl.textContent = '1'; addNoteEl.value = '';
 				document.getElementById('additem-title').textContent = name;
 				var vs = VARIANTS[name];
@@ -518,6 +539,31 @@
 						addVariantOpts.appendChild(b);
 					});
 				} else { addVariantsWrap.hidden = true; }
+
+				/* Opciones (salsa, acompañamiento, etc.) — no cambian el precio */
+				addOptionsWrap.innerHTML = '';
+				var groups = OPTIONS[name];
+				if (groups) {
+					groups.forEach(function (g) {
+						adding.options[g.l] = g.o[0]; /* por defecto la primera */
+						var lbl = document.createElement('p');
+						lbl.className = 'additem-label'; lbl.textContent = g.l;
+						var box = document.createElement('div'); box.className = 'opt-group';
+						g.o.forEach(function (choice, i) {
+							var b = document.createElement('button');
+							b.type = 'button'; b.className = 'opt-btn' + (i === 0 ? ' active' : '');
+							b.textContent = choice;
+							b.addEventListener('click', function () {
+								box.querySelectorAll('.opt-btn').forEach(function (x) { x.classList.remove('active'); });
+								b.classList.add('active'); adding.options[g.l] = choice;
+							});
+							box.appendChild(b);
+						});
+						addOptionsWrap.appendChild(lbl);
+						addOptionsWrap.appendChild(box);
+					});
+				}
+
 				addPreview();
 				addModal.classList.add('open'); addModal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
 			}
@@ -528,7 +574,7 @@
 			document.getElementById('additem-close').addEventListener('click', closeAdd);
 			addModal.addEventListener('click', function (e) { if (e.target === addModal) closeAdd(); });
 			document.getElementById('additem-add').addEventListener('click', function () {
-				cart.push({ id: uid(), name: adding.name, variant: adding.variant, note: addNoteEl.value.trim(), price: adding.price, qty: addQty });
+				cart.push({ id: uid(), name: adding.name, variant: adding.variant, options: adding.options, note: addNoteEl.value.trim(), price: adding.price, qty: addQty });
 				save(); refreshFab(); closeAdd();
 			});
 
@@ -551,15 +597,18 @@
 				if (cart.length === 0) { emptyEl.style.display = 'block'; summaryEl.hidden = true; return; }
 				emptyEl.style.display = 'none'; summaryEl.hidden = false;
 				cart.forEach(function (it) {
+					var opts = optionsStr(it);
 					var row = document.createElement('div'); row.className = 'cart-row';
 					row.innerHTML =
 						'<div class="cart-row-info"><span class="cart-row-name"></span>' +
 						'<span class="cart-row-price">' + fmt(it.price) + ' c/u</span>' +
+						(opts ? '<span class="cart-row-opts"></span>' : '') +
 						(it.note ? '<span class="cart-row-note"></span>' : '') + '</div>' +
 						'<div class="cart-qty"><button type="button" class="qty-btn" data-dec>−</button>' +
 						'<span class="qty-n">' + it.qty + '</span>' +
 						'<button type="button" class="qty-btn" data-inc>＋</button></div>';
 					row.querySelector('.cart-row-name').textContent = lineLabel(it);
+					if (opts) row.querySelector('.cart-row-opts').textContent = opts;
 					if (it.note) row.querySelector('.cart-row-note').textContent = '📝 ' + it.note;
 					row.querySelector('[data-dec]').addEventListener('click', function () { it.qty--; if (it.qty <= 0) cart = cart.filter(function (x) { return x.id !== it.id; }); save(); refreshFab(); render(); });
 					row.querySelector('[data-inc]').addEventListener('click', function () { it.qty++; save(); refreshFab(); render(); });
@@ -612,6 +661,8 @@
 				lines.push('Pago: ' + chosen.pay, '');
 				cart.forEach(function (it) {
 					lines.push('• ' + it.qty + 'x ' + lineLabel(it) + ' — ' + fmt(it.qty * it.price));
+					var opts = optionsStr(it);
+					if (opts) lines.push('   ' + opts);
 					if (it.note) lines.push('   Nota: ' + it.note);
 				});
 				lines.push('', 'Subtotal aprox: ' + fmt(totals().total));

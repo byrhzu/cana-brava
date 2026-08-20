@@ -2260,3 +2260,44 @@ button, input, select, textarea {
 		scroll-padding-left: 1.5rem;
 	}
 }
+
+/* ============================================================
+   ESPECIALIDADES: cards de igual tamaño
+   ============================================================ */
+
+.showcase-card {
+	display: flex;
+	flex-direction: column;
+}
+
+.card-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+}
+
+.card-content h3 {
+	min-height: 3rem;                 /* espacio para 1–2 líneas de título */
+	display: flex;
+	align-items: flex-end;
+}
+
+.card-content p {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	min-height: 4.5em;                /* 3 líneas fijas de descripción */
+}
+
+.card-content .card-price {
+	margin-top: auto;                 /* precio siempre al fondo */
+}
+
+.cart-row-opts {
+	display: block;
+	color: var(--cream-2);
+	font-size: 0.8rem;
+	margin-top: 0.2rem;
+}

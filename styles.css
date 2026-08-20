@@ -2101,3 +2101,80 @@ button, input, select, textarea {
 	line-height: 1.5;
 	margin: 0.75rem 0 1rem;
 }
+
+/* ============================================================
+   AGREGAR PLATO: variantes, nota, opciones de pago
+   ============================================================ */
+
+.additem-label {
+	display: block;
+	font-size: 0.85rem;
+	color: var(--cream-2);
+	font-weight: 500;
+	margin: 0.4rem 0 0.5rem;
+}
+
+#additem-note {
+	width: 100%;
+	padding: 0.7rem 0.9rem;
+	background: var(--bg-2);
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	color: var(--cream);
+	resize: vertical;
+	font-size: 0.95rem;
+	margin-bottom: 1rem;
+}
+#additem-note:focus { outline: none; border-color: var(--accent); }
+
+.additem-variants { margin-bottom: 0.5rem; }
+
+.additem-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+.additem-price {
+	font-family: 'Fraunces', serif;
+	font-size: 1.3rem;
+	font-weight: 600;
+	color: var(--accent);
+}
+
+/* Botones de opción (variante / tipo / pago) */
+.opt-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.opt-btn {
+	flex: 1 1 auto;
+	min-width: 44%;
+	padding: 0.7rem 0.9rem;
+	border-radius: 8px;
+	background: var(--bg-2);
+	border: 1px solid var(--line);
+	color: var(--cream);
+	font-size: 0.92rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	text-align: center;
+}
+.opt-btn:hover { border-color: var(--accent); }
+.opt-btn.active {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: var(--ink);
+	font-weight: 600;
+}
+
+.pay-hint { color: var(--cream-3); font-size: 0.85rem; }
+
+.cart-row-note {
+	display: block;
+	color: var(--accent);
+	font-size: 0.78rem;
+	margin-top: 0.2rem;
+}

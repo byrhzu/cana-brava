@@ -12,7 +12,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="styles.css?v=20260819f">
+	<link rel="stylesheet" href="styles.css?v=20260819g">
 </head>
 <body>
 	<nav class="nav-main scrolled">
@@ -40,7 +40,7 @@
 	<header class="menu-hero">
 		<h1>Nuestro Menú</h1>
 		<p>Más que comidas rápidas: hamburguesas, antojitos mexicanos, cortes de carne a la parrilla, alas, patacones y postres.</p>
-		<p class="menu-note">Precios en colones · No incluyen cargo del 10% a la mesa</p>
+		<p class="menu-note">Precios en colones</p>
 	</header>
 
 	<nav class="menu-nav" id="menu-nav">
@@ -299,22 +299,60 @@
 		<span class="cart-count" id="cart-count">0</span>
 	</button>
 
+	<!-- Ventana: agregar un plato (variante + nota + cantidad) -->
+	<div class="modal-overlay" id="additem-modal" aria-hidden="true">
+		<div class="modal-box modal-box-sm" role="dialog" aria-modal="true" aria-labelledby="additem-title">
+			<button class="modal-close" id="additem-close" type="button" aria-label="Cerrar">&times;</button>
+			<h2 id="additem-title">Agregar</h2>
+			<div id="additem-variants" class="additem-variants" hidden>
+				<p class="additem-label">Elegí una opción</p>
+				<div id="additem-variant-opts" class="opt-group"></div>
+			</div>
+			<label class="additem-label" for="additem-note">Nota (opcional)</label>
+			<textarea id="additem-note" rows="2" placeholder="Ej: sin cebolla, alergias, término de la carne…"></textarea>
+			<div class="additem-row">
+				<div class="cart-qty">
+					<button type="button" class="qty-btn" id="additem-minus" aria-label="Quitar uno">−</button>
+					<span class="qty-n" id="additem-qty">1</span>
+					<button type="button" class="qty-btn" id="additem-plus" aria-label="Agregar uno">＋</button>
+				</div>
+				<span class="additem-price" id="additem-price">₡0</span>
+			</div>
+			<button class="btn btn-primary btn-large" id="additem-add" type="button" style="width:100%">Agregar al pedido</button>
+		</div>
+	</div>
+
 	<!-- Ventana del pedido (carrito) -->
 	<div class="modal-overlay" id="cart-modal" aria-hidden="true">
 		<div class="modal-box modal-box-sm" role="dialog" aria-modal="true" aria-labelledby="cart-title">
 			<button class="modal-close" id="cart-close" type="button" aria-label="Cerrar">&times;</button>
 			<h2 id="cart-title">Tu Pedido</h2>
 
+			<!-- Paso 1: platos -->
 			<div id="cart-view">
 				<div class="cart-empty" id="cart-empty">Tu pedido está vacío.<br>Tocá <strong>“＋”</strong> en los platos del menú para agregarlos.</div>
 				<div class="cart-items" id="cart-items"></div>
 				<div class="cart-summary" id="cart-summary" hidden>
 					<div class="cart-total-row"><span>Subtotal aprox.</span><span id="cart-total">₡0</span></div>
-					<p class="cart-note">Precios de referencia. El local confirma el total final; no incluye el 10% de servicio ni el costo de envío.</p>
-					<button class="btn btn-primary btn-large" id="cart-checkout" type="button" style="width:100%">Enviar pedido por WhatsApp</button>
+					<p class="cart-note">Precios de referencia. El local confirma el total final y el costo de envío (si es express).</p>
+					<button class="btn btn-primary btn-large" id="cart-continue" type="button" style="width:100%">Continuar</button>
 				</div>
 			</div>
 
+			<!-- Paso 2: tipo de pedido + pago -->
+			<div id="cart-details" hidden>
+				<p class="modal-sub">¿Cómo querés tu pedido?</p>
+				<div class="opt-group" id="order-type">
+					<button type="button" class="opt-btn" data-type="express">Express (a domicilio)</button>
+					<button type="button" class="opt-btn" data-type="retiro">Paso a retirar</button>
+				</div>
+				<p class="modal-sub" style="margin-top:1.2rem">Método de pago</p>
+				<div class="opt-group" id="pay-method"><span class="pay-hint">Elegí primero el tipo de pedido.</span></div>
+				<button class="btn btn-primary btn-large" id="cart-topay" type="button" style="width:100%;margin-top:1rem" disabled>Elegir local y enviar</button>
+				<button class="btn btn-ghost" id="cart-back1" type="button" style="width:100%;margin-top:0.5rem">Volver</button>
+			</div>
+
+			<!-- Paso 3: local -->
 			<div id="cart-location" hidden>
 				<p class="modal-sub">¿Desde cuál local hacés el pedido?</p>
 				<div class="pedir-opciones">
@@ -327,7 +365,7 @@
 						<span class="pedir-local-sub">150 m oeste de la iglesia católica</span>
 					</a>
 				</div>
-				<button class="btn btn-ghost" id="cart-back" type="button" style="width:100%;margin-top:0.5rem">Volver</button>
+				<button class="btn btn-ghost" id="cart-back2" type="button" style="width:100%;margin-top:0.5rem">Volver</button>
 			</div>
 		</div>
 	</div>
@@ -393,128 +431,177 @@
 		   ========================================================== */
 		(function () {
 			var WA = { guacimo: '50663018863', guapiles: '50663528533' };
-			var cart = {};
-			try { cart = JSON.parse(localStorage.getItem('cb_cart') || '{}') || {}; } catch (e) { cart = {}; }
+
+			/* Platos con variantes (proteína o cantidad) → el precio cambia según la opción */
+			var VARIANTS = {
+				'Quesadillas': [{ l: 'Carne', p: 4600 }, { l: 'Pollo', p: 4600 }, { l: 'Camarón', p: 5300 }],
+				'Tacos Ahumados': [{ l: '4 unidades', p: 5100 }, { l: '8 unidades', p: 8800 }, { l: '12 unidades', p: 12600 }],
+				'Taco Lomito Res': [{ l: '4 unidades', p: 6900 }, { l: '8 unidades', p: 11500 }],
+				'Tacos al Pastor': [{ l: '4 unidades', p: 5000 }, { l: '8 unidades', p: 9800 }, { l: '12 unidades', p: 14500 }]
+			};
+
+			var cart = [];
+			try { cart = JSON.parse(localStorage.getItem('cb_cart2') || '[]') || []; } catch (e) { cart = []; }
 
 			var fab = document.getElementById('cart-fab');
-			var countEl = document.getElementById('cart-count');
 			var modal = document.getElementById('cart-modal');
+			if (!fab || !modal) return;
+			var countEl = document.getElementById('cart-count');
 			var itemsEl = document.getElementById('cart-items');
 			var emptyEl = document.getElementById('cart-empty');
 			var summaryEl = document.getElementById('cart-summary');
 			var totalEl = document.getElementById('cart-total');
 			var viewEl = document.getElementById('cart-view');
+			var detailsEl = document.getElementById('cart-details');
 			var locEl = document.getElementById('cart-location');
-			if (!fab || !modal) return;
 
 			function fmt(n) { return '₡' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
-			function save() { try { localStorage.setItem('cb_cart', JSON.stringify(cart)); } catch (e) {} }
-			function parsePrice(txt) {
-				var m = (txt || '').replace(/\./g, '').match(/₡\s*([0-9,]+)/);
-				return m ? parseInt(m[1].replace(/,/g, ''), 10) : 0;
-			}
+			function save() { try { localStorage.setItem('cb_cart2', JSON.stringify(cart)); } catch (e) {} }
+			function parsePrice(txt) { var m = (txt || '').replace(/\./g, '').match(/₡\s*([0-9,]+)/); return m ? parseInt(m[1].replace(/,/g, ''), 10) : 0; }
+			function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+			function totals() { var n = 0, t = 0; cart.forEach(function (it) { n += it.qty; t += it.qty * it.price; }); return { n: n, total: t }; }
+			function refreshFab() { var c = totals(); countEl.textContent = c.n; countEl.style.display = c.n > 0 ? 'flex' : 'none'; }
+			function lineLabel(it) { return it.name + (it.variant ? ' (' + it.variant + ')' : ''); }
 
-			function counts() {
-				var n = 0, total = 0;
-				Object.keys(cart).forEach(function (k) { n += cart[k].qty; total += cart[k].qty * cart[k].price; });
-				return { n: n, total: total };
-			}
+			/* ---------- Agregar plato (variante + nota + cantidad) ---------- */
+			var addModal = document.getElementById('additem-modal');
+			var adding = null, addQty = 1;
+			var addQtyEl = document.getElementById('additem-qty');
+			var addPriceEl = document.getElementById('additem-price');
+			var addNoteEl = document.getElementById('additem-note');
+			var addVariantsWrap = document.getElementById('additem-variants');
+			var addVariantOpts = document.getElementById('additem-variant-opts');
 
-			function refreshFab() {
-				var c = counts();
-				countEl.textContent = c.n;
-				countEl.style.display = c.n > 0 ? 'flex' : 'none';
-				fab.classList.toggle('has-items', c.n > 0);
-			}
+			function addPreview() { addPriceEl.textContent = fmt(adding.price * addQty); }
 
-			function add(name, price) {
-				if (!cart[name]) cart[name] = { name: name, price: price, qty: 0 };
-				cart[name].qty++;
-				save(); refreshFab(); render();
+			function openAdd(name, basePrice) {
+				adding = { name: name, price: basePrice, variant: null };
+				addQty = 1; addQtyEl.textContent = '1'; addNoteEl.value = '';
+				document.getElementById('additem-title').textContent = name;
+				var vs = VARIANTS[name];
+				addVariantOpts.innerHTML = '';
+				if (vs) {
+					addVariantsWrap.hidden = false;
+					adding.variant = vs[0].l; adding.price = vs[0].p;
+					vs.forEach(function (v, i) {
+						var b = document.createElement('button');
+						b.type = 'button'; b.className = 'opt-btn' + (i === 0 ? ' active' : '');
+						b.textContent = v.l + ' · ' + fmt(v.p);
+						b.addEventListener('click', function () {
+							addVariantOpts.querySelectorAll('.opt-btn').forEach(function (x) { x.classList.remove('active'); });
+							b.classList.add('active'); adding.variant = v.l; adding.price = v.p; addPreview();
+						});
+						addVariantOpts.appendChild(b);
+					});
+				} else { addVariantsWrap.hidden = true; }
+				addPreview();
+				addModal.classList.add('open'); addModal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
 			}
-			function dec(name) {
-				if (!cart[name]) return;
-				cart[name].qty--;
-				if (cart[name].qty <= 0) delete cart[name];
-				save(); refreshFab(); render();
-			}
+			function closeAdd() { addModal.classList.remove('open'); addModal.setAttribute('aria-hidden', 'true'); document.body.style.overflow = modal.classList.contains('open') ? 'hidden' : ''; }
 
-			function render() {
-				var keys = Object.keys(cart);
-				itemsEl.innerHTML = '';
-				if (keys.length === 0) {
-					emptyEl.style.display = 'block';
-					summaryEl.hidden = true;
-					return;
-				}
-				emptyEl.style.display = 'none';
-				summaryEl.hidden = false;
-				keys.forEach(function (k) {
-					var it = cart[k];
-					var row = document.createElement('div');
-					row.className = 'cart-row';
-					row.innerHTML =
-						'<div class="cart-row-info"><span class="cart-row-name"></span>' +
-						'<span class="cart-row-price">' + fmt(it.price) + ' c/u</span></div>' +
-						'<div class="cart-qty"><button type="button" class="qty-btn" data-dec>−</button>' +
-						'<span class="qty-n">' + it.qty + '</span>' +
-						'<button type="button" class="qty-btn" data-inc>＋</button></div>';
-					row.querySelector('.cart-row-name').textContent = it.name;
-					row.querySelector('[data-dec]').addEventListener('click', function () { dec(k); });
-					row.querySelector('[data-inc]').addEventListener('click', function () { add(it.name, it.price); });
-					itemsEl.appendChild(row);
-				});
-				totalEl.textContent = fmt(counts().total);
-			}
+			document.getElementById('additem-minus').addEventListener('click', function () { if (addQty > 1) { addQty--; addQtyEl.textContent = addQty; addPreview(); } });
+			document.getElementById('additem-plus').addEventListener('click', function () { addQty++; addQtyEl.textContent = addQty; addPreview(); });
+			document.getElementById('additem-close').addEventListener('click', closeAdd);
+			addModal.addEventListener('click', function (e) { if (e.target === addModal) closeAdd(); });
+			document.getElementById('additem-add').addEventListener('click', function () {
+				cart.push({ id: uid(), name: adding.name, variant: adding.variant, note: addNoteEl.value.trim(), price: adding.price, qty: addQty });
+				save(); refreshFab(); closeAdd();
+			});
 
-			/* Inyecta el botón "＋ Agregar" en cada plato */
+			/* Inyecta el botón "＋" en cada plato */
 			document.querySelectorAll('.menu-item').forEach(function (item) {
-				var head = item.querySelector('.menu-item-head');
 				var nameEl = item.querySelector('.menu-item-name');
 				var priceEl = item.querySelector('.menu-item-price');
-				if (!head || !nameEl) return;
-				var price = parsePrice(priceEl ? priceEl.textContent : '');
+				if (!nameEl) return;
+				var base = parsePrice(priceEl ? priceEl.textContent : '');
 				var btn = document.createElement('button');
-				btn.type = 'button';
-				btn.className = 'add-btn';
-				btn.setAttribute('aria-label', 'Agregar ' + nameEl.textContent);
-				btn.textContent = '＋';
-				btn.addEventListener('click', function () {
-					add(nameEl.textContent.trim(), price);
-					btn.classList.add('added');
-					setTimeout(function () { btn.classList.remove('added'); }, 400);
-				});
+				btn.type = 'button'; btn.className = 'add-btn';
+				btn.setAttribute('aria-label', 'Agregar ' + nameEl.textContent); btn.textContent = '＋';
+				btn.addEventListener('click', function () { openAdd(nameEl.textContent.trim(), base); });
 				item.appendChild(btn);
 			});
 
-			/* Abrir / cerrar el carrito */
-			function open() { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; locEl.hidden = true; viewEl.hidden = false; render(); }
+			/* ---------- Carrito ---------- */
+			function render() {
+				itemsEl.innerHTML = '';
+				if (cart.length === 0) { emptyEl.style.display = 'block'; summaryEl.hidden = true; return; }
+				emptyEl.style.display = 'none'; summaryEl.hidden = false;
+				cart.forEach(function (it) {
+					var row = document.createElement('div'); row.className = 'cart-row';
+					row.innerHTML =
+						'<div class="cart-row-info"><span class="cart-row-name"></span>' +
+						'<span class="cart-row-price">' + fmt(it.price) + ' c/u</span>' +
+						(it.note ? '<span class="cart-row-note"></span>' : '') + '</div>' +
+						'<div class="cart-qty"><button type="button" class="qty-btn" data-dec>−</button>' +
+						'<span class="qty-n">' + it.qty + '</span>' +
+						'<button type="button" class="qty-btn" data-inc>＋</button></div>';
+					row.querySelector('.cart-row-name').textContent = lineLabel(it);
+					if (it.note) row.querySelector('.cart-row-note').textContent = '📝 ' + it.note;
+					row.querySelector('[data-dec]').addEventListener('click', function () { it.qty--; if (it.qty <= 0) cart = cart.filter(function (x) { return x.id !== it.id; }); save(); refreshFab(); render(); });
+					row.querySelector('[data-inc]').addEventListener('click', function () { it.qty++; save(); refreshFab(); render(); });
+					itemsEl.appendChild(row);
+				});
+				totalEl.textContent = fmt(totals().total);
+			}
+
+			function showStep(step) { viewEl.hidden = step !== 'cart'; detailsEl.hidden = step !== 'details'; locEl.hidden = step !== 'loc'; }
+			function open() { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; showStep('cart'); render(); }
 			function close() { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
 			fab.addEventListener('click', open);
 			document.getElementById('cart-close').addEventListener('click', close);
 			modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
-			document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+			document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (addModal.classList.contains('open')) closeAdd(); else if (modal.classList.contains('open')) close(); } });
 
-			/* Construir mensaje y pasar a elegir local */
+			document.getElementById('cart-continue').addEventListener('click', function () { if (totals().n === 0) return; showStep('details'); });
+			document.getElementById('cart-back1').addEventListener('click', function () { showStep('cart'); });
+			document.getElementById('cart-back2').addEventListener('click', function () { showStep('details'); });
+
+			/* ---------- Tipo de pedido + método de pago ---------- */
+			var chosen = { type: null, typeLabel: '', pay: null };
+			var payMethods = {
+				express: [{ v: 'sinpe', l: 'Sinpe Móvil' }, { v: 'efectivo', l: 'Efectivo' }],
+				retiro: [{ v: 'sinpe', l: 'Sinpe Móvil' }, { v: 'efectivo', l: 'Efectivo' }, { v: 'tarjeta', l: 'Tarjeta' }]
+			};
+			var typeLabels = { express: 'Express (a domicilio)', retiro: 'Paso a retirar' };
+			var payEl = document.getElementById('pay-method');
+			var toPayBtn = document.getElementById('cart-topay');
+			function updateToPay() { toPayBtn.disabled = !(chosen.type && chosen.pay); }
+
+			document.getElementById('order-type').querySelectorAll('.opt-btn').forEach(function (b) {
+				b.addEventListener('click', function () {
+					document.getElementById('order-type').querySelectorAll('.opt-btn').forEach(function (x) { x.classList.remove('active'); });
+					b.classList.add('active');
+					chosen.type = b.getAttribute('data-type'); chosen.typeLabel = typeLabels[chosen.type]; chosen.pay = null;
+					payEl.innerHTML = '';
+					payMethods[chosen.type].forEach(function (pm) {
+						var pb = document.createElement('button'); pb.type = 'button'; pb.className = 'opt-btn'; pb.textContent = pm.l;
+						pb.addEventListener('click', function () { payEl.querySelectorAll('.opt-btn').forEach(function (x) { x.classList.remove('active'); }); pb.classList.add('active'); chosen.pay = pm.l; updateToPay(); });
+						payEl.appendChild(pb);
+					});
+					updateToPay();
+				});
+			});
+
 			function buildMessage() {
 				var lines = ['Hola Caña Brava, quiero hacer este pedido:', ''];
-				Object.keys(cart).forEach(function (k) {
-					var it = cart[k];
-					lines.push('• ' + it.qty + 'x ' + it.name + ' — ' + fmt(it.qty * it.price));
+				lines.push('Tipo: ' + chosen.typeLabel);
+				lines.push('Pago: ' + chosen.pay, '');
+				cart.forEach(function (it) {
+					lines.push('• ' + it.qty + 'x ' + lineLabel(it) + ' — ' + fmt(it.qty * it.price));
+					if (it.note) lines.push('   Nota: ' + it.note);
 				});
-				lines.push('', 'Subtotal aprox: ' + fmt(counts().total));
-				lines.push('(Confirmo detalles, forma de entrega y total final.)');
+				lines.push('', 'Subtotal aprox: ' + fmt(totals().total));
+				lines.push('(Confirmo ' + (chosen.type === 'express' ? 'dirección' : 'datos') + ' y total final.)');
 				return lines.join('\n');
 			}
 
-			document.getElementById('cart-checkout').addEventListener('click', function () {
-				if (counts().n === 0) return;
+			toPayBtn.addEventListener('click', function () {
+				if (!(chosen.type && chosen.pay)) return;
 				var msg = encodeURIComponent(buildMessage());
 				document.getElementById('cart-wa-guacimo').href = 'https://wa.me/' + WA.guacimo + '?text=' + msg;
 				document.getElementById('cart-wa-guapiles').href = 'https://wa.me/' + WA.guapiles + '?text=' + msg;
-				viewEl.hidden = true; locEl.hidden = false;
+				showStep('loc');
 			});
-			document.getElementById('cart-back').addEventListener('click', function () { locEl.hidden = true; viewEl.hidden = false; });
 
 			refreshFab();
 		})();

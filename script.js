@@ -52,10 +52,10 @@
 			var mins = now.getHours() * 60 + now.getMinutes();
 			var abierto = mins >= 12 * 60 && mins <= 21 * 60 + 30; /* 12:00 a 21:30 */
 			if (abierto) {
-				el.textContent = 'Guácimo & Guápiles · ' + (en ? 'Open now' : 'Abierto ahora');
+				el.textContent = en ? 'Open now · closes 9:30 PM' : 'Abierto ahora · cierra 9:30 PM';
 				if (dot) dot.style.background = 'var(--accent)';
 			} else {
-				el.textContent = 'Guácimo & Guápiles · ' + (en ? 'Closed · Open at 12:00 PM' : 'Cerrado · Abrimos 12:00 PM');
+				el.textContent = en ? 'Closed · opens 12:00 PM' : 'Cerrado · abre 12:00 PM';
 				if (dot) dot.style.background = '#c0392b';
 			}
 		}

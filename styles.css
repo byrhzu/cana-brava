@@ -521,22 +521,24 @@ button, input, select, textarea {
 	align-items: center;
 	justify-content: center;
 	align-self: stretch;
-	padding: 0 0.85rem;
+	padding: 0 0.9rem;
 	border-radius: 4px;
-	background: var(--cream);
-	border: 1px solid var(--cream);
-	transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+	background: #EE2738;
+	border: 1px solid #EE2738;
+	transition: background 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
 }
 
 .nav-ya img {
-	height: 13px;
+	height: 19px;
 	width: auto;
 	display: block;
 }
 
 .nav-ya:hover {
+	background: #D41C2C;
+	border-color: #D41C2C;
 	transform: translateY(-2px);
-	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+	box-shadow: 0 12px 24px rgba(238, 39, 56, 0.3);
 }
 
 @media (max-width: 560px) {

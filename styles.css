@@ -335,9 +335,10 @@ button, input, select, textarea {
 }
 
 /* En pantallas muy pequeñas, el botón "Pedir" de la barra se oculta
-   (queda dentro del menú) para dar aire */
+   (queda en el menú lateral y en la barra inferior) para dar aire.
+   Necesita .nav-actions delante: si no, .btn lo sobrescribe. */
 @media (max-width: 480px) {
-	.nav-pedir { display: none; }
+	.nav-actions .nav-pedir { display: none; }
 }
 
 /* ============================================================
@@ -494,11 +495,48 @@ button, input, select, textarea {
 .hero-meta-estado {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.5rem;
-	font-size: clamp(0.78rem, 1.5vw, 0.86rem);
-	letter-spacing: 0.04em;
-	color: var(--cream-3);
+	gap: 0.45rem;
+	padding: 0.34rem 0.75rem 0.36rem;
+	border: 1px solid rgba(241, 242, 237, 0.24);
+	border-radius: 4px;
+	background: rgba(13, 15, 13, 0.72);
+	font-size: clamp(0.76rem, 1.4vw, 0.84rem);
+	font-weight: 500;
+	letter-spacing: 0;
+	color: var(--cream);
 	white-space: nowrap;
+}
+
+.hero-meta-estado.is-open {
+	border-color: rgba(111, 176, 74, 0.55);
+}
+
+.hero-meta-estado.is-closed {
+	border-color: rgba(192, 57, 43, 0.5);
+}
+
+/* Botón de PedidosYa en la barra superior */
+.nav-ya {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	align-self: stretch;
+	padding: 0 0.85rem;
+	border-radius: 4px;
+	background: var(--cream);
+	border: 1px solid var(--cream);
+	transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.nav-ya img {
+	height: 13px;
+	width: auto;
+	display: block;
+}
+
+.nav-ya:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
 }
 
 @media (max-width: 560px) {

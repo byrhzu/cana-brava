@@ -51,12 +51,15 @@
 			var now = new Date();
 			var mins = now.getHours() * 60 + now.getMinutes();
 			var abierto = mins >= 12 * 60 && mins <= 21 * 60 + 30; /* 12:00 a 21:30 */
+			var chip = el.parentElement;
 			if (abierto) {
 				el.textContent = en ? 'Open now · closes 9:30 PM' : 'Abierto ahora · cierra 9:30 PM';
 				if (dot) dot.style.background = 'var(--accent)';
+				if (chip) { chip.classList.add('is-open'); chip.classList.remove('is-closed'); }
 			} else {
 				el.textContent = en ? 'Closed · opens 12:00 PM' : 'Cerrado · abre 12:00 PM';
 				if (dot) dot.style.background = '#c0392b';
+				if (chip) { chip.classList.add('is-closed'); chip.classList.remove('is-open'); }
 			}
 		}
 		window.__refreshStatus = update;

@@ -95,7 +95,7 @@ Dos casos por debajo de AA, ambos justificados y sin acción pendiente:
 
 `--cream-3` se queda en AA y no debe usarse por debajo de 0.85rem sobre `--bg-3`.
 
-**Deuda registrada:** existen 5 declaraciones con `rgba(197, 48, 30, …)` — un terracota que fue el acento antes de que la marca pasara a verde. Ver §8.
+**Resuelto el 22/09/2026:** las 5 declaraciones con el terracota `rgba(197, 48, 30, …)` — acento anterior al cambio de marca a verde — ya no existen.
 
 ---
 

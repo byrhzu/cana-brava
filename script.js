@@ -58,7 +58,7 @@
 				if (chip) { chip.classList.add('is-open'); chip.classList.remove('is-closed'); }
 			} else {
 				el.textContent = en ? 'Closed · opens 12:00 PM' : 'Cerrado · abre 12:00 PM';
-				if (dot) dot.style.background = '#c0392b';
+				if (dot) dot.style.background = 'var(--cerrado)';
 				if (chip) { chip.classList.add('is-closed'); chip.classList.remove('is-open'); }
 			}
 		}

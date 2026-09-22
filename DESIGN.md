@@ -378,20 +378,31 @@ Este sitio es una **herramienta de pedidos** para un restaurante de pueblo, no u
 
 ---
 
-## Deuda técnica registrada
+## Deuda técnica — estado
 
-Hallazgos de la auditoría del 1 de septiembre de 2026. **Ninguno está corregido**: se dejaron anotados por decisión del dueño para atenderlos más adelante. Ninguno rompe el sitio hoy.
+Auditoría del 1 de septiembre de 2026, **resuelta el 22 de septiembre** en una pasada de pulido. Los colores no se tocaron: se verificó que fondo, texto, verde de marca y rojo de PedidosYa siguen dando exactamente los mismos valores computados.
 
-| # | Hallazgo | Dónde | Impacto |
-|---|---|---|---|
-| 1 | 5 declaraciones con el acento terracota `rgba(197, 48, 30, …)`, anterior al cambio de marca a verde | `styles.css` líneas 683, 777, 1050, 1051, 1170 | **Visible:** `.showcase-card:hover` (línea 777) tiña de rojizo el hover de las 7 tarjetas de especialidades. Las otras 4 son código muerto |
-| 2 | Cero reglas `:focus-visible`; solo 4 `:focus` a secas, dos de ellas con `outline: none` | Todo el archivo | Quien navega con teclado no ve dónde está el cursor |
-| 3 | 28 de 184 clases sin uso (15%) — restos de reservas, asistente de IA, "Nuestra Propuesta" y tarjetas de testimonios | Todo el archivo | Peso muerto; confunde en cada edición futura |
-| 4 | 9 puntos de corte distintos: 480, 500, 560, 600, 640, 720, 768, 860, 900 | Todo el archivo | Comportamiento difícil de predecir entre pantallas. Consolidar en los 4 de §9 |
-| 5 | 9 radios, 9 sombras y 22 transiciones sin sistema; 8 usan `transition: all` | Todo el archivo | Inconsistencia visual y transiciones sobre propiedades que no deberían animarse |
-| 6 | 20 colores en hexadecimal fuera de `:root` | Todo el archivo | Cambiar un color de marca obliga a buscar y reemplazar a mano |
+| # | Hallazgo | Estado |
+|---|---|---|
+| 1 | Acento terracota abandonado (5 usos) | **Resuelto.** El único vivo (`.showcase-card:hover`, que teñía de rojizo el hover de las 7 tarjetas) ahora usa el verde de marca; los otros 4 desaparecieron con el código muerto |
+| 2 | Cero reglas `:focus-visible` | **Resuelto.** 18 reglas; anillo verde general y crema sobre fondos de color. Verificado con tabulador real |
+| 3 | 28 clases muertas (15% del CSS) | **Resuelto.** 47 reglas eliminadas |
+| 4 | 9 puntos de corte distintos | **No aplicado a propósito.** Consolidarlos cambia el comportamiento en anchos intermedios; es un cambio de diseño, no de pulido. Sigue pendiente |
+| 5 | Radios, sombras y transiciones sin sistema | **Parcial.** Los 16 `transition: all` pasaron a propiedades explícitas. Los 10 radios y 8 sombras siguen sin consolidar |
+| 6 | Colores en hexadecimal fuera de `:root` | **Resuelto.** De 20 a 4, y esos 4 son blanco puro sobre botones de marcas de terceros, donde es obligado |
 
-**Además, pendiente de decisión del dueño:** el hero muestra `4.8 ★ · 850 reseñas` con contador animado. Ese dato no tiene respaldo verificado y contradice la estrategia de reseñas reales. Ver Don't #4.
+### Añadido en la misma pasada
+
+| Área | Cambio |
+|---|---|
+| Rendimiento | El logotipo pesaba **205 KB a 2048px** y se muestra a 42px. Reescalado a 400px: **29 KB, −86%**. Está en la ruta crítica (splash y barra), así que es lo primero que carga todo el mundo |
+| Estabilidad visual | **33 imágenes** llevan ahora `width` y `height`. El navegador reserva el espacio y la página deja de saltar mientras cargan las fotos |
+| Navegación por teclado | Enlace **"Saltar al contenido"** en ambas páginas, oculto hasta que se le da el tabulador |
+| Semántica | `<main id="contenido">` en la portada, que no lo tenía |
+| Táctil | Los enlaces del menú lateral pasaron de **23px a 50px** de alto y el botón de hamburguesa a **44×44** |
+| Estado | El color de "cerrado" dejó de estar escrito a mano en el JavaScript |
+
+**Verificado:** escritorio (1280px) y móvil (375px), portada y menú. Sin desbordamiento horizontal, sin errores en consola, el menú lateral abre y cierra, los 123 platos y el armador de pedido intactos, y los colores idénticos.
 
 ---
 

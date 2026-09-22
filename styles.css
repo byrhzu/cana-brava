@@ -20,6 +20,26 @@
 	--green-2:  #1C3A12;
 	--ink:      #0D0F0D;   /* texto oscuro sobre verde */
 	--line:     rgba(241,242,237,.12);
+	--line-2:   rgba(241,242,237,.28);
+
+	/* Valores RGB auxiliares (para rgba()) */
+	--accent-rgb: 111, 176, 74;
+	--cream-rgb:  241, 242, 237;
+	--bg-rgb:     13, 15, 13;
+
+	/* Estado */
+	--cerrado:  #C0392B;
+
+	/* Colores oficiales de terceros — solo para sus propios botones */
+	--whatsapp:   #25D366;
+	--pedidosya:  #EE2738;
+	--pedidosya-2:#D41C2C;
+	--facebook:   #1877F2;
+	--tiktok:     #33CCFF;
+	/* Textos oscuros que acompañan a esos fondos de marca */
+	--whatsapp-ink: #06301A;
+	--waze-ink:     #05303D;
+	--blanco-hover: #F6F6F6;
 	--scroll-color: var(--accent);
 }
 
@@ -58,6 +78,13 @@ html {
 	-moz-osx-font-smoothing: grayscale;
 }
 
+/* Con width/height en el HTML el navegador reserva el espacio y la página
+   no salta al cargar; esta regla mantiene el escalado fluido. */
+img {
+	max-width: 100%;
+	height: auto;
+}
+
 body {
 	background: var(--bg);
 	color: var(--cream);
@@ -67,7 +94,12 @@ body {
 	overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
 	font-family: 'Fraunces', serif;
 	font-weight: 600;
 	line-height: 1.2;
@@ -88,7 +120,10 @@ a:hover {
 	color: var(--gold);
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
 	font-family: inherit;
 	color: inherit;
 	background: inherit;
@@ -164,7 +199,9 @@ button, input, select, textarea {
 	background: rgba(13, 15, 13, 0.7);
 	backdrop-filter: blur(10px);
 	border-bottom: 1px solid var(--line);
-	transition: all 0.3s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.3s;
+	transition-timing-function: ease;
 	padding: 0;
 }
 
@@ -222,7 +259,9 @@ button, input, select, textarea {
 .nav-menu a {
 	font-size: 0.95rem;
 	color: var(--cream-2);
-	transition: all 0.3s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.3s;
+	transition-timing-function: ease;
 	position: relative;
 }
 
@@ -244,7 +283,6 @@ button, input, select, textarea {
 /* CTA dentro del menú (solo visible en móvil) */
 .nav-menu-cta { display: none; }
 
-.nav-cta,
 .nav-actions {
 	margin-left: auto;
 	display: flex;
@@ -287,7 +325,7 @@ button, input, select, textarea {
 
 /* ---- Móvil: menú lateral deslizable ---- */
 @media (max-width: 860px) {
-	.nav-toggle { display: flex; }
+	.nav-toggle { display: flex; min-width: 44px; min-height: 44px; }
 
 	.nav-menu {
 		position: fixed;
@@ -315,7 +353,12 @@ button, input, select, textarea {
 	body.menu-open .reserva-fab,
 	body.menu-open .menu-order-cta { display: none; }
 
-	.nav-menu a { font-size: 1.15rem; }
+	.nav-menu a {
+		font-size: 1.15rem;
+		/* área táctil de 44px sin mover el texto de sitio */
+		display: block;
+		padding: 0.65rem 0;
+	}
 
 	.nav-menu-cta { display: block; margin-top: 0.5rem; }
 	.nav-menu-cta a {
@@ -334,9 +377,11 @@ button, input, select, textarea {
 	body.menu-open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 }
 
-/* En pantallas muy pequeñas, el botón "Pedir" de la barra se oculta
+/* En pantallas muy pequeñas,
+el botón "Pedir" de la barra se oculta
    (queda en el menú lateral y en la barra inferior) para dar aire.
-   Necesita .nav-actions delante: si no, .btn lo sobrescribe. */
+   Necesita .nav-actions delante: si no,
+.btn lo sobrescribe. */
 @media (max-width: 480px) {
 	.nav-actions .nav-pedir { display: none; }
 }
@@ -352,7 +397,9 @@ button, input, select, textarea {
 	font-weight: 500;
 	font-size: 0.95rem;
 	text-align: center;
-	transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.3s;
+	transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
 	cursor: pointer;
 	text-decoration: none;
 	border: 1px solid transparent;
@@ -523,8 +570,8 @@ button, input, select, textarea {
 	align-self: stretch;
 	padding: 0 0.9rem;
 	border-radius: 4px;
-	background: #EE2738;
-	border: 1px solid #EE2738;
+	background: var(--pedidosya);
+	border: 1px solid var(--pedidosya);
 	transition: background 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
 }
 
@@ -535,8 +582,8 @@ button, input, select, textarea {
 }
 
 .nav-ya:hover {
-	background: #D41C2C;
-	border-color: #D41C2C;
+	background: var(--pedidosya-2);
+	border-color: var(--pedidosya-2);
 	transform: translateY(-2px);
 	box-shadow: 0 12px 24px rgba(238, 39, 56, 0.3);
 }
@@ -563,13 +610,6 @@ button, input, select, textarea {
 @keyframes pulse {
 	0%, 100% { opacity: 1; }
 	50% { opacity: 0.3; }
-}
-
-.hero-glyph {
-	display: block;
-	font-size: 5rem;
-	margin-bottom: 1rem;
-	animation: glyphBounce 3s ease-in-out infinite;
 }
 
 @keyframes glyphBounce {
@@ -626,86 +666,6 @@ button, input, select, textarea {
 	gap: 1rem;
 	justify-content: center;
 	flex-wrap: wrap;
-}
-
-/* ============================================================
-   CONCEPT SECTION
-   ============================================================ */
-
-.concept {
-	padding: 5rem 2rem;
-	background: var(--bg);
-	border-top: 1px solid var(--line);
-	border-bottom: 1px solid var(--line);
-}
-
-.concept-container {
-	max-width: 1200px;
-	margin: 0 auto;
-}
-
-.concept h2 {
-	font-size: 2.5rem;
-	margin-bottom: 1rem;
-	text-align: center;
-	color: var(--cream);
-}
-
-.concept-intro {
-	text-align: center;
-	font-size: 1.1rem;
-	color: var(--cream-2);
-	max-width: 700px;
-	margin: 0 auto 3rem;
-	line-height: 1.8;
-}
-
-.concept-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-	gap: 2rem;
-	margin-top: 2rem;
-}
-
-.concept-card {
-	padding: 2rem;
-	background: var(--bg-3);
-	border: 1px solid var(--line);
-	border-radius: 4px;
-	transition: all 0.3s ease;
-	text-align: center;
-}
-
-.concept-card:hover {
-	background: var(--bg-2);
-	border-color: var(--accent);
-	transform: translateY(-8px);
-	box-shadow: 0 20px 40px rgba(197, 48, 30, 0.15);
-}
-
-.concept-icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 56px;
-	height: 56px;
-	margin-bottom: 1.2rem;
-	border-radius: 50%;
-	background: var(--accent-soft);
-	color: var(--accent);
-}
-
-.concept-icon svg { width: 28px; height: 28px; }
-
-.concept-card h3 {
-	font-size: 1.5rem;
-	margin-bottom: 1rem;
-	color: var(--cream);
-}
-
-.concept-card p {
-	color: var(--cream-2);
-	line-height: 1.8;
 }
 
 /* ============================================================
@@ -766,7 +726,9 @@ button, input, select, textarea {
 	border: 1px solid var(--line);
 	border-radius: 4px;
 	overflow: hidden;
-	transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.3s;
+	transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
 	cursor: pointer;
 	min-width: 0;
 }
@@ -774,7 +736,7 @@ button, input, select, textarea {
 .showcase-card:hover {
 	transform: translateY(-12px) rotateX(5deg);
 	border-color: var(--accent);
-	box-shadow: 0 24px 48px rgba(197, 48, 30, 0.2);
+	box-shadow: 0 24px 48px rgba(var(--accent-rgb), 0.2);
 }
 
 .card-image {
@@ -788,7 +750,9 @@ button, input, select, textarea {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-	transition: all 0.5s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.5s;
+	transition-timing-function: ease;
 	filter: saturate(1.05) contrast(1.05);
 }
 
@@ -866,7 +830,9 @@ button, input, select, textarea {
 	background: var(--bg-3);
 	border: 1px solid var(--line);
 	border-radius: 10px;
-	transition: all 0.3s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.3s;
+	transition-timing-function: ease;
 }
 
 .ubicacion-card:hover {
@@ -945,7 +911,9 @@ button, input, select, textarea {
 	background: var(--bg-2);
 	border: 1px solid var(--line);
 	color: var(--cream);
-	transition: all 0.25s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.25s;
+	transition-timing-function: ease;
 }
 
 .loc-btn svg { width: 18px; height: 18px; }
@@ -956,42 +924,9 @@ button, input, select, textarea {
 	color: var(--cream);
 }
 
-.loc-wa:hover   { background: #25D366; border-color: #25D366; color: #06301a; }
-.loc-waze:hover { background: #33CCFF; border-color: #33CCFF; color: #05303d; }
+.loc-wa:hover { background: var(--whatsapp); border-color: var(--whatsapp); color: var(--whatsapp-ink); }
+.loc-waze:hover { background: var(--tiktok); border-color: var(--tiktok); color: var(--waze-ink); }
 .loc-maps:hover { background: var(--accent); border-color: var(--accent); color: var(--ink); }
-
-/* ============================================================
-   RESERVAR SECTION
-   ============================================================ */
-
-.reservar {
-	padding: 5rem 2rem;
-	background: var(--bg);
-}
-
-.reservar-container {
-	max-width: 600px;
-	margin: 0 auto;
-	background: var(--bg-3);
-	padding: 3rem;
-	border: 1px solid var(--line);
-	border-radius: 4px;
-}
-
-.reservar-container h2 {
-	font-size: 2rem;
-	text-align: center;
-	margin-bottom: 0.5rem;
-}
-
-.reservar-container > p {
-	text-align: center;
-	color: var(--cream-3);
-	margin-bottom: 2rem;
-	font-size: 0.95rem;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-}
 
 .reserva-form {
 	display: flex;
@@ -999,63 +934,7 @@ button, input, select, textarea {
 	gap: 1.5rem;
 }
 
-.form-group {
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
-}
-
-.form-row {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 1rem;
-}
-
 @media (max-width: 640px) {
-	.form-row {
-		grid-template-columns: 1fr;
-	}
-}
-
-.form-group label {
-	font-size: 0.9rem;
-	color: var(--cream-2);
-	font-weight: 500;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-	padding: 0.75rem 1rem;
-	background: var(--bg-2);
-	border: 1px solid var(--line);
-	border-radius: 4px;
-	color: var(--cream);
-	font-size: 1rem;
-	transition: all 0.3s ease;
-}
-
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-	color: var(--cream-3);
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-	outline: none;
-	border-color: var(--accent);
-	background: rgba(197, 48, 30, 0.05);
-	box-shadow: 0 0 0 3px rgba(197, 48, 30, 0.1);
-}
-
-.form-note {
-	text-align: center;
-	font-size: 0.85rem;
-	color: var(--cream-3);
-	margin-top: 1rem;
 }
 
 /* ============================================================
@@ -1079,103 +958,6 @@ button, input, select, textarea {
 	margin-bottom: 3rem;
 }
 
-.testimonios-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-	gap: 2rem;
-}
-
-.testimonio-card {
-	padding: 2rem;
-	background: var(--bg-3);
-	border: 1px solid var(--line);
-	border-radius: 4px;
-	transition: all 0.3s ease;
-}
-
-.testimonio-card:hover {
-	background: var(--bg-2);
-	border-color: var(--accent);
-	transform: translateY(-8px);
-}
-
-.testimonio-rating {
-	color: var(--gold);
-	margin-bottom: 1rem;
-	font-size: 1.1rem;
-	letter-spacing: 0.2em;
-}
-
-.testimonio-text {
-	color: var(--cream-2);
-	line-height: 1.8;
-	margin-bottom: 1.5rem;
-	font-style: italic;
-	font-size: 0.95rem;
-}
-
-.testimonio-author {
-	color: var(--cream-3);
-	font-size: 0.9rem;
-	font-weight: 500;
-}
-
-/* ============================================================
-   ASISTENTE PREVIEW
-   ============================================================ */
-
-.asistente-preview {
-	padding: 5rem 2rem;
-	background: var(--bg-2);
-	border-top: 1px solid var(--line);
-	border-bottom: 1px solid var(--line);
-}
-
-.asistente-container {
-	max-width: 800px;
-	margin: 0 auto;
-	text-align: center;
-}
-
-.asistente-container h2 {
-	font-size: 2rem;
-	margin-bottom: 0.5rem;
-}
-
-.asistente-container > p {
-	color: var(--cream-3);
-	margin-bottom: 2rem;
-	font-size: 0.95rem;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-}
-
-.asistente-placeholder {
-	background: var(--bg);
-	border: 1px solid var(--line);
-	border-radius: 4px;
-	padding: 2rem;
-	text-align: left;
-}
-
-.chat-bubble {
-	margin-bottom: 1.5rem;
-	padding: 1rem;
-	border-radius: 4px;
-	max-width: 80%;
-	animation: chatSlide 0.5s ease-out both;
-}
-
-.chat-bubble.user {
-	background: rgba(197, 48, 30, 0.15);
-	border-left: 3px solid var(--accent);
-	color: var(--cream);
-	margin-left: auto;
-	margin-right: 0;
-	text-align: right;
-	animation-delay: 0.1s;
-}
-
 .chat-bubble.ai {
 	background: rgba(196, 154, 91, 0.1);
 	border-left: 3px solid var(--gold);
@@ -1188,14 +970,6 @@ button, input, select, textarea {
 @keyframes chatSlide {
 	0% { opacity: 0; transform: translateX(-10px); }
 	100% { opacity: 1; transform: translateX(0); }
-}
-
-.asistente-note {
-	text-align: center;
-	color: var(--cream-3);
-	font-size: 0.9rem;
-	margin-top: 1.5rem;
-	font-style: italic;
 }
 
 /* ============================================================
@@ -1230,7 +1004,9 @@ button, input, select, textarea {
 	background: var(--bg-3);
 	border: 1px solid var(--line);
 	border-radius: 4px;
-	transition: all 0.3s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.3s;
+	transition-timing-function: ease;
 }
 
 .contacto-item:hover {
@@ -1328,8 +1104,8 @@ button, input, select, textarea {
 
 @media (prefers-reduced-motion: reduce) {
 	*,
-	*::before,
-	*::after {
+*::before,
+*::after {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
@@ -1401,7 +1177,9 @@ button, input, select, textarea {
 	font-size: 0.85rem;
 	color: var(--cream-2);
 	border: 1px solid var(--line);
-	transition: all 0.25s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.25s;
+	transition-timing-function: ease;
 	flex-shrink: 0;
 }
 
@@ -1507,7 +1285,8 @@ button, input, select, textarea {
 	margin-top: 0.2rem;
 }
 
-/* Subgroup heading inside a category (e.g., RES / CERDO) */
+/* Subgroup heading inside a category (e.g.,
+RES / CERDO) */
 .menu-subgroup {
 	grid-column: 1 / -1;
 	color: var(--accent);
@@ -1522,17 +1301,7 @@ button, input, select, textarea {
 
 .menu-subgroup:first-child { border-top: none; padding-top: 0; margin-top: 0; }
 
-/* Back to order CTA */
-.menu-order-cta {
-	position: fixed;
-	bottom: 1.5rem;
-	right: 1.5rem;
-	z-index: 60;
-	box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-
 @media (max-width: 500px) {
-	.menu-order-cta { bottom: 1rem; right: 1rem; padding: 0.7rem 1.4rem; }
 }
 
 /* ============================================================
@@ -1630,7 +1399,9 @@ button, input, select, textarea {
 	background: var(--bg-3);
 	border: 1px solid var(--line);
 	color: var(--cream-2);
-	transition: all 0.3s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.3s;
+	transition-timing-function: ease;
 }
 
 .social-btn svg { width: 22px; height: 22px; }
@@ -1649,31 +1420,7 @@ button, input, select, textarea {
 .footer-logo { height: 46px; width: auto; margin-bottom: 1rem; opacity: 0.9; }
 .footer-legal { color: var(--cream-3); font-size: 0.82rem; margin-top: 0.4rem; }
 
-.reserva-fab {
-	position: fixed;
-	bottom: 1.5rem;
-	right: 1.5rem;
-	z-index: 120;
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0.85rem 1.5rem;
-	border-radius: 999px;
-	background: var(--accent);
-	color: var(--ink);
-	font-weight: 600;
-	font-size: 0.95rem;
-	cursor: pointer;
-	box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-	transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
-
-.reserva-fab svg { width: 20px; height: 20px; }
-.reserva-fab:hover { background: var(--accent-2); transform: translateY(-3px) scale(1.03); }
-
 @media (max-width: 500px) {
-	.reserva-fab span, .reserva-fab { font-size: 0.9rem; }
-	.reserva-fab { padding: 0.75rem 1.2rem; bottom: 1rem; right: 1rem; }
 }
 
 /* ============================================================
@@ -1715,8 +1462,6 @@ button, input, select, textarea {
 	gap: 1rem;
 	flex-wrap: wrap;
 }
-
-.loc-fb:hover { background: #1877F2; border-color: #1877F2; color: #fff; }
 
 /* ============================================================
    GALERÍA
@@ -1775,11 +1520,13 @@ button, input, select, textarea {
 	border-radius: 10px;
 	background: var(--bg-2);
 	border: 1px solid var(--line);
-	transition: all 0.25s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.25s;
+	transition-timing-function: ease;
 }
 
 .pedir-local:hover {
-	border-color: #25D366;
+	border-color: var(--whatsapp);
 	background: var(--bg-4);
 	transform: translateY(-2px);
 }
@@ -1791,7 +1538,7 @@ button, input, select, textarea {
 	color: var(--cream);
 }
 
-.pedir-local-head svg { width: 22px; height: 22px; color: #25D366; }
+.pedir-local-head svg { width: 22px; height: 22px; color: var(--whatsapp); }
 
 .pedir-local-name {
 	font-family: 'Fraunces', serif;
@@ -1840,10 +1587,12 @@ button, input, select, textarea {
 	border-radius: 10px;
 	background: #fff;
 	border: 1px solid rgba(0,0,0,0.06);
-	transition: all 0.25s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.25s;
+	transition-timing-function: ease;
 }
 
-.pedir-plataforma:hover { background: #f6f6f6; transform: translateY(-2px); }
+.pedir-plataforma:hover { background: var(--blanco-hover); transform: translateY(-2px); }
 
 /* Logo oficial PedidosYa */
 .pedidosya-img {
@@ -2019,7 +1768,6 @@ button, input, select, textarea {
 .mobile-actionbar { display: none; }
 
 @media (max-width: 860px) {
-	.reserva-fab { display: none; }
 
 	.mobile-actionbar {
 		display: flex;
@@ -2061,7 +1809,9 @@ button, input, select, textarea {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transition: all 0.2s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.2s;
+	transition-timing-function: ease;
 	flex-shrink: 0;
 }
 
@@ -2144,7 +1894,9 @@ button, input, select, textarea {
 	line-height: 1;
 	cursor: pointer;
 	display: flex; align-items: center; justify-content: center;
-	transition: all 0.2s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.2s;
+	transition-timing-function: ease;
 }
 .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
 .qty-n { min-width: 20px; text-align: center; font-weight: 600; }
@@ -2168,7 +1920,9 @@ button, input, select, textarea {
 }
 
 /* ============================================================
-   AGREGAR PLATO: variantes, nota, opciones de pago
+   AGREGAR PLATO: variantes,
+nota,
+opciones de pago
    ============================================================ */
 
 .additem-label {
@@ -2224,7 +1978,9 @@ button, input, select, textarea {
 	color: var(--cream);
 	font-size: 0.92rem;
 	cursor: pointer;
-	transition: all 0.2s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.2s;
+	transition-timing-function: ease;
 	text-align: center;
 }
 .opt-btn:hover { border-color: var(--accent); }
@@ -2263,7 +2019,9 @@ button, input, select, textarea {
 	font-weight: 600;
 	letter-spacing: 0.03em;
 	cursor: pointer;
-	transition: all 0.25s ease;
+	transition-property: background, border-color, color, box-shadow, transform, filter, opacity;
+	transition-duration: 0.25s;
+	transition-timing-function: ease;
 }
 
 .lang-toggle:hover {
@@ -2296,7 +2054,8 @@ button, input, select, textarea {
 }
 
 /* ============================================================
-   PISTA DE DESLIZAR (especialidades, solo móvil)
+   PISTA DE DESLIZAR (especialidades,
+solo móvil)
    ============================================================ */
 
 .swipe-hint { display: none; }
@@ -2365,4 +2124,76 @@ button, input, select, textarea {
 	color: var(--cream-2);
 	font-size: 0.8rem;
 	margin-top: 0.2rem;
+}
+
+/* ============================================================
+   ACCESIBILIDAD — enlace de salto y foco de teclado
+   Se añade al final a propósito: así estas reglas ganan sobre
+   cualquier `outline: none` declarado más arriba.
+   ============================================================ */
+
+/* Enlace de salto: invisible hasta que se llega con el tabulador */
+.saltar {
+	position: fixed;
+	top: -120%;
+	left: 1rem;
+	z-index: 9999;
+	padding: 0.8rem 1.4rem;
+	background: var(--accent);
+	color: var(--ink);
+	font-size: 0.95rem;
+	font-weight: 600;
+	border-radius: 4px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+	transition: top 0.2s ease;
+}
+
+.saltar:focus {
+	top: 1rem;
+}
+
+/* Anillo de foco visible solo para quien navega con teclado.
+   Con el mouse no aparece, así que el diseño no cambia. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+	border-radius: 2px;
+}
+
+/* Sobre fondos de color el anillo verde se pierde: se usa crema */
+.btn-primary:focus-visible,
+.nav-menu-cta a:focus-visible,
+.nav-ya:focus-visible,
+.loc-wa:focus-visible,
+.cart-fab:focus-visible,
+.add-btn:focus-visible {
+	outline-color: var(--cream);
+	outline-offset: 2px;
+}
+
+/* Miniaturas de galería: el anillo va pegado al borde de la foto */
+.galeria-item:focus-visible {
+	outline: 3px solid var(--accent);
+	outline-offset: -3px;
+	border-radius: 0;
+}
+
+/* Campos que anulaban el contorno sin sustituto */
+#additem-note:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+/* Controles del visor de galería, sobre la foto a pantalla completa */
+.lightbox-close:focus-visible,
+.lightbox-prev:focus-visible,
+.lightbox-next:focus-visible {
+	outline: 2px solid var(--cream);
+	outline-offset: 3px;
 }

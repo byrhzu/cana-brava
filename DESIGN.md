@@ -6,6 +6,11 @@ Especificación visual del sitio de Caña Brava (Guácimo y Guápiles, Limón, C
 
 **Estado:** el sitio está en producción en https://canabravacr.com y recibe pedidos reales por WhatsApp. Cualquier cambio se hace de forma incremental y verificable.
 
+> **Aviso (5/10/2026):** la portada se rediseñó (`index.html` + `portada.css` + `portada.js`).
+> Este documento describe la paleta, la tipografía y los principios, que siguen vigentes,
+> pero los componentes de §4 corresponden al sistema anterior, que hoy solo usa `menu.html`.
+> Pendiente: actualizar §4 y §5 con los componentes de la portada nueva.
+
 ---
 
 ## 1. Visual Theme & Atmosphere

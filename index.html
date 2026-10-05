@@ -28,7 +28,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="styles.css?v=20260922c">
+	<link rel="stylesheet" href="portada.css?v=20261005c">
 	<script type="application/ld+json">
 	{
 		"@context": "https://schema.org",
@@ -179,438 +179,313 @@
 	</script>
 </head>
 <body>
-	<a class="saltar" href="#contenido" data-en="Skip to content">Saltar al contenido</a>
-	<div class="splash-loader">
-		<div class="splash-inner">
-			<img src="assets/img/logo-canabrava.png?v=20260922a" alt="Caña Brava" class="splash-logo" width="400" height="211">
+<a class="saltar" href="#contenido" data-en="Skip to content">Saltar al contenido</a>
+
+<header class="barra">
+	<div class="barra-in">
+		<a href="index.html" aria-label="Caña Brava, inicio"><img src="assets/img/logo-canabrava.png?v=20260922a" alt="Caña Brava" width="400" height="211"></a>
+		<nav>
+			<a href="menu.html" data-en="Menu">Menú</a>
+			<a href="#sedes" data-en="Locations">Dónde estamos</a>
+			<a href="#galeria" data-en="The place">El local</a>
+			<a href="#contacto" data-en="Contact">Contacto</a>
+		</nav>
+		<div class="acciones">
+			<button class="idioma" id="idioma" type="button" aria-label="Change to English">EN</button>
+			<a class="btn-ya" href="https://www.pedidosya.cr/restaurantes/pococi/cana-brava-menu?origin=shop_list" target="_blank" rel="noopener" aria-label="Pedir por PedidosYa">
+				<img src="assets/img/pedidosya-blanco.png?v=20260829d" alt="PedidosYa" width="987" height="220">
+			</a>
+			<a class="btn-pedir" href="#pedir" data-abre="pedir" data-en="Order">Pedir</a>
+			<button class="hamburguesa" id="hamburguesa" type="button" aria-label="Abrir menú" aria-expanded="false">
+				<span></span><span></span><span></span>
+			</button>
+		</div>
+	</div>
+</header>
+
+<main id="contenido">
+
+<!-- ============ 1. LA CARTA EN ÓRBITA ============ -->
+<section class="orbita">
+	<div class="orb-cabeza">
+		<span class="estado" id="estado"><span class="punto"></span><span id="estado-txt">Abierto · cerramos 9:30</span></span>
+		<span class="lugar">Restaurante en Guácimo y Guápiles, Limón</span>
+	</div>
+
+	<div class="orb-escena">
+		<div class="orb-anillo" id="anillo" role="tablist" aria-label="Categorías de la carta">
+			<button class="orb-etiqueta" type="button" role="tab" aria-selected="false" data-nombre="Entradas" data-img="cat-entradas.webp" data-alt="Entradas de Caña Brava" data-platos="7" data-precio="₡2.000" data-ancla="entradas">Entradas</button>
+			<button class="orb-etiqueta" type="button" role="tab" aria-selected="true"  data-nombre="Hamburguesas" data-img="cat-hamburguesas.webp" data-alt="Hamburguesa con papas de Caña Brava" data-platos="22" data-precio="₡3.500" data-ancla="hamburguesas">Hamburguesas</button>
+			<button class="orb-etiqueta" type="button" role="tab" aria-selected="false" data-nombre="Cortes de carne" data-img="cat-cortes.webp" data-alt="Corte de carne a la parrilla" data-platos="14" data-precio="₡4.900" data-ancla="carne">Cortes</button>
+			<button class="orb-etiqueta" type="button" role="tab" aria-selected="false" data-nombre="Antojitos mexicanos" data-img="cat-antojitos.webp" data-alt="Tacos y antojitos mexicanos" data-platos="18" data-precio="₡3.900" data-ancla="mexicanos">Mexicanos</button>
+			<button class="orb-etiqueta" type="button" role="tab" aria-selected="false" data-nombre="Tacos y papas" data-img="cat-papas.webp" data-alt="Papas cargadas para compartir" data-platos="27" data-precio="₡1.950" data-ancla="tacos">Tacos</button>
+			<button class="orb-etiqueta" type="button" role="tab" aria-selected="false" data-nombre="Patacones y alas" data-img="cat-strips.webp" data-alt="Alas de pollo con patacones" data-platos="12" data-precio="₡3.200" data-ancla="patacones">Alas</button>
+			<button class="orb-etiqueta" type="button" role="tab" aria-selected="false" data-nombre="Postres" data-img="cat-postres.webp" data-alt="Postre de la casa" data-platos="6" data-precio="₡2.300" data-ancla="postres">Postres</button>
+		</div>
+		<div class="orb-plato">
+			<img id="orb-img" src="assets/img/cat-hamburguesas.webp" alt="Hamburguesa con papas de Caña Brava" width="900" height="675">
+			<a class="orb-pedir" href="#pedir" data-abre="pedir" data-en="Order">Pedir</a>
 		</div>
 	</div>
 
-	<nav class="nav-main">
-		<div class="nav-container">
-			<a href="index.html" class="nav-logo">
-				<img src="assets/img/logo-canabrava.png?v=20260922a" alt="Caña Brava" class="logo-img" width="400" height="211">
+	<div class="orb-tira" id="tira" role="tablist" aria-label="Categorías de la carta">
+		<button type="button" role="tab" aria-selected="false">Entradas</button>
+		<button type="button" role="tab" aria-selected="true">Hamburguesas</button>
+		<button type="button" role="tab" aria-selected="false">Cortes</button>
+		<button type="button" role="tab" aria-selected="false">Mexicanos</button>
+		<button type="button" role="tab" aria-selected="false">Tacos</button>
+		<button type="button" role="tab" aria-selected="false">Alas</button>
+		<button type="button" role="tab" aria-selected="false">Postres</button>
+	</div>
+
+	<div class="orb-detalle envoltura">
+		<h1 id="orb-nombre">Hamburguesas</h1>
+		<p class="orb-datos"><span id="orb-n">22 platos</span> · <span data-en="from">desde</span> <b id="orb-precio">₡3.500</b></p>
+		<a class="orb-ver" id="orb-ver" href="menu.html#hamburguesas" data-en="See it on the menu">Ver en el menú</a>
+	</div>
+</section>
+
+<!-- ============ 2. PEDIR ============ -->
+<div class="colgada" id="pedir">
+	<div class="colgada-caja">
+		<div class="colgada-tit" data-en="Order on WhatsApp">Pedir por WhatsApp</div>
+		<div class="colgada-ops">
+			<a href="https://wa.me/50663018863" target="_blank" rel="noopener">
+				<span class="q">Guácimo</span><span class="v">6301-8863</span>
 			</a>
-			<ul class="nav-menu" id="nav-menu">
-				<li><a href="menu.html" data-en="Menu">Menú</a></li>
-				<li><a href="#ubicaciones" data-en="Locations">Ubicaciones</a></li>
-				<li><a href="#galeria" data-en="Gallery">Galería</a></li>
-				<li><a href="#contacto" data-en="Contact">Contacto</a></li>
-				<li class="nav-menu-cta"><a href="#" data-open-pedir data-en="Order Now">Pedir Ahora</a></li>
-			</ul>
-			<div class="nav-actions">
-				<button class="lang-toggle" id="lang-toggle" type="button" aria-label="Change to English">EN</button>
-				<a class="nav-ya" href="https://www.pedidosya.cr/restaurantes/pococi/cana-brava-menu?origin=shop_list" target="_blank" rel="noopener" aria-label="Pedir por PedidosYa">
-					<img src="assets/img/pedidosya-blanco.png?v=20260829d" alt="PedidosYa" width="987" height="220">
-				</a>
-				<button class="btn btn-primary nav-pedir" data-open-pedir type="button" data-en="Order">Pedir</button>
-				<button class="nav-toggle" id="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">
-					<span></span><span></span><span></span>
-				</button>
-			</div>
-		</div>
-	</nav>
-	<div class="nav-backdrop" id="nav-backdrop"></div>
-
-	<main id="contenido">
-
-	<section class="hero">
-		<div class="hero-bg">
-			<img src="assets/img/hero-parrilla.webp?v=20260819e" alt="Parrillada Caña Brava" class="hero-img" width="1440" height="703">
-			<div class="hero-bg-tint"></div>
-		</div>
-		<div class="hero-mesh"></div>
-		<div class="hero-grain"></div>
-		<div class="hero-inner">
-			<div class="hero-meta" id="hero-meta">
-				<span class="hero-meta-lugar">Guácimo &amp; Guápiles</span>
-				<span class="hero-meta-linea" aria-hidden="true"></span>
-				<span class="hero-meta-estado">
-					<span class="dot" id="status-dot"></span>
-					<span id="open-status">Abierto ahora</span>
-				</span>
-			</div>
-			<h1 class="hero-title">
-				<span data-en="A delicious and">Experiencia gastronómica</span>
-				<span><em data-en="fast dining experience.">deliciosa y rápida.</em></span>
-			</h1>
-			<p class="hero-sub" data-en="Costa Rican and Mexican food, premium steaks, desserts and fresh milkshakes.">Comida costarricense, mexicana, carnes premium, postres y batidos frescos.</p>
-			<div class="hero-foot">
-				<div class="hero-rating">
-					<span data-count-to="4.8">4.8</span> ★ ·
-					<span data-count-to="850">850</span> <span data-en="reviews">reseñas</span>
-				</div>
-				<div class="hero-actions">
-					<button type="button" data-open-pedir class="btn btn-primary" data-en="Order Now">Pedir Ahora</button>
-					<a href="menu.html" class="btn btn-ghost" data-en="View Menu">Ver Menú</a>
-				</div>
-			</div>
-		</div>
-	</section>
-
-
-	<section class="showcase" id="menu">
-		<div class="showcase-header">
-			<h2 data-en="Our Menu">Nuestro Menú</h2>
-			<p data-en="Explore our specialties">Explora nuestras especialidades</p>
-			<p class="swipe-hint" data-en="Swipe to see more →">Deslizá para ver más →</p>
-		</div>
-
-		<div class="showcase-container">
-			<div class="showcase-scroll">
-				<div class="showcase-card">
-					<div class="card-image">
-						<img src="assets/img/cat-hamburguesas.webp?v=20260819e" alt="Hamburguesas Caña Brava" loading="lazy" width="900" height="675">
-					</div>
-					<div class="card-content">
-						<h3 data-en="Burgers">Hamburguesas</h3>
-						<p data-en="Classic and Premium: Cañaburger, Mar y Tierra, Rib Burger, Mexican Burger and more.">Clásicas y Premium: Cañaburger, Mar y Tierra, Rib Burger, Mexican Burger y más.</p>
-						<div class="card-price" data-en="from ₡3,500">desde ₡3,500</div>
-					</div>
-				</div>
-
-				<div class="showcase-card">
-					<div class="card-image">
-						<img src="assets/img/cat-antojitos.webp?v=20260819e" alt="Antojitos Mexicanos" loading="lazy" width="900" height="599">
-					</div>
-					<div class="card-content">
-						<h3 data-en="Mexican Antojitos">Antojitos Mexicanos</h3>
-						<p data-en="Birria tacos, quesadillas, chilaquiles, enchiladas, quesabirria and taquizas.">Tacos de birria, quesadillas, chilaquiles, enchiladas, quesabirria y taquizas.</p>
-						<div class="card-price" data-en="from ₡3,900">desde ₡3,900</div>
-					</div>
-				</div>
-
-				<div class="showcase-card">
-					<div class="card-image">
-						<img src="assets/img/cat-cortes.webp?v=20260819e" alt="Cortes de Carne" loading="lazy" width="900" height="599">
-					</div>
-					<div class="card-content">
-						<h3 data-en="Steaks &amp; Grill">Cortes de Carne</h3>
-						<p data-en="Churrasco, New York, Rib Eye, Tomahawk and smoked ribs off the grill.">Churrasco, New York, Rib Eye, Tomahawk y costillas ahumadas a la parrilla.</p>
-						<div class="card-price" data-en="from ₡7,500">desde ₡7,500</div>
-					</div>
-				</div>
-
-				<div class="showcase-card">
-					<div class="card-image">
-						<img src="assets/img/cat-papas.webp?v=20260819e" alt="Papas y Patacones" loading="lazy" width="900" height="599">
-					</div>
-					<div class="card-content">
-						<h3 data-en="Fries, Wings &amp; Patacones">Papas, Alas &amp; Patacones</h3>
-						<p data-en="To share and snack on. Loaded fries, wings with sauces to choose, and combo platters.">Para picar y compartir. Papas arregladas, alitas con salsas a elegir y surtidos.</p>
-						<div class="card-price" data-en="from ₡1,950">desde ₡1,950</div>
-					</div>
-				</div>
-
-				<div class="showcase-card">
-					<div class="card-image">
-						<img src="assets/img/cat-strips.webp?v=20260819e" alt="Strips de Pollo y Entradas" loading="lazy" width="900" height="1125">
-					</div>
-					<div class="card-content">
-						<h3 data-en="Strips &amp; Starters">Strips &amp; Entradas</h3>
-						<p data-en="Chicken strips, cheese bites, chilli beans, plantain chips and more to start.">Strips de pollo, dados de queso, chilli beans, chips de plátano y más para empezar.</p>
-						<div class="card-price" data-en="from ₡2,000">desde ₡2,000</div>
-					</div>
-				</div>
-
-				<div class="showcase-card">
-					<div class="card-image">
-						<img src="assets/img/cat-postres.webp?v=20260819e" alt="Postres y Batidos" loading="lazy" width="800" height="1280">
-					</div>
-					<div class="card-content">
-						<h3 data-en="Desserts &amp; Milkshakes">Postres &amp; Batidos</h3>
-						<p data-en="Loaded milkshakes, brownie with ice cream, cheesecake, sweet nachos and ice cream cups.">Batidos elaborados, brownie con helado, cheesecake, nacho dulce y copas de helado.</p>
-						<div class="card-price" data-en="from ₡2,300">desde ₡2,300</div>
-					</div>
-				</div>
-
-				<div class="showcase-card">
-					<div class="card-image">
-						<img src="assets/img/cat-bebidas.webp?v=20260819e" alt="Bebidas y Cócteles" loading="lazy" width="900" height="675">
-					</div>
-					<div class="card-content">
-						<h3 data-en="Drinks &amp; Cocktails">Bebidas &amp; Cócteles</h3>
-						<p data-en="Cocktails like the Blue Guaro Sour, piña colada, mojitos, lemonades and natural fruit drinks.">Cócteles como el Blue Guaro Sour, piña colada, mojitos, limonadas y frescos naturales.</p>
-						<div class="card-price" data-en="Refresh">Refrescate</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="showcase-cta">
-			<a href="menu.html" class="btn btn-primary" data-en="View Full Menu">Ver Menú Completo</a>
-		</div>
-	</section>
-
-	<section class="ubicaciones" id="ubicaciones">
-		<div class="ubicaciones-container">
-			<h2 data-en="Our Locations">Nuestras Ubicaciones</h2>
-			<p class="section-sub" data-en="Two spacious restaurants to enjoy. Choose the closest one.">Dos restaurantes amplios para disfrutar. Elegí el más cercano.</p>
-
-			<div class="ubicaciones-grid">
-				<div class="ubicacion-card">
-					<div class="ubicacion-foto"><img src="assets/img/loc-guacimo.webp?v=20260819h" alt="Restaurante Caña Brava Guácimo" loading="lazy" width="900" height="1200"></div>
-					<h3>Guácimo</h3>
-					<p class="ubicacion-dir" data-en="50 m south of Correos de Costa Rica, Guácimo, Limón.">50 m sur de Correos de Costa Rica, Guácimo, Limón.</p>
-					<div class="ubicacion-meta">
-						<span class="dot dot-green"></span> <span data-en="Open every day · 12:00 PM – 9:30 PM">Abierto todos los días · 12:00 PM – 9:30 PM</span>
-					</div>
-					<a class="ubicacion-tel" href="tel:+50663018863">+506 6301-8863</a>
-					<div class="ubicacion-servicios">
-						<span data-en="Dine-in">Comer en el lugar</span><span>Delivery</span><span data-en="Takeout">Pedidos</span>
-					</div>
-					<div class="ubicacion-actions">
-						<a class="loc-btn loc-wa" href="https://wa.me/50663018863" target="_blank" rel="noopener">
-							<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-4-3.4-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3ZM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.2 8.2 0 1 1 12 20.2Z"/></svg>
-							<span>WhatsApp</span>
-						</a>
-						<a class="loc-btn loc-waze" href="https://ul.waze.com/ul?place=ChIJ-wXSNwC3oI8RLpLUy4uISzw&ll=10.21198910%2C-83.68092930&navigate=yes" target="_blank" rel="noopener">
-							<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a9 9 0 0 0-9 9c0 1.6.4 2.8.9 3.8.4.8-.3 1.6-.3 2.6 0 .9.7 1.6 1.6 1.6.7 0 1.3-.4 1.9-.4.5 0 1.4.4 2.6.6-.2-.4-.3-.9-.3-1.4a3 3 0 0 1 6 0h.2A9 9 0 0 0 12 2Zm-2.5 8a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Zm5 0a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Z"/></svg>
-							<span>Waze</span>
-						</a>
-						<a class="loc-btn loc-maps" href="https://maps.app.goo.gl/e9tdLMWy73DtVU9y7" target="_blank" rel="noopener">
-							<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
-							<span data-en="Map">Mapa</span>
-						</a>
-					</div>
-					<div class="ubicacion-mapa">
-						<iframe title="Mapa Caña Brava Guácimo" src="https://maps.google.com/maps?q=10.21198910,-83.68092930&z=16&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-					</div>
-				</div>
-
-				<div class="ubicacion-card">
-					<div class="ubicacion-foto"><img src="assets/img/loc-guapiles.webp?v=20260819h" alt="Restaurante Caña Brava Guápiles" loading="lazy" width="900" height="1200"></div>
-					<h3>Guápiles</h3>
-					<p class="ubicacion-dir" data-en="150 m west of the Catholic church, Guápiles, Limón.">150 m oeste de la iglesia católica, Guápiles, Limón.</p>
-					<div class="ubicacion-meta">
-						<span class="dot dot-green"></span> <span data-en="Open every day · 12:00 PM – 9:30 PM">Abierto todos los días · 12:00 PM – 9:30 PM</span>
-					</div>
-					<a class="ubicacion-tel" href="tel:+50663528533">+506 6352-8533</a>
-					<div class="ubicacion-servicios">
-						<span data-en="Dine-in">Comer en el lugar</span><span>Delivery</span><span data-en="Takeout">Pedidos</span>
-					</div>
-					<div class="ubicacion-actions">
-						<a class="loc-btn loc-wa" href="https://wa.me/50663528533" target="_blank" rel="noopener">
-							<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-4-3.4-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3ZM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.2 8.2 0 1 1 12 20.2Z"/></svg>
-							<span>WhatsApp</span>
-						</a>
-						<a class="loc-btn loc-waze" href="https://ul.waze.com/ul?place=ChIJa13uPp-5oI8RNFKEkCnayeo&ll=10.21360350%2C-83.79130440&navigate=yes" target="_blank" rel="noopener">
-							<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a9 9 0 0 0-9 9c0 1.6.4 2.8.9 3.8.4.8-.3 1.6-.3 2.6 0 .9.7 1.6 1.6 1.6.7 0 1.3-.4 1.9-.4.5 0 1.4.4 2.6.6-.2-.4-.3-.9-.3-1.4a3 3 0 0 1 6 0h.2A9 9 0 0 0 12 2Zm-2.5 8a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Zm5 0a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Z"/></svg>
-							<span>Waze</span>
-						</a>
-						<a class="loc-btn loc-maps" href="https://maps.app.goo.gl/uXAKy3wGvK2rcT4v7" target="_blank" rel="noopener">
-							<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
-							<span data-en="Map">Mapa</span>
-						</a>
-					</div>
-					<div class="ubicacion-mapa">
-						<iframe title="Mapa Caña Brava Guápiles" src="https://maps.google.com/maps?q=10.21360350,-83.79130440&z=16&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
-
-
-	<section class="testimonios">
-		<div class="testimonios-container">
-			<h2 data-en="Our Customers Back Us">Nuestros Clientes Nos Respaldan</h2>
-			<p class="section-sub" data-en="Thousands already enjoy Caña Brava. Read the real reviews on Google.">Miles de personas ya disfrutan de Caña Brava. Leé las opiniones reales en Google.</p>
-
-			<div class="resenas-stats">
-				<div class="resena-stat">
-					<span class="resena-num">22 mil+</span>
-					<span class="resena-label" data-en="Facebook followers">Seguidores en Facebook</span>
-				</div>
-				<div class="resena-stat">
-					<span class="resena-num">3,300+</span>
-					<span class="resena-label" data-en="Instagram followers">Seguidores en Instagram</span>
-				</div>
-				<div class="resena-stat">
-					<span class="resena-num">2</span>
-					<span class="resena-label" data-en="Locations in the Caribbean zone">Locales en la zona Caribe</span>
-				</div>
-			</div>
-
-			<div class="resenas-cta">
-				<a class="loc-btn loc-maps" href="https://maps.app.goo.gl/e9tdLMWy73DtVU9y7" target="_blank" rel="noopener">
-					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
-					<span data-en="Google Reviews · Guácimo">Reseñas Google · Guácimo</span>
-				</a>
-				<a class="loc-btn loc-maps" href="https://maps.app.goo.gl/uXAKy3wGvK2rcT4v7" target="_blank" rel="noopener">
-					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
-					<span data-en="Google Reviews · Guápiles">Reseñas Google · Guápiles</span>
-				</a>
-			</div>
-		</div>
-	</section>
-
-	<section class="galeria" id="galeria">
-		<div class="galeria-header">
-			<h2 data-en="Gallery">Galería</h2>
-			<p class="section-sub" data-en="A glimpse of what awaits you at Caña Brava.">Un vistazo a lo que te espera en Caña Brava.</p>
-		</div>
-		<p class="galeria-hint" data-en="Tap a photo to view it larger.">Tocá una foto para verla en grande.</p>
-		<div class="galeria-grid" id="galeria-grid">
-			<button class="galeria-item" type="button"><img src="assets/img/gal-1.webp?v=20260819e" alt="Hamburguesa con papas Caña Brava" loading="lazy" width="1400" height="932"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-2.webp?v=20260819e" alt="Tabla surtida para compartir" loading="lazy" width="1200" height="1600"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-3.webp?v=20260819e" alt="Brownie de chocolate" loading="lazy" width="957" height="1280"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-4.webp?v=20260819e" alt="Batido de chocolate y oreo" loading="lazy" width="853" height="1280"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-5.webp?v=20260819e" alt="Nachos Caña Brava" loading="lazy" width="720" height="1280"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-6.webp?v=20260819e" alt="Piña colada" loading="lazy" width="1066" height="1600"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-7.webp?v=20260819e" alt="Plato de tacos y antojitos" loading="lazy" width="1066" height="1600"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-8.webp?v=20260819e" alt="Hamburguesa premium" loading="lazy" width="1066" height="1600"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-9.webp?v=20260819e" alt="Combo con bebidas" loading="lazy" width="805" height="1280"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-10.webp?v=20260819e" alt="Batido de fresa y chocolate" loading="lazy" width="939" height="1280"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-11.webp?v=20260819e" alt="Fajitas para compartir" loading="lazy" width="1400" height="932"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-12.webp?v=20260819e" alt="Mojitos y limonadas" loading="lazy" width="796" height="1280"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-13.webp?v=20260819h" alt="Jardín iluminado en Guácimo" loading="lazy" width="960" height="1280"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-15.webp?v=20260819h" alt="Fachada Caña Brava Guápiles" loading="lazy" width="1200" height="829"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-16.webp?v=20260819h" alt="Interior Caña Brava Guápiles" loading="lazy" width="960" height="1280"></button>
-			<button class="galeria-item" type="button"><img src="assets/img/gal-14.webp?v=20260819h" alt="Food truck en Guácimo" loading="lazy" width="960" height="1280"></button>
-		</div>
-	</section>
-
-	<section class="contacto" id="contacto">
-		<div class="contacto-container">
-			<h2 data-en="Contact Us">Contáctanos</h2>
-			<p class="section-sub" data-en="Message us, call us or follow us on social media.">Escribinos, llamanos o seguinos en nuestras redes.</p>
-
-			<div class="contacto-grid">
-				<div class="contacto-item">
-					<span class="contacto-icon" aria-hidden="true">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
-					</span>
-					<h3 data-en="Phone">Teléfono</h3>
-					<p><a href="tel:+50663018863">+506 6301-8863</a> · Guácimo</p>
-					<p><a href="tel:+50663528533">+506 6352-8533</a> · Guápiles</p>
-				</div>
-
-				<div class="contacto-item">
-					<span class="contacto-icon" aria-hidden="true">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg>
-					</span>
-					<h3>Email</h3>
-					<p><a href="mailto:canabravaguacimo@gmail.com">canabravaguacimo@gmail.com</a></p>
-				</div>
-
-				<div class="contacto-item">
-					<span class="contacto-icon" aria-hidden="true">
-						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-4-3.4-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3ZM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/></svg>
-					</span>
-					<h3>WhatsApp</h3>
-					<p>
-						<a href="https://wa.me/50663018863" target="_blank" rel="noopener">Guácimo</a> ·
-						<a href="https://wa.me/50663528533" target="_blank" rel="noopener">Guápiles</a>
-					</p>
-				</div>
-
-				<div class="contacto-item">
-					<span class="contacto-icon" aria-hidden="true">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-10a7 7 0 0 1 14 0c0 5.5-7 10-7 10Z"/><circle cx="12" cy="11" r="2.5"/></svg>
-					</span>
-					<h3 data-en="Visit Us">Visitanos</h3>
-					<p>Guácimo &amp; Guápiles, Limón</p>
-					<p data-en="12:00 PM – 9:30 PM · Every day">12:00 PM – 9:30 PM · Todos los días</p>
-				</div>
-			</div>
-
-			<div class="social-row">
-				<a class="social-btn" href="https://www.facebook.com/canabrava21/" target="_blank" rel="noopener" aria-label="Facebook">
-					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 9h3V6h-3c-1.9 0-3 1.4-3 3.2V11H8v3h3v7h3v-7h2.5l.5-3H14V9.4c0-.3.2-.4.5-.4Z"/></svg>
-				</a>
-				<a class="social-btn" href="https://www.instagram.com/cana_bravacr/" target="_blank" rel="noopener" aria-label="Instagram">
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg>
-				</a>
-				<button class="social-btn" data-open-whatsapp type="button" aria-label="WhatsApp">
-					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-4-3.4-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3ZM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/></svg>
-				</button>
-				<a class="social-btn" href="https://www.tiktok.com/@canabravacr" target="_blank" rel="noopener" aria-label="TikTok">
-					<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.3 2 1.5 3.6 3.5 3.9v2.6c-1.3.1-2.5-.3-3.6-1v5.9c0 3.3-2.5 5.6-5.6 5.6A5.5 5.5 0 0 1 5.3 14a5.4 5.4 0 0 1 6-5.2v2.8c-.3-.1-.7-.2-1-.2a2.6 2.6 0 0 0 .1 5.2c1.4 0 2.6-1.1 2.6-2.7V3h3.5Z"/></svg>
-				</a>
-			</div>
-		</div>
-	</section>
-
-	</main>
-
-	<footer class="footer">
-		<div class="footer-container">
-			<div class="footer-content">
-				<img src="assets/img/logo-canabrava.png?v=20260922a" alt="Caña Brava" class="footer-logo" width="400" height="211">
-				<p>Guácimo &amp; Guápiles, Costa Rica · 12:00 PM – 9:30 PM</p>
-				<p class="footer-legal" data-en="© 2026 Caña Brava. All rights reserved.">&copy; 2026 Caña Brava. Todos los derechos reservados.</p>
-			</div>
-		</div>
-	</footer>
-
-	<div class="modal-overlay" id="pedir-modal" aria-hidden="true">
-		<div class="modal-box modal-box-sm" role="dialog" aria-modal="true" aria-labelledby="pedir-title">
-			<button class="modal-close" id="pedir-close" type="button" aria-label="Cerrar">&times;</button>
-			<h2 id="pedir-title" data-en="Place Your Order">Hacé tu Pedido</h2>
-			<p class="modal-sub" data-en="Choose the closest location and we'll take you straight to its WhatsApp.">Elegí el local más cercano y te llevamos directo a su WhatsApp.</p>
-			<div class="pedir-opciones">
-				<a class="pedir-local" href="https://wa.me/50663018863" target="_blank" rel="noopener">
-					<span class="pedir-local-head">
-						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-4-3.4-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3ZM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/></svg>
-						<span class="pedir-local-name">Guácimo</span>
-					</span>
-					<span class="pedir-local-sub">50 m sur de Correos de Costa Rica</span>
-				</a>
-				<a class="pedir-local" href="https://wa.me/50663528533" target="_blank" rel="noopener">
-					<span class="pedir-local-head">
-						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-4-3.4-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3ZM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/></svg>
-						<span class="pedir-local-name">Guápiles</span>
-					</span>
-					<span class="pedir-local-sub">150 m oeste de la iglesia católica</span>
-				</a>
-			</div>
-			<div class="pedir-divider"><span data-en="or order via a delivery platform">o pedí por plataforma de delivery</span></div>
-			<a class="pedir-plataforma" href="https://www.pedidosya.cr/restaurantes/pococi/cana-brava-menu?origin=shop_list" target="_blank" rel="noopener" aria-label="Pedir por PedidosYa">
-				<img src="assets/img/pedidosya.png?v=20260819c" alt="PedidosYa" class="pedidosya-img" width="312" height="204">
+			<a href="https://wa.me/50663528533" target="_blank" rel="noopener">
+				<span class="q">Guápiles</span><span class="v">6352-8533</span>
 			</a>
 		</div>
 	</div>
+</div>
 
-	<div class="modal-overlay" id="whatsapp-modal" aria-hidden="true">
-		<div class="modal-box modal-box-sm" role="dialog" aria-modal="true" aria-labelledby="wa-title">
-			<button class="modal-close" id="whatsapp-close" type="button" aria-label="Cerrar">&times;</button>
-			<h2 id="wa-title" data-en="Message us on WhatsApp">Escribinos por WhatsApp</h2>
-			<p class="modal-sub" data-en="Choose the location you want to chat with.">Elegí el local con el que querés hablar.</p>
-			<div class="pedir-opciones">
-				<a class="pedir-local" href="https://wa.me/50663018863" target="_blank" rel="noopener">
-					<span class="pedir-local-head">
-						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-4-3.4-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3ZM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/></svg>
-						<span class="pedir-local-name">Guácimo</span>
-					</span>
-					<span class="pedir-local-sub">+506 6301-8863</span>
-				</a>
-				<a class="pedir-local" href="https://wa.me/50663528533" target="_blank" rel="noopener">
-					<span class="pedir-local-head">
-						<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-4-3.4-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3ZM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/></svg>
-						<span class="pedir-local-name">Guápiles</span>
-					</span>
-					<span class="pedir-local-sub">+506 6352-8533</span>
-				</a>
+<!-- ============ 3. SUCURSALES ============ -->
+<section class="sedes" id="sedes">
+	<div class="envoltura">
+		<div class="sedes-cabeza">
+			<h2 data-en="Where we are">Dónde estamos</h2>
+			<p class="rotulo" data-en="Every day · 12:00 noon to 9:30 pm">Todos los días · 12:00 md a 9:30 pm</p>
+		</div>
+
+		<div class="linea" role="tablist" aria-label="Sucursales">
+			<button type="button" role="tab" aria-selected="true">Guácimo</button>
+			<button type="button" role="tab" aria-selected="false">Guápiles</button>
+		</div>
+
+		<div class="sede-panel">
+			<div class="sede-foto">
+				<img src="assets/img/loc-guacimo.webp?v=20260819h" alt="Terraza del restaurante Caña Brava en Guácimo" width="900" height="1200" loading="lazy">
+			</div>
+			<div class="sede-info">
+				<h3>Caña Brava Guácimo</h3>
+				<dl style="margin:0">
+					<div class="sede-dato"><dt data-en="Address">Dirección</dt><dd>50 m sur de Correos de Costa Rica, Guácimo, Limón</dd></div>
+					<div class="sede-dato"><dt data-en="Phone">Teléfono</dt><dd><a href="tel:+50663018863">6301-8863</a></dd></div>
+					<div class="sede-dato"><dt data-en="Hours">Horario</dt><dd data-en="Every day, 12:00 noon to 9:30 pm">Todos los días, 12:00 md a 9:30 pm</dd></div>
+				</dl>
+				<div class="sede-acc">
+					<a class="sede-wa" href="https://wa.me/50663018863" target="_blank" rel="noopener">WhatsApp</a>
+					<a href="https://ul.waze.com/ul?place=ChIJ-wXSNwC3oI8RLpLUy4uISzw&amp;ll=10.21198910%2C-83.68092930&amp;navigate=yes" target="_blank" rel="noopener">Waze</a>
+					<a href="https://maps.app.goo.gl/e9tdLMWy73DtVU9y7" target="_blank" rel="noopener">Google Maps</a>
+				</div>
+				<div class="sede-mapa">
+					<iframe title="Mapa de Caña Brava Guácimo" src="https://maps.google.com/maps?q=10.21198910,-83.68092930&amp;z=16&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+				</div>
+			</div>
+		</div>
+
+		<div class="sede-panel" hidden>
+			<div class="sede-foto">
+				<img src="assets/img/loc-guapiles.webp?v=20260819h" alt="Salón del restaurante Caña Brava en Guápiles" width="900" height="1200" loading="lazy">
+			</div>
+			<div class="sede-info">
+				<h3>Caña Brava Guápiles</h3>
+				<dl style="margin:0">
+					<div class="sede-dato"><dt data-en="Address">Dirección</dt><dd>150 m oeste de la iglesia católica, Guápiles, Limón</dd></div>
+					<div class="sede-dato"><dt data-en="Phone">Teléfono</dt><dd><a href="tel:+50663528533">6352-8533</a></dd></div>
+					<div class="sede-dato"><dt data-en="Hours">Horario</dt><dd data-en="Every day, 12:00 noon to 9:30 pm">Todos los días, 12:00 md a 9:30 pm</dd></div>
+				</dl>
+				<div class="sede-acc">
+					<a class="sede-wa" href="https://wa.me/50663528533" target="_blank" rel="noopener">WhatsApp</a>
+					<a href="https://ul.waze.com/ul?place=ChIJa13uPp-5oI8RNFKEkCnayeo&amp;ll=10.21360350%2C-83.79130440&amp;navigate=yes" target="_blank" rel="noopener">Waze</a>
+					<a href="https://maps.app.goo.gl/uXAKy3wGvK2rcT4v7" target="_blank" rel="noopener">Google Maps</a>
+				</div>
+				<div class="sede-mapa">
+					<iframe title="Mapa de Caña Brava Guápiles" src="https://maps.google.com/maps?q=10.21360350,-83.79130440&amp;z=16&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+				</div>
 			</div>
 		</div>
 	</div>
+</section>
 
-	<div class="lightbox" id="lightbox" aria-hidden="true">
-		<button class="lightbox-close" id="lightbox-close" type="button" aria-label="Cerrar">&times;</button>
-		<button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="Anterior">&#8249;</button>
-		<div class="lightbox-stage" id="lightbox-stage">
-			<img class="lightbox-img" id="lightbox-img" src="" alt="">
+<!-- ============ 4. RELATO ============ -->
+<section class="relato">
+	<div class="envoltura relato-grid">
+		<div class="pila">
+			<figure class="f1"><img src="assets/img/gal-13.webp" alt="Entrada del restaurante de noche con luces" loading="lazy" width="960" height="1280"></figure>
+			<figure class="f2"><img src="assets/img/gal-2.webp" alt="Surtido de antojitos para compartir" loading="lazy" width="1200" height="1600"></figure>
+			<figure class="f3"><img src="assets/img/gal-16.webp" alt="Salón del restaurante con bombillos colgantes" loading="lazy" width="960" height="1280"></figure>
+			<figure class="f4"><img src="assets/img/cat-bebidas.webp" alt="Cócteles Blue Guaro Sour" loading="lazy" width="900" height="675"></figure>
 		</div>
-		<button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="Siguiente">&#8250;</button>
-		<p class="lightbox-hint" id="lightbox-hint" data-en="Tap the image to zoom">Tocá la imagen para acercar</p>
+		<div class="relato-texto">
+			<h2 data-en="We're more than fast food.">Somos más que comidas rápidas.</h2>
+			<p data-en="On the grill: churrasco, rib eye and ribs. Off the griddle, the burgers. And from the kitchen, birria tacos, fajitas and patacones.">En la parrilla hay churrasco, rib eye y costilla. De la plancha salen las hamburguesas. Y de la cocina, tacos de birria, fajitas y patacones.</p>
+			<p data-en="Everything is cooked when you order it — that's why we sometimes take a little longer.">Todo se hace cuando usted lo pide — por eso a veces tardamos un poquito más.</p>
+			<p class="firma" data-en="119 dishes on the menu. Prices in colones.">119 platos en la carta. Precios en colones.</p>
+		</div>
 	</div>
+</section>
 
-	<div class="mobile-actionbar">
-		<a class="btn btn-ghost" href="menu.html" data-en="View Menu">Ver Menú</a>
-		<button class="btn btn-primary" data-open-pedir type="button" data-en="Order Now">Pedir Ahora</button>
+<!-- ============ 5. GALERÍA ============ -->
+<section class="galeria" id="galeria">
+	<div class="envoltura">
+		<div class="galeria-cabeza">
+			<h2 data-en="The place">El local</h2>
+			<p class="rotulo" data-en="Tap a photo to enlarge">Tocá una foto para verla en grande</p>
+		</div>
+		<div class="galeria-grid">
+			<button class="gA" type="button"><img src="assets/img/gal-13.webp" alt="Arco de luces a la entrada del local de noche" loading="lazy" width="960" height="1280"></button>
+			<button class="gB" type="button"><img src="assets/img/gal-16.webp" alt="Salón interior con bombillos colgantes" loading="lazy" width="960" height="1280"></button>
+			<button class="gC" type="button"><img src="assets/img/gal-2.webp" alt="Surtido de antojitos mexicanos para compartir" loading="lazy" width="1200" height="1600"></button>
+			<button class="gC" type="button"><img src="assets/img/gal-15.webp" alt="Fachada del restaurante Caña Brava de día" loading="lazy" width="1200" height="829"></button>
+			<button class="gC" type="button"><img src="assets/img/cat-bebidas.webp" alt="Cócteles Blue Guaro Sour en la barra" loading="lazy" width="900" height="675"></button>
+			<button class="gD" type="button"><img src="assets/img/gal-11.webp" alt="Ensalada servida en tabla de pizarra" loading="lazy" width="1400" height="932"></button>
+			<button class="gD" type="button"><img src="assets/img/gal-8.webp" alt="Hamburguesa con papas fritas" loading="lazy" width="1066" height="1600"></button>
+			<button class="gC" type="button"><img src="assets/img/gal-1.webp" alt="Hamburguesa de la casa con papas" loading="lazy" width="1400" height="932"></button>
+			<button class="gC" type="button"><img src="assets/img/gal-3.webp" alt="Brownie de chocolate con helado" loading="lazy" width="957" height="1280"></button>
+			<button class="gC" type="button"><img src="assets/img/gal-12.webp" alt="Mojitos preparados en la barra" loading="lazy" width="796" height="1280"></button>
+			<button class="gD" type="button"><img src="assets/img/gal-14.webp" alt="Terraza del local iluminada de noche" loading="lazy" width="960" height="1280"></button>
+			<button class="gD" type="button"><img src="assets/img/gal-5.webp" alt="Nachos con guacamole para compartir" loading="lazy" width="720" height="1280"></button>
+		</div>
 	</div>
+</section>
 
-	<script defer src="script.js?v=20260922a"></script>
+<!-- ============ 6. TRES FORMAS DE COMER ============ -->
+<section class="formas">
+	<div class="forma">
+		<div class="forma-foto"><img src="assets/img/gal-16.webp" alt="" loading="lazy" width="960" height="1280"></div>
+		<div>
+			<h3 data-en="Eat here">Comé aquí</h3>
+			<p data-en="Big dining room, for families and large groups.">Salón amplio, para familias y grupos grandes.</p>
+			<a href="#sedes" data-en="See the locations">Ver los locales</a>
+		</div>
+	</div>
+	<div class="forma">
+		<div class="forma-foto"><img src="assets/img/gal-8.webp" alt="" loading="lazy" width="1066" height="1600"></div>
+		<div>
+			<h3 data-en="We bring it to you">Te lo llevamos</h3>
+			<p data-en="Our own delivery in Guácimo and Guápiles. Cash, SINPE or card.">Delivery propio en Guácimo y Guápiles. Efectivo, SINPE Móvil o tarjeta.</p>
+			<a href="#pedir" data-abre="pedir" data-en="Order on WhatsApp">Pedir por WhatsApp</a>
+		</div>
+	</div>
+	<div class="forma">
+		<div class="forma-foto"><img src="assets/img/cat-papas.webp" alt="" loading="lazy" width="900" height="599"></div>
+		<div>
+			<h3 data-en="Through PedidosYa">Por PedidosYa</h3>
+			<p data-en="If you'd rather order from the app.">Si preferís pedir desde la app.</p>
+			<a href="https://www.pedidosya.cr/restaurantes/pococi/cana-brava-menu?origin=shop_list" target="_blank" rel="noopener" data-en="Open PedidosYa">Abrir PedidosYa</a>
+		</div>
+	</div>
+</section>
+
+<!-- ============ 7. CONTACTO ============ -->
+<section class="contacto" id="contacto">
+	<div class="envoltura contacto-grid">
+		<div>
+			<h2 data-en="Get in touch">Escribinos</h2>
+			<p data-en="For orders, large groups or any question, WhatsApp is the fastest way.">Para pedidos, grupos grandes o cualquier consulta, lo más rápido es el WhatsApp.</p>
+			<p class="zona" data-en="Delivery in Guácimo, Pocora, Río Jiménez, Guápiles, La Rita, Cariari and Roxana.">Hacemos delivery en Guácimo, Pocora, Río Jiménez, Guápiles, La Rita, Cariari y Roxana.</p>
+		</div>
+		<dl class="contacto-lista">
+			<div class="contacto-fila"><dt>WhatsApp</dt><dd><a href="#" data-abre="whatsapp" data-en="Choose a location">Elegí el local</a></dd></div>
+			<div class="contacto-fila"><dt data-en="Guácimo phone">Tel. Guácimo</dt><dd><a href="tel:+50663018863">6301-8863</a></dd></div>
+			<div class="contacto-fila"><dt data-en="Guápiles phone">Tel. Guápiles</dt><dd><a href="tel:+50663528533">6352-8533</a></dd></div>
+			<div class="contacto-fila"><dt>Email</dt><dd><a href="mailto:canabravaguacimo@gmail.com">canabravaguacimo@gmail.com</a></dd></div>
+			<div class="contacto-fila"><dt data-en="Payment">Pagos</dt><dd data-en="Cash, SINPE Móvil and card">Efectivo, SINPE Móvil y tarjeta</dd></div>
+		</dl>
+	</div>
+</section>
+
+</main>
+
+<footer class="pie">
+	<div class="envoltura">
+		<div class="pie-top">
+			<div>
+				<img src="assets/img/logo-canabrava.png?v=20260922a" alt="Caña Brava" width="400" height="211">
+				<p class="rotulo">Guácimo y Guápiles · Limón · Costa Rica</p>
+			</div>
+			<nav class="pie-nav">
+				<a href="menu.html" data-en="Menu">Menú</a>
+				<a href="#sedes" data-en="Locations">Dónde estamos</a>
+				<a href="#contacto" data-en="Contact">Contacto</a>
+				<a href="https://www.facebook.com/canabrava21/" target="_blank" rel="noopener">Facebook</a>
+				<a href="https://www.instagram.com/cana_bravacr/" target="_blank" rel="noopener">Instagram</a>
+				<a href="https://www.tiktok.com/@canabravacr" target="_blank" rel="noopener">TikTok</a>
+				<a href="https://maps.app.goo.gl/e9tdLMWy73DtVU9y7" target="_blank" rel="noopener" data-en="Reviews Guácimo">Reseñas Guácimo</a>
+				<a href="https://maps.app.goo.gl/uXAKy3wGvK2rcT4v7" target="_blank" rel="noopener" data-en="Reviews Guápiles">Reseñas Guápiles</a>
+			</nav>
+		</div>
+		<div class="pie-legal">
+			<span>© 2026 Caña Brava</span>
+			<span><a href="mailto:canabravaguacimo@gmail.com">canabravaguacimo@gmail.com</a></span>
+		</div>
+	</div>
+</footer>
+
+<div class="barra-movil">
+	<a class="ver" href="menu.html" data-en="See the menu">Ver el menú</a>
+	<a class="ped" href="#pedir" data-abre="pedir" data-en="Order">Pedir</a>
+</div>
+
+<!-- ============ modales ============ -->
+<div class="modal" id="modal-pedir" aria-hidden="true">
+	<div class="modal-caja" role="dialog" aria-modal="true" aria-labelledby="pedir-tit">
+		<button class="modal-cerrar" type="button" aria-label="Cerrar">&times;</button>
+		<h2 id="pedir-tit" data-en="Place your order">Hacé tu pedido</h2>
+		<p class="sub" data-en="Choose the closest location.">Elegí el local más cercano.</p>
+		<div class="modal-ops">
+			<a class="modal-op" href="https://wa.me/50663018863" target="_blank" rel="noopener">
+				<span class="n">Guácimo</span>
+				<span class="d">50 m sur de Correos de Costa Rica · 6301-8863</span>
+			</a>
+			<a class="modal-op" href="https://wa.me/50663528533" target="_blank" rel="noopener">
+				<span class="n">Guápiles</span>
+				<span class="d">150 m oeste de la iglesia católica · 6352-8533</span>
+			</a>
+		</div>
+		<div class="modal-sep" data-en="or order through the app">o pedí por la app</div>
+		<a class="modal-ya" href="https://www.pedidosya.cr/restaurantes/pococi/cana-brava-menu?origin=shop_list" target="_blank" rel="noopener" aria-label="Pedir por PedidosYa">
+			<img src="assets/img/pedidosya-blanco.png?v=20260829d" alt="PedidosYa" width="987" height="220">
+		</a>
+	</div>
+</div>
+
+<div class="modal" id="modal-whatsapp" aria-hidden="true">
+	<div class="modal-caja" role="dialog" aria-modal="true" aria-labelledby="wa-tit">
+		<button class="modal-cerrar" type="button" aria-label="Cerrar">&times;</button>
+		<h2 id="wa-tit" data-en="Message us on WhatsApp">Escribinos por WhatsApp</h2>
+		<p class="sub" data-en="Choose the location you want to talk to.">Elegí el local con el que querés hablar.</p>
+		<div class="modal-ops">
+			<a class="modal-op" href="https://wa.me/50663018863" target="_blank" rel="noopener">
+				<span class="n">Guácimo</span><span class="d">6301-8863</span>
+			</a>
+			<a class="modal-op" href="https://wa.me/50663528533" target="_blank" rel="noopener">
+				<span class="n">Guápiles</span><span class="d">6352-8533</span>
+			</a>
+		</div>
+	</div>
+</div>
+
+<div class="visor" id="visor" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Galería de fotos">
+	<button class="visor-cerrar" type="button" aria-label="Cerrar">&times;</button>
+	<button class="visor-ant" type="button" aria-label="Foto anterior">&#8249;</button>
+	<img id="visor-img" src="" alt="">
+	<button class="visor-sig" type="button" aria-label="Foto siguiente">&#8250;</button>
+	<p class="visor-pie" id="visor-pie"></p>
+</div>
+
+<script src="portada.js?v=20261005a"></script>
 </body>
 </html>

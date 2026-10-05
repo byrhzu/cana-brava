@@ -626,8 +626,9 @@ el botón "Pedir" de la barra se oculta
 }
 
 .hero-title em {
-	color: var(--gold);
-	font-style: italic;
+	/* Sin cursiva ni color: el énfasis lo hace el tamaño.
+	   Regla tomada de Sanitarios Ticos (tic 2 del catálogo). */
+	font-style: normal;
 }
 
 .hero-sub {
@@ -690,8 +691,6 @@ el botón "Pedir" de la barra se oculta
 .showcase-header p {
 	font-size: 1.1rem;
 	color: var(--cream-3);
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
 	font-size: 0.9rem;
 }
 
@@ -787,7 +786,6 @@ el botón "Pedir" de la barra se oculta
 .showcase-cta {
 	text-align: center;
 	padding-top: 2rem;
-	border-top: 1px solid var(--line);
 }
 
 /* ============================================================
@@ -796,9 +794,7 @@ el botón "Pedir" de la barra se oculta
 
 .ubicaciones {
 	padding: 5rem 2rem;
-	background: var(--bg);
-	border-top: 1px solid var(--line);
-	border-bottom: 1px solid var(--line);
+	background: var(--bg-2);
 }
 
 .ubicaciones-container {
@@ -943,8 +939,7 @@ el botón "Pedir" de la barra se oculta
 
 .testimonios {
 	padding: 5rem 2rem;
-	background: var(--bg);
-	border-top: 1px solid var(--line);
+	
 }
 
 .testimonios-container {
@@ -1039,7 +1034,6 @@ el botón "Pedir" de la barra se oculta
 
 .footer {
 	background: var(--bg-2);
-	border-top: 1px solid var(--line);
 	padding: 3rem 2rem;
 	text-align: center;
 }
@@ -1123,7 +1117,6 @@ el botón "Pedir" de la barra se oculta
 	background:
 		linear-gradient(180deg, rgba(46,91,30,0.25) 0%, transparent 60%),
 		var(--bg);
-	border-bottom: 1px solid var(--line);
 }
 
 .menu-hero h1 {
@@ -1200,11 +1193,10 @@ el botón "Pedir" de la barra se oculta
 
 .menu-cat {
 	padding: 2.5rem 0;
-	border-bottom: 1px solid var(--line);
 	scroll-margin-top: 130px;
 }
 
-.menu-cat:last-child { border-bottom: none; }
+
 
 .menu-cat-title {
 	font-size: 2rem;
@@ -1228,8 +1220,6 @@ el botón "Pedir" de la barra se oculta
 	text-align: center;
 	color: var(--cream-3);
 	font-size: 0.85rem;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
 	margin-bottom: 2rem;
 }
 
@@ -1245,9 +1235,23 @@ el botón "Pedir" de la barra se oculta
 
 .menu-items.single { grid-template-columns: 1fr; max-width: 620px; margin: 0 auto; }
 
+/* Los platos se separan con franja alterna, no con raya.
+   Como la rejilla es de dos columnas, la franja agarra de dos en dos
+   para que pinte renglones completos y no un tablero de ajedrez. */
 .menu-item {
-	padding-bottom: 1.2rem;
-	border-bottom: 1px dashed var(--line);
+	padding: 0.85rem 1.05rem;
+	margin-inline: -1.05rem;
+	border-radius: 3px;
+}
+
+.menu-items > .menu-item:nth-child(4n+1),
+.menu-items > .menu-item:nth-child(4n+2) {
+	background: var(--bg-3);
+}
+
+@media (max-width: 720px) {
+	.menu-items > .menu-item:nth-child(4n+2) { background: none; }
+	.menu-items > .menu-item:nth-child(odd)  { background: var(--bg-3); }
 }
 
 .menu-item-head {
@@ -1292,11 +1296,8 @@ RES / CERDO) */
 	color: var(--accent);
 	font-size: 1rem;
 	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
 	margin-top: 0.5rem;
 	padding-top: 1rem;
-	border-top: 1px solid var(--line);
 }
 
 .menu-subgroup:first-child { border-top: none; padding-top: 0; margin-top: 0; }
@@ -1469,8 +1470,7 @@ RES / CERDO) */
 
 .galeria {
 	padding: 5rem 2rem;
-	background: var(--bg);
-	border-top: 1px solid var(--line);
+	background: var(--bg-2);
 }
 
 .galeria-header { text-align: center; margin-bottom: 2.5rem; }
@@ -1575,8 +1575,6 @@ RES / CERDO) */
 	padding: 0 1rem;
 	color: var(--cream-3);
 	font-size: 0.82rem;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
 }
 
 .pedir-plataforma {
@@ -1874,8 +1872,9 @@ RES / CERDO) */
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
-	padding: 0.7rem 0;
-	border-bottom: 1px dashed var(--line);
+	padding: 0.7rem 0.9rem;
+	margin-inline: -0.9rem;
+	border-radius: 3px;
 }
 
 .cart-row-info { display: flex; flex-direction: column; }
@@ -2197,3 +2196,51 @@ summary:focus-visible,
 	outline: 2px solid var(--cream);
 	outline-offset: 3px;
 }
+
+
+/* =============================================================
+   PASO ENTRE PÁGINAS
+   Sin esto, cada clic al menú da un parpadeo en blanco y se siente
+   que uno salió del sitio. Técnica tomada de Sanitarios Ticos.
+   La barra de arriba va nombrada: se queda quieta y solo cambia el
+   contenido, como en una aplicación.
+   ============================================================= */
+@view-transition { navigation: auto; }
+
+:root {
+	--paso-tiempo: .55s;
+	--paso-curva: cubic-bezier(0.65, 0, 0.2, 1);
+}
+
+/* La franja que se ve en el hueco entre la página que sale y la que
+   entra es el verde de la marca. No es un elemento nuevo: es el fondo
+   del propio grupo de la transición. Cero HTML y cero JavaScript. */
+::view-transition-group(root) { background: var(--accent); }
+
+::view-transition-old(root) { animation: paso-sale var(--paso-tiempo) var(--paso-curva) forwards; }
+::view-transition-new(root) { animation: paso-entra var(--paso-tiempo) var(--paso-curva) forwards; }
+
+@keyframes paso-sale {
+	from { clip-path: inset(0 0 0 0); }
+	to   { clip-path: inset(0 0 0 100%); }
+}
+
+/* Entra 14 % después; ese 14 % es el ancho de la franja verde. */
+@keyframes paso-entra {
+	0%   { clip-path: inset(0 100% 0 0); }
+	14%  { clip-path: inset(0 100% 0 0); }
+	100% { clip-path: inset(0 0 0 0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.nav-main { view-transition-name: cabecera; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(root),
+	::view-transition-new(root) { animation: none; }
+}
+
+/* La tarjeta de especialidad ahora es un enlace a su sección de la carta. */
+a.showcase-card { display: block; color: inherit; text-decoration: none; }
+a.showcase-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }

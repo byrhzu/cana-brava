@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Caña Brava — propuesta de portada</title>
+<link rel="icon" href="assets/img/logo-canabrava.png?v=20260922a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CAÑA BRAVA — propuesta de portada
+   Paleta, logo y tipografías idénticas al sitio actual.
+   ============================================================ */
+:root{
+	--bg:#0D0F0D; --bg-2:#141714; --bg-3:#1B1F1B; --bg-4:#232823;
+	--cream:#F1F2ED; --cream-2:#C6C9C0; --cream-3:#868D82;
+	--accent:#6FB04A; --accent-2:#58913A;
+	--accent-rgb:111,176,74; --cream-rgb:241,242,237; --bg-rgb:13,15,13;
+	--line:rgba(var(--cream-rgb),.12);
+	--line-2:rgba(var(--cream-rgb),.26);
+	--cerrado:#C0392B;
+	--whatsapp:#25D366; --pedidosya:#EE2738;
+	--titulo:'Fraunces',Georgia,serif;
+	--texto:'Inter',-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--cream);font-family:var(--texto);font-size:17px;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:var(--titulo);font-weight:600;margin:0;line-height:1.08;letter-spacing:-.015em}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+.saltar{position:fixed;top:-120%;left:1rem;z-index:9999;padding:.8rem 1.4rem;background:var(--accent);color:var(--bg);font-weight:600;border-radius:4px;transition:top .2s ease}
+.saltar:focus{top:1rem}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+.btn-pedir:focus-visible,.orb-pedir:focus-visible,.sede-wa:focus-visible{outline-color:var(--cream)}
+
+.envoltura{width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,5vw,56px)}
+.rotulo{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cream-3);font-weight:500;margin:0}
+
+/* ---------- barra ---------- */
+.barra{position:sticky;top:0;z-index:100;background:rgba(var(--bg-rgb),.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.barra-in{max-width:1240px;margin:0 auto;padding:0 clamp(20px,5vw,56px);height:68px;display:flex;align-items:center;gap:clamp(14px,3vw,32px)}
+.barra img{height:38px;width:auto}
+.barra nav{display:flex;gap:clamp(14px,2.2vw,26px);margin-left:auto}
+.barra nav a{font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;color:var(--cream-2);padding:4px 0;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.barra nav a:hover{color:var(--cream);border-bottom-color:var(--accent)}
+.acciones{display:flex;align-items:center;gap:.6rem;margin-left:auto}
+.barra nav+.acciones{margin-left:0}
+.idioma{min-width:40px;height:36px;border:1px solid var(--line-2);border-radius:999px;font-size:.75rem;font-weight:600;color:var(--cream)}
+.idioma:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ya{display:inline-flex;align-items:center;padding:0 .9rem;height:44px;background:var(--pedidosya);border-radius:4px}
+.btn-ya img{height:17px}
+.btn-pedir{height:44px;padding:0 1.5rem;background:var(--accent);color:var(--bg);font-weight:600;font-size:.92rem;border-radius:4px;display:inline-flex;align-items:center;transition:background .2s,transform .2s}
+.btn-pedir:hover{background:var(--accent-2);transform:translateY(-2px)}
+/* menú móvil: los enlaces de sección pasan a un panel */
+.hamburguesa{display:none;flex-direction:column;justify-content:center;gap:5px;width:44px;height:44px;flex:none}
+.hamburguesa span{display:block;width:21px;height:2px;background:var(--cream);margin:0 auto;transition:transform .25s,opacity .25s}
+body.abierto .hamburguesa span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+body.abierto .hamburguesa span:nth-child(2){opacity:0}
+body.abierto .hamburguesa span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media(max-width:1000px){
+	.hamburguesa{display:flex}
+	.barra nav{position:absolute;left:0;right:0;top:68px;flex-direction:column;gap:0;background:var(--bg-2);border-bottom:1px solid var(--line);padding:.4rem clamp(20px,5vw,56px) 1rem;transform:translateY(-130%);transition:transform .3s ease;z-index:-1}
+	body.abierto .barra nav{transform:translateY(0)}
+	.barra nav a{padding:.95rem 0;border-bottom:1px solid var(--line);font-size:.92rem}
+	.barra nav a:last-child{border-bottom:0}
+}
+@media(max-width:560px){.barra img{height:32px}.btn-pedir{padding:0 1rem}}
+
+/* ============================================================
+   1. ÓRBITA — el menú es la portada
+   ============================================================ */
+.orbita{position:relative;padding:clamp(22px,4vw,44px) 0 clamp(40px,6vw,72px);overflow:hidden}
+/* las fotos del fondo invaden el borde, como la mesa de la referencia */
+.orbita::before,.orbita::after{content:"";position:absolute;width:clamp(200px,26vw,380px);height:clamp(200px,26vw,380px);background-size:cover;background-position:center;opacity:.17;filter:saturate(.75);pointer-events:none}
+.orbita::before{left:-7%;top:14%;background-image:url('assets/img/gal-6.webp');border-radius:50%}
+.orbita::after{right:-8%;bottom:4%;background-image:url('assets/img/gal-7.webp');border-radius:50%}
+
+.orb-cabeza{display:flex;align-items:center;justify-content:center;gap:1.1rem;flex-wrap:wrap;margin-bottom:clamp(16px,3vw,30px);position:relative;z-index:2}
+.estado{display:inline-flex;align-items:center;gap:.5rem;padding:.34rem .8rem;border:1px solid var(--line-2);border-radius:4px;background:rgba(var(--bg-rgb),.72);font-size:.82rem;font-weight:500}
+.estado .punto{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+.estado.cerrado .punto{background:var(--cerrado)}
+.estado.cerrado{border-color:rgba(192,57,43,.5)}
+.orb-cabeza .lugar{font-size:.95rem;color:var(--cream-2)}
+
+.orb-escena{position:relative;z-index:2;display:grid;place-items:center;min-height:clamp(360px,56vw,640px)}
+.orb-anillo{position:absolute;inset:0;margin:auto;width:clamp(360px,52vw,620px);height:clamp(360px,52vw,620px);border:1px solid var(--line);border-radius:50%;pointer-events:none}
+.orb-etiqueta{pointer-events:auto}
+.orb-anillo::after{content:"";position:absolute;inset:clamp(26px,3.4vw,42px);border:1px dashed rgba(var(--cream-rgb),.07);border-radius:50%}
+
+.orb-plato{position:relative;width:clamp(230px,34vw,420px);aspect-ratio:1;border-radius:50%;overflow:hidden;border:1px solid var(--line-2)}
+.orb-plato img{width:100%;height:100%;object-fit:cover;transition:opacity .42s ease,transform .42s ease}
+.orb-plato img.saliendo{opacity:0;transform:scale(1.04)}
+.orb-pedir{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:.8rem 1.7rem;background:rgba(var(--bg-rgb),.86);border:1px solid var(--line-2);border-radius:999px;color:var(--cream);font-size:.82rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;transition:background .2s,color .2s,border-color .2s}
+.orb-pedir:hover{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+/* etiquetas en arco (posicionadas por JS) */
+.orb-etiqueta{position:absolute;left:50%;top:50%;transform-origin:center;font-size:clamp(.68rem,1.15vw,.82rem);letter-spacing:.15em;text-transform:uppercase;color:var(--cream-3);white-space:nowrap;padding:.3rem .2rem;transition:color .2s}
+.orb-etiqueta:hover{color:var(--cream)}
+.orb-etiqueta[aria-selected="true"]{color:var(--accent);font-weight:600}
+@media(max-width:820px){.orb-anillo,.orb-etiqueta{display:none}}
+
+/* panel de la categoría activa */
+.orb-detalle{position:relative;z-index:3;text-align:center;margin-top:clamp(20px,3vw,34px)}
+.orb-detalle h1{font-size:clamp(2rem,5.2vw,3.4rem);margin-bottom:.35rem}
+.orb-datos{font-size:.95rem;color:var(--cream-2);margin-bottom:1rem}
+.orb-datos b{color:var(--accent);font-weight:600}
+.orb-ver{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cream);border-bottom:1px solid var(--accent);padding-bottom:3px}
+.orb-ver:hover{color:var(--accent)}
+
+/* en móvil la órbita se vuelve una tira de categorías */
+.orb-tira{display:none;gap:.5rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:1.2rem clamp(20px,5vw,56px) .3rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.orb-tira::-webkit-scrollbar{display:none}
+.orb-tira button{flex:none;scroll-snap-align:center;padding:.6rem 1rem;border:1px solid var(--line-2);border-radius:999px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cream-2);white-space:nowrap}
+.orb-tira button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+@media(max-width:820px){.orb-tira{display:flex}.orb-escena{min-height:0;padding:.5rem 0}}
+
+/* ============================================================
+   2. BANDA DE PEDIDO — colgada entre secciones
+   ============================================================ */
+.colgada{position:relative;z-index:4;margin:0 auto;max-width:900px;padding:0 clamp(20px,5vw,56px);transform:translateY(clamp(14px,2.4vw,26px))}
+.colgada-caja{display:flex;align-items:stretch;background:var(--bg-3);border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
+.colgada-tit{display:flex;align-items:center;padding:0 clamp(16px,2.4vw,28px);background:var(--accent);color:var(--bg);font-weight:600;font-size:.88rem;letter-spacing:.06em;white-space:nowrap}
+.colgada-ops{display:flex;flex:1;min-width:0}
+.colgada-ops a{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:.85rem clamp(12px,2vw,22px);border-left:1px solid var(--line);transition:background .2s}
+.colgada-ops a:first-child{border-left:0}
+.colgada-ops a:hover{background:var(--bg-4)}
+.colgada-ops .q{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cream-3)}
+.colgada-ops .v{font-size:.98rem;font-weight:600}
+@media(max-width:700px){
+	.colgada-caja{flex-direction:column}
+	.colgada-tit{padding:.7rem 1.1rem;justify-content:center}
+	.colgada-ops a{border-left:0;border-top:1px solid var(--line)}
+}
+
+/* ============================================================
+   3. SEDES — selector en línea, no tarjetas gemelas
+   ============================================================ */
+.sedes{padding:clamp(70px,9vw,120px) 0 clamp(50px,7vw,90px);background:var(--bg-2);border-top:1px solid var(--line)}
+.sedes-cabeza{display:flex;align-items:baseline;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;margin-bottom:clamp(26px,4vw,44px)}
+.sedes-cabeza h2{font-size:clamp(1.7rem,3.4vw,2.5rem)}
+
+.linea{position:relative;display:flex;margin-bottom:clamp(30px,4vw,48px)}
+.linea::before{content:"";position:absolute;left:0;right:0;top:7px;height:1px;background:var(--line-2)}
+.linea button{position:relative;flex:1;text-align:left;padding-top:26px;font-size:.84rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-3);transition:color .2s}
+.linea button::before{content:"";position:absolute;left:0;top:2px;width:11px;height:11px;border-radius:50%;background:var(--bg-2);border:1px solid var(--line-2);transition:background .2s,border-color .2s}
+.linea button:hover{color:var(--cream-2)}
+.linea button[aria-selected="true"]{color:var(--accent);font-weight:600}
+.linea button[aria-selected="true"]::before{background:var(--accent);border-color:var(--accent)}
+
+.sede-panel{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,56px);align-items:start}
+@media(max-width:860px){.sede-panel{grid-template-columns:1fr}}
+.sede-foto{aspect-ratio:16/10;overflow:hidden;border-radius:4px}
+.sede-foto img{width:100%;height:100%;object-fit:cover}
+.sede-info h3{font-size:clamp(1.5rem,2.8vw,2rem);margin-bottom:.9rem}
+.sede-dato{display:flex;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.sede-dato dt{flex:none;width:84px;margin:0;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--cream-3);padding-top:4px}
+.sede-dato dd{margin:0;color:var(--cream)}
+.sede-dato dd a:hover{color:var(--accent)}
+.sede-acc{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.3rem}
+.sede-acc a{padding:.7rem 1.1rem;border:1px solid var(--line-2);border-radius:4px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-2);transition:background .2s,color .2s,border-color .2s}
+.sede-acc a:hover{background:var(--cream);color:var(--bg);border-color:var(--cream)}
+.sede-acc .sede-wa:hover{background:var(--whatsapp);border-color:var(--whatsapp);color:#06301A}
+.sede-mapa{margin-top:1.2rem;height:190px;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.sede-mapa iframe{width:100%;height:100%;border:0;filter:grayscale(1) brightness(.72);transition:filter .3s}
+.sede-mapa:hover iframe{filter:grayscale(0) brightness(.95)}
+
+/* ============================================================
+   4. BANDA NARRATIVA — fotos superpuestas
+   ============================================================ */
+.relato{position:relative;padding:clamp(70px,10vw,130px) 0;background:var(--bg);overflow:hidden}
+.relato-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(30px,5vw,70px);align-items:center}
+@media(max-width:900px){.relato-grid{grid-template-columns:1fr}}
+.pila{position:relative;height:clamp(330px,42vw,470px)}
+.pila figure{position:absolute;margin:0;overflow:hidden;border:4px solid var(--cream);box-shadow:0 18px 40px rgba(0,0,0,.55);transition:transform .35s ease}
+.pila figure img{width:100%;height:100%;object-fit:cover}
+.pila .f1{left:0;top:8%;width:46%;height:52%;transform:rotate(-5deg)}
+.pila .f2{left:30%;top:0;width:44%;height:46%;transform:rotate(3deg)}
+.pila .f3{left:14%;top:44%;width:50%;height:52%;transform:rotate(2deg)}
+.pila .f4{right:0;top:26%;width:40%;height:46%;transform:rotate(-3deg);border-color:var(--bg-4)}
+.pila figure:hover{transform:rotate(0deg) scale(1.03);z-index:5}
+.relato-texto h2{font-size:clamp(1.9rem,4.4vw,3.1rem);margin-bottom:1.1rem;max-width:16ch}
+.relato-texto p{color:var(--cream-2);max-width:46ch;margin-bottom:.9rem}
+.relato-texto .firma{font-size:.82rem;color:var(--cream-3);letter-spacing:.04em}
+
+/* ============================================================
+   5. TRES FORMAS DE COMER
+   ============================================================ */
+.formas{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+@media(max-width:820px){.formas{grid-template-columns:1fr}}
+.forma{padding:clamp(32px,4.5vw,52px) clamp(22px,3vw,40px);border-left:1px solid var(--line);display:flex;gap:1.1rem;align-items:flex-start}
+.forma:first-child{border-left:0}
+@media(max-width:820px){.forma{border-left:0;border-top:1px solid var(--line)}.forma:first-child{border-top:0}}
+.forma:nth-child(2){background:var(--bg-2)}
+.forma-foto{flex:none;width:58px;height:58px;border-radius:50%;overflow:hidden;border:1px solid var(--line-2)}
+.forma-foto img{width:100%;height:100%;object-fit:cover}
+.forma h3{font-size:1.18rem;margin-bottom:.35rem}
+.forma p{font-size:.92rem;color:var(--cream-2);margin-bottom:.7rem}
+.forma a{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border-bottom:1px solid transparent;padding-bottom:2px}
+.forma a:hover{border-bottom-color:var(--accent)}
+
+/* ============================================================
+   pie
+   ============================================================ */
+.pie{padding:clamp(48px,6vw,76px) 0 clamp(26px,3vw,38px);border-top:1px solid var(--line);background:var(--bg-2)}
+.pie-top{display:flex;justify-content:space-between;gap:2rem;flex-wrap:wrap;margin-bottom:clamp(26px,3.5vw,42px)}
+.pie img{height:46px;width:auto;opacity:.9;margin-bottom:.8rem}
+.pie-nav{display:flex;flex-wrap:wrap;gap:.7rem 1.6rem;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cream-2)}
+.pie-nav a:hover{color:var(--accent)}
+.pie-legal{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-top:1.3rem;border-top:1px solid var(--line);font-size:.78rem;color:var(--cream-3)}
+
+/* barra inferior móvil */
+.barra-movil{display:none}
+@media(max-width:820px){
+	.barra-movil{display:flex;gap:.6rem;position:fixed;left:0;right:0;bottom:0;z-index:90;padding:.7rem clamp(14px,4vw,20px);background:rgba(var(--bg-rgb),.95);border-top:1px solid var(--line);backdrop-filter:blur(8px)}
+	.barra-movil a{flex:1;text-align:center;padding:.85rem;border-radius:4px;font-size:.88rem;font-weight:600}
+	.barra-movil .ver{border:1px solid var(--line-2);color:var(--cream)}
+	.barra-movil .ped{background:var(--accent);color:var(--bg)}
+	body{padding-bottom:78px}
+}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="barra">
+	<div class="barra-in">
+		<a href="#" aria-label="Caña Brava, inicio"><img src="assets/img/logo-canabrava.png?v=20260922a" alt="Caña Brava"></a>
+		<nav>
+			<a href="menu.html">Carta</a>
+			<a href="#sedes">Dónde estamos</a>
+			<a href="#relato">El local</a>
+		</nav>
+		<div class="acciones">
+			<button class="idioma" type="button" aria-label="Change to English">EN</button>
+			<a class="btn-ya" href="https://www.pedidosya.cr/restaurantes/pococi/cana-brava-menu?origin=shop_list" target="_blank" rel="noopener" aria-label="Pedir por PedidosYa">
+				<img src="assets/img/pedidosya-blanco.png?v=20260829d" alt="PedidosYa">
+			</a>
+			<a class="btn-pedir" href="#pedir">Pedir</a>
+			<button class="hamburguesa" id="hamburguesa" type="button" aria-label="Abrir menú" aria-expanded="false">
+				<span></span><span></span><span></span>
+			</button>
+		</div>
+	</div>
+</header>
+
+<main id="contenido">
+
+<!-- ============ 1. ÓRBITA ============ -->
+<section class="orbita">
+	<div class="orb-cabeza">
+		<span class="estado" id="estado"><span class="punto"></span><span id="estado-txt">Abierto · cerramos 9:30</span></span>
+		<span class="lugar">Guácimo y Guápiles</span>
+	</div>
+
+	<div class="orb-escena">
+		<div class="orb-anillo" id="anillo" role="tablist" aria-label="Categorías de la carta"></div>
+		<div class="orb-plato">
+			<img id="orb-img" src="assets/img/cat-hamburguesas.webp" alt="Hamburguesa de Caña Brava" width="900" height="675">
+			<a class="orb-pedir" href="#pedir">Pedir</a>
+		</div>
+	</div>
+
+	<div class="orb-tira" id="tira" role="tablist" aria-label="Categorías de la carta"></div>
+
+	<div class="orb-detalle envoltura">
+		<h1 id="orb-nombre">Hamburguesas</h1>
+		<p class="orb-datos"><span id="orb-n">22 platos</span> · desde <b id="orb-precio">₡3.500</b></p>
+		<a class="orb-ver" id="orb-ver" href="menu.html#hamburguesas">Ver la sección</a>
+	</div>
+</section>
+
+<!-- ============ 2. BANDA COLGADA ============ -->
+<div class="colgada" id="pedir">
+	<div class="colgada-caja">
+		<div class="colgada-tit">Pedir por WhatsApp</div>
+		<div class="colgada-ops">
+			<a href="https://wa.me/50663018863" target="_blank" rel="noopener">
+				<span class="q">Guácimo</span><span class="v">6301-8863</span>
+			</a>
+			<a href="https://wa.me/50663528533" target="_blank" rel="noopener">
+				<span class="q">Guápiles</span><span class="v">6352-8533</span>
+			</a>
+		</div>
+	</div>
+</div>
+
+<!-- ============ 3. SEDES ============ -->
+<section class="sedes" id="sedes">
+	<div class="envoltura">
+		<div class="sedes-cabeza">
+			<h2>Dónde estamos</h2>
+			<p class="rotulo">Todos los días · 12 md a 9:30 pm</p>
+		</div>
+
+		<div class="linea" role="tablist" aria-label="Sucursales">
+			<button type="button" role="tab" aria-selected="true" data-sede="0">Guácimo</button>
+			<button type="button" role="tab" aria-selected="false" data-sede="1">Guápiles</button>
+		</div>
+
+		<div class="sede-panel">
+			<div class="sede-foto">
+				<img id="sede-img" src="assets/img/loc-guacimo.webp" alt="Local de Caña Brava en Guácimo" width="900" height="1200">
+			</div>
+			<div class="sede-info">
+				<h3 id="sede-nombre">Guácimo</h3>
+				<dl style="margin:0">
+					<div class="sede-dato"><dt>Dirección</dt><dd id="sede-dir">50 m sur de Correos de Costa Rica, Guácimo, Limón</dd></div>
+					<div class="sede-dato"><dt>Teléfono</dt><dd><a id="sede-tel" href="tel:+50663018863">6301-8863</a></dd></div>
+					<div class="sede-dato"><dt>Horario</dt><dd>Todos los días, 12 md a 9:30 pm</dd></div>
+				</dl>
+				<div class="sede-acc">
+					<a class="sede-wa" id="sede-wa" href="https://wa.me/50663018863" target="_blank" rel="noopener">WhatsApp</a>
+					<a id="sede-waze" href="https://ul.waze.com/ul?place=ChIJ-wXSNwC3oI8RLpLUy4uISzw&amp;ll=10.21198910%2C-83.68092930&amp;navigate=yes" target="_blank" rel="noopener">Waze</a>
+					<a id="sede-maps" href="https://maps.app.goo.gl/e9tdLMWy73DtVU9y7" target="_blank" rel="noopener">Google Maps</a>
+				</div>
+				<div class="sede-mapa">
+					<iframe id="sede-iframe" title="Mapa de Caña Brava Guácimo" src="https://maps.google.com/maps?q=10.21198910,-83.68092930&amp;z=16&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- ============ 4. RELATO ============ -->
+<section class="relato" id="relato">
+	<div class="envoltura relato-grid">
+		<div class="pila">
+			<figure class="f1"><img src="assets/img/gal-13.webp" alt="Entrada del local de noche" loading="lazy" width="960" height="1280"></figure>
+			<figure class="f2"><img src="assets/img/gal-2.webp" alt="Surtido para compartir" loading="lazy" width="1200" height="1600"></figure>
+			<figure class="f3"><img src="assets/img/gal-16.webp" alt="Salón con bombillos colgantes" loading="lazy" width="960" height="1280"></figure>
+			<figure class="f4"><img src="assets/img/cat-bebidas.webp" alt="Blue Guaro Sour" loading="lazy" width="900" height="675"></figure>
+		</div>
+		<div class="relato-texto">
+			<h2>Somos más que comidas rápidas.</h2>
+			<p>En la parrilla hay churrasco, rib eye y costilla. De la plancha salen las hamburguesas. Y de la cocina, tacos de birria, fajitas y patacones.</p>
+			<p>Todo se hace cuando usted lo pide — por eso a veces tardamos un poquito más.</p>
+			<p class="firma">119 platos en la carta. Precios en colones.</p>
+		</div>
+	</div>
+</section>
+
+<!-- ============ 5. TRES FORMAS ============ -->
+<section class="formas">
+	<div class="forma">
+		<div class="forma-foto"><img src="assets/img/gal-16.webp" alt="" loading="lazy" width="960" height="1280"></div>
+		<div>
+			<h3>Comé aquí</h3>
+			<p>Salón amplio, para familias y grupos grandes.</p>
+			<a href="#sedes">Ver los locales</a>
+		</div>
+	</div>
+	<div class="forma">
+		<div class="forma-foto"><img src="assets/img/gal-8.webp" alt="" loading="lazy" width="1066" height="1600"></div>
+		<div>
+			<h3>Te lo llevamos</h3>
+			<p>Delivery propio en Guácimo y Guápiles. Efectivo, SINPE o tarjeta.</p>
+			<a href="#pedir">Pedir por WhatsApp</a>
+		</div>
+	</div>
+	<div class="forma">
+		<div class="forma-foto"><img src="assets/img/cat-papas.webp" alt="" loading="lazy" width="900" height="599"></div>
+		<div>
+			<h3>Por PedidosYa</h3>
+			<p>Si preferís pedir desde la app.</p>
+			<a href="https://www.pedidosya.cr/restaurantes/pococi/cana-brava-menu?origin=shop_list" target="_blank" rel="noopener">Abrir PedidosYa</a>
+		</div>
+	</div>
+</section>
+
+</main>
+
+<footer class="pie">
+	<div class="envoltura">
+		<div class="pie-top">
+			<div>
+				<img src="assets/img/logo-canabrava.png?v=20260922a" alt="Caña Brava" width="400" height="211">
+				<p class="rotulo">Guácimo y Guápiles · Limón</p>
+			</div>
+			<nav class="pie-nav">
+				<a href="menu.html">Carta</a>
+				<a href="#sedes">Dónde estamos</a>
+				<a href="https://www.facebook.com/canabrava21/" target="_blank" rel="noopener">Facebook</a>
+				<a href="https://www.instagram.com/cana_bravacr/" target="_blank" rel="noopener">Instagram</a>
+				<a href="https://www.tiktok.com/@canabravacr" target="_blank" rel="noopener">TikTok</a>
+				<a href="https://maps.app.goo.gl/e9tdLMWy73DtVU9y7" target="_blank" rel="noopener">Reseñas Guácimo</a>
+				<a href="https://maps.app.goo.gl/uXAKy3wGvK2rcT4v7" target="_blank" rel="noopener">Reseñas Guápiles</a>
+			</nav>
+		</div>
+		<div class="pie-legal">
+			<span>© 2026 Caña Brava</span>
+			<span>canabravaguacimo@gmail.com</span>
+		</div>
+	</div>
+</footer>
+
+<div class="barra-movil">
+	<a class="ver" href="menu.html">Ver la carta</a>
+	<a class="ped" href="#pedir">Pedir</a>
+</div>
+
+<script>
+(function(){
+	/* ---------- datos reales de la carta ---------- */
+	var CATS=[
+		{n:'Entradas',            c:'Entradas',   img:'cat-entradas.webp',     alt:'Entradas de Caña Brava',      p:7,  d:'₡2.000', a:'entradas'},
+		{n:'Hamburguesas',        c:'Hamburguesas',img:'cat-hamburguesas.webp', alt:'Hamburguesa de Caña Brava',   p:22, d:'₡3.500', a:'hamburguesas'},
+		{n:'Cortes de carne',     c:'Cortes',     img:'cat-cortes.webp',       alt:'Corte a la parrilla',         p:14, d:'₡4.900', a:'carne'},
+		{n:'Antojitos mexicanos', c:'Mexicanos',  img:'cat-antojitos.webp',    alt:'Tacos y antojitos mexicanos', p:18, d:'₡3.900', a:'mexicanos'},
+		{n:'Tacos y papas',       c:'Tacos',      img:'cat-papas.webp',        alt:'Papas cargadas',              p:27, d:'₡1.950', a:'tacos'},
+		{n:'Patacones y alas',    c:'Alas',       img:'cat-strips.webp',       alt:'Alas y patacones',            p:12, d:'₡3.200', a:'patacones'},
+		{n:'Postres',             c:'Postres',    img:'cat-postres.webp',      alt:'Postre de la casa',           p:6,  d:'₡2.300', a:'postres'}
+	];
+
+	var anillo=document.getElementById('anillo'), tira=document.getElementById('tira');
+	var img=document.getElementById('orb-img'), nombre=document.getElementById('orb-nombre');
+	var nTxt=document.getElementById('orb-n'), precio=document.getElementById('orb-precio'), ver=document.getElementById('orb-ver');
+	var activa=1, etiquetas=[], chips=[];
+
+	CATS.forEach(function(c,i){
+		var b=document.createElement('button');
+		b.type='button'; b.className='orb-etiqueta'; b.textContent=c.c;
+		b.setAttribute('role','tab'); b.setAttribute('aria-selected', i===activa);
+		b.addEventListener('click',function(){elegir(i);});
+		b.addEventListener('mouseenter',function(){elegir(i);});
+		anillo.appendChild(b); etiquetas.push(b);
+
+		var t=document.createElement('button');
+		t.type='button'; t.textContent=c.n;
+		t.setAttribute('role','tab'); t.setAttribute('aria-selected', i===activa);
+		t.addEventListener('click',function(){elegir(i);});
+		tira.appendChild(t); chips.push(t);
+	});
+
+	/* reparte las etiquetas sobre el arco superior */
+	function colocar(){
+		var caja=anillo.getBoundingClientRect();
+		var R=caja.width/2 - 6;
+		var n=CATS.length, abanico=212, paso=abanico/(n-1), inicio=-abanico/2;
+		etiquetas.forEach(function(b,i){
+			var g=(inicio+paso*i)*Math.PI/180;
+			var x=Math.sin(g)*R, y=-Math.cos(g)*R;
+			b.style.transform='translate('+(x-b.offsetWidth/2)+'px,'+(y-b.offsetHeight/2)+'px) rotate('+(inicio+paso*i)+'deg)';
+		});
+	}
+
+	function elegir(i){
+		if(i===activa) return;
+		activa=i;
+		var c=CATS[i];
+		img.classList.add('saliendo');
+		setTimeout(function(){
+			img.src='assets/img/'+c.img;
+			img.alt=c.alt;
+			img.classList.remove('saliendo');
+		},200);
+		nombre.textContent=c.n;
+		nTxt.textContent=c.p+' platos';
+		precio.textContent=c.d;
+		ver.href='menu.html#'+c.a;
+		etiquetas.forEach(function(b,k){b.setAttribute('aria-selected',k===i);});
+		chips.forEach(function(b,k){
+			b.setAttribute('aria-selected',k===i);
+			if(k===i) b.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+		});
+	}
+
+	/* flechas para moverse por la órbita */
+	anillo.addEventListener('keydown',function(e){
+		if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();elegir((activa+1)%CATS.length);etiquetas[activa].focus();}
+		if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();elegir((activa-1+CATS.length)%CATS.length);etiquetas[activa].focus();}
+	});
+
+	window.addEventListener('resize',colocar);
+	window.addEventListener('load',colocar);
+	colocar(); setTimeout(colocar,400);
+
+	/* ---------- sedes ---------- */
+	var SEDES=[
+		{n:'Guácimo', dir:'50 m sur de Correos de Costa Rica, Guácimo, Limón', tel:'6301-8863', tels:'+50663018863',
+		 img:'loc-guacimo.webp', alt:'Local de Caña Brava en Guácimo',
+		 waze:'https://ul.waze.com/ul?place=ChIJ-wXSNwC3oI8RLpLUy4uISzw&ll=10.21198910%2C-83.68092930&navigate=yes',
+		 maps:'https://maps.app.goo.gl/e9tdLMWy73DtVU9y7', q:'10.21198910,-83.68092930'},
+		{n:'Guápiles', dir:'150 m oeste de la iglesia católica, Guápiles, Limón', tel:'6352-8533', tels:'+50663528533',
+		 img:'loc-guapiles.webp', alt:'Local de Caña Brava en Guápiles',
+		 waze:'https://ul.waze.com/ul?place=ChIJa13uPp-5oI8RNFKEkCnayeo&ll=10.21360350%2C-83.79130440&navigate=yes',
+		 maps:'https://maps.app.goo.gl/uXAKy3wGvK2rcT4v7', q:'10.21360350,-83.79130440'}
+	];
+	var botones=[].slice.call(document.querySelectorAll('.linea button'));
+	botones.forEach(function(b,i){
+		b.addEventListener('click',function(){
+			var s=SEDES[i];
+			botones.forEach(function(o,k){o.setAttribute('aria-selected',k===i);});
+			document.getElementById('sede-nombre').textContent=s.n;
+			document.getElementById('sede-dir').textContent=s.dir;
+			var tel=document.getElementById('sede-tel'); tel.textContent=s.tel; tel.href='tel:'+s.tels;
+			var f=document.getElementById('sede-img'); f.src='assets/img/'+s.img; f.alt=s.alt;
+			document.getElementById('sede-wa').href='https://wa.me/'+s.tels.replace('+','');
+			document.getElementById('sede-waze').href=s.waze;
+			document.getElementById('sede-maps').href=s.maps;
+			var m=document.getElementById('sede-iframe');
+			m.src='https://maps.google.com/maps?q='+s.q+'&z=16&output=embed';
+			m.title='Mapa de Caña Brava '+s.n;
+		});
+	});
+
+	/* ---------- menú móvil ---------- */
+	var ham=document.getElementById('hamburguesa');
+	ham.addEventListener('click',function(){
+		var abierto=document.body.classList.toggle('abierto');
+		ham.setAttribute('aria-expanded',abierto);
+		ham.setAttribute('aria-label',abierto?'Cerrar menú':'Abrir menú');
+	});
+	document.querySelectorAll('.barra nav a').forEach(function(a){
+		a.addEventListener('click',function(){
+			document.body.classList.remove('abierto');
+			ham.setAttribute('aria-expanded','false');
+		});
+	});
+
+	/* ---------- abierto / cerrado ---------- */
+	function horario(){
+		var d=new Date(), min=d.getHours()*60+d.getMinutes();
+		var abierto = min>=720 && min<=1290;
+		var caja=document.getElementById('estado'), txt=document.getElementById('estado-txt');
+		caja.classList.toggle('cerrado',!abierto);
+		txt.textContent = abierto ? 'Abierto · cerramos 9:30' : 'Cerrado · abrimos a mediodía';
+	}
+	horario(); setInterval(horario,60000);
+})();
+</script>
+</body>
+</html>

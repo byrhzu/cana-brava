@@ -1,0 +1,56 @@
+/* ============================================================
+   CAÑA BRAVA — cascarón compartido
+   Lo cargan la portada y el menú: tokens de marca, enlace de salto,
+   foco de teclado y la barra superior. Un solo sitio que tocar.
+   ============================================================ */
+:root{
+	--bg:#0D0F0D; --bg-2:#141714; --bg-3:#1B1F1B; --bg-4:#232823;
+	--cream:#F1F2ED; --cream-2:#C6C9C0; --cream-3:#868D82;
+	--accent:#6FB04A; --accent-2:#58913A;
+	--accent-rgb:111,176,74; --cream-rgb:241,242,237; --bg-rgb:13,15,13;
+	--line:rgba(var(--cream-rgb),.12);
+	--line-2:rgba(var(--cream-rgb),.26);
+	--cerrado:#C0392B;
+	--whatsapp:#25D366; --pedidosya:#EE2738;
+	--titulo:'Fraunces',Georgia,serif;
+	--texto:'Inter',-apple-system,'Segoe UI',sans-serif;
+}
+
+.saltar{position:fixed;top:-120%;left:1rem;z-index:9999;padding:.8rem 1.4rem;background:var(--accent);color:var(--bg);font-weight:600;border-radius:4px;transition:top .2s ease}
+.saltar:focus{top:1rem}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+.btn-pedir:focus-visible,.orb-pedir:focus-visible,.sede-wa:focus-visible{outline-color:var(--cream)}
+
+.envoltura{width:100%;max-width:1240px;margin:0 auto;padding:0 clamp(20px,5vw,56px)}
+.rotulo{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cream-3);font-weight:500;margin:0}
+
+/* ---------- barra superior ---------- */
+/* ---------- barra ---------- */
+.barra{position:sticky;top:0;z-index:100;background:rgba(var(--bg-rgb),.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.barra-in{max-width:1240px;margin:0 auto;padding:0 clamp(20px,5vw,56px);height:68px;display:flex;align-items:center;gap:clamp(14px,3vw,32px)}
+.barra img{height:38px;width:auto}
+.barra nav{display:flex;gap:clamp(14px,2.2vw,26px);margin-left:auto}
+.barra nav a{font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;color:var(--cream-2);padding:4px 0;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.barra nav a:hover{color:var(--cream);border-bottom-color:var(--accent)}
+.acciones{display:flex;align-items:center;gap:.6rem;margin-left:auto}
+.barra nav+.acciones{margin-left:0}
+.idioma{min-width:40px;height:36px;border:1px solid var(--line-2);border-radius:999px;font-size:.75rem;font-weight:600;color:var(--cream)}
+.idioma:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ya{display:inline-flex;align-items:center;padding:0 .9rem;height:44px;background:var(--pedidosya);border-radius:4px}
+.btn-ya img{height:17px}
+.btn-pedir{height:44px;padding:0 1.5rem;background:var(--accent);color:var(--bg);font-weight:600;font-size:.92rem;border-radius:4px;display:inline-flex;align-items:center;transition:background .2s,transform .2s}
+.btn-pedir:hover{background:var(--accent-2);transform:translateY(-2px)}
+/* menú móvil: los enlaces de sección pasan a un panel */
+.hamburguesa{display:none;flex-direction:column;justify-content:center;gap:5px;width:44px;height:44px;flex:none}
+.hamburguesa span{display:block;width:21px;height:2px;background:var(--cream);margin:0 auto;transition:transform .25s,opacity .25s}
+body.abierto .hamburguesa span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+body.abierto .hamburguesa span:nth-child(2){opacity:0}
+body.abierto .hamburguesa span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media(max-width:1000px){
+	.hamburguesa{display:flex}
+	.barra nav{position:absolute;left:0;right:0;top:68px;flex-direction:column;gap:0;background:var(--bg-2);border-bottom:1px solid var(--line);padding:.4rem clamp(20px,5vw,56px) 1rem;transform:translateY(-130%);transition:transform .3s ease;z-index:-1}
+	body.abierto .barra nav{transform:translateY(0)}
+	.barra nav a{padding:.95rem 0;border-bottom:1px solid var(--line);font-size:.92rem}
+	.barra nav a:last-child{border-bottom:0}
+}
+@media(max-width:560px){.barra img{height:32px}.btn-pedir{padding:0 1rem}}

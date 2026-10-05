@@ -10,7 +10,7 @@
    Tiene la forma G-XXXXXXXXXX.
    ============================================================ */
 
-var ID_MEDICION = 'G-XXXXXXXXXX';
+var ID_MEDICION = 'G-2141B5RQ4J';
 
 (function () {
 	'use strict';

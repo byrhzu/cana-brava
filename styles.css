@@ -1790,12 +1790,14 @@ RES / CERDO) */
    ============================================================ */
 
 /* Botón "＋ Agregar" en cada plato */
-.menu-item { position: relative; padding-right: 44px; }
+.menu-item { position: relative; padding-right: 58px; }
 
 .add-btn {
 	position: absolute;
-	right: 0;
-	top: 0;
+	/* Alineado con la primera línea del plato. Antes iba a top:0, que
+	   desde que el plato tiene relleno queda por encima del nombre. */
+	right: 1.05rem;
+	top: 0.72rem;
 	width: 34px;
 	height: 34px;
 	border-radius: 50%;

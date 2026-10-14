@@ -84,9 +84,19 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
 .quincenas button{padding:.42rem 1rem;border-radius:999px;font-size:.87rem;color:var(--txt2);white-space:nowrap}
 .quincenas button[aria-pressed="true"]{background:var(--sup);color:var(--verde-t);font-weight:600;box-shadow:inset 0 0 0 1px var(--verde-linea)}
 
-.locales{display:flex;gap:4px;background:var(--ctrl);padding:4px;border-radius:999px;flex-wrap:wrap}
-.locales button{padding:.42rem .95rem;border-radius:999px;font-size:.86rem;color:var(--txt2);white-space:nowrap}
-.locales button[aria-pressed="true"]{background:var(--sup);color:var(--verde-t);font-weight:600;box-shadow:inset 0 0 0 1px var(--verde-linea)}
+/* Selector de sede, en la barra lateral */
+.sedes-env{padding-bottom:var(--e4);margin-bottom:var(--e3);border-bottom:1px solid var(--linea)}
+.sedes{display:flex;flex-direction:column;gap:1px}
+.sedes button{text-align:left;padding:.42rem var(--e3);border-radius:10px;font-size:.88rem;color:var(--txt2);transition:background .15s,color .15s}
+.sedes button:hover{background:var(--ctrl);color:var(--txt)}
+.sedes button[aria-pressed="true"]{background:var(--verde-suave);color:var(--verde-t);font-weight:600}
+.sedes .sede-todas{font-weight:500;margin-bottom:.3rem}
+.sedes .sede-grupo{margin:.55rem 0 .15rem;padding:0 var(--e3);font-size:.74rem;color:var(--tenue)}
+.sedes-movil{display:none;gap:4px;overflow-x:auto;padding:0 0 var(--e4);scrollbar-width:none}
+.sedes-movil::-webkit-scrollbar{display:none}
+.sedes-movil button{flex:none;padding:.42rem .9rem;border-radius:999px;background:var(--ctrl);font-size:.84rem;color:var(--txt2);white-space:nowrap}
+.sedes-movil button[aria-pressed="true"]{background:var(--verde-suave);color:var(--verde-t);font-weight:600;box-shadow:inset 0 0 0 1px var(--verde-linea)}
+.sedes .sede-grupo+button{margin-top:0}
 
 /* ---------- superficies ---------- */
 .tarj{background:var(--sup);border-radius:var(--radio);padding:var(--e5)}
@@ -164,7 +174,8 @@ tfoot td{border-top:2px solid var(--verde-linea);font-weight:700;font-family:var
 @media (max-width:860px){
 	.app{flex-direction:column}
 	.barra{position:fixed;left:.6rem;right:.6rem;top:auto;bottom:calc(.5rem + env(safe-area-inset-bottom));width:auto;flex:none;height:auto;flex-direction:row;z-index:30;padding:.3rem;border-radius:999px;border:1px solid var(--linea);box-shadow:0 10px 30px -12px rgba(20,26,18,.3)}
-	.marca,.barra-pie{display:none}
+	.marca,.barra-pie,.sedes-env{display:none}
+	.sedes-movil{display:flex}
 	.nav{flex-direction:row;width:100%;gap:0}
 	.nav button{flex-direction:column;gap:.15rem;justify-content:center;padding:.4rem .2rem;font-size:.64rem;border-radius:999px}
 	.lienzo{padding:var(--e4) var(--e3) 6rem}
@@ -184,6 +195,7 @@ tfoot td{border-top:2px solid var(--verde-linea);font-weight:700;font-family:var
 			<span class="sep"></span>
 			<b>Planilla</b>
 		</div>
+		<div class="sedes-env" id="sedes-env"></div>
 		<nav class="nav" id="nav">
 			<button type="button" data-ir="quincena" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h10"/></svg><span>Quincena</span></button>
 			<button type="button" data-ir="empleados"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M17 11h4M19 9v4"/></svg><span>Empleados</span></button>
@@ -220,10 +232,10 @@ var LLAVE = 'cb_planilla_v2';
 
 var PORDEFECTO = {
 	locales: [
-		{ id:'cbgpl', nombre:'Caña Brava Guápiles',  activo:true },
-		{ id:'cbgua', nombre:'Caña Brava Guácimo',   activo:true },
-		{ id:'pbgpl', nombre:'Pollo Bravo Guápiles', activo:true },
-		{ id:'pbgua', nombre:'Pollo Bravo Guácimo',  activo:true }
+		{ id:'cbgpl', grupo:'Caña Brava',  sede:'Guápiles', activo:true },
+		{ id:'cbgua', grupo:'Caña Brava',  sede:'Guácimo',  activo:true },
+		{ id:'pbgpl', grupo:'Pollo Bravo', sede:'Guápiles', activo:true },
+		{ id:'pbgua', grupo:'Pollo Bravo', sede:'Guácimo',  activo:true }
 	],
 	empleados: [],
 	periodos: {},
@@ -329,7 +341,11 @@ var estado = {
 };
 
 function empleadosDe(id){ return D.empleados.filter(function(e){ return e.localId===id && e.activo!==false; }); }
-function localDe(id){ return D.locales.find(function(l){ return l.id===id; }) || {nombre:'—'}; }
+function nombreLocal(l){
+	if (!l) return '—';
+	return l.nombre || ((l.grupo?l.grupo+' ':'') + (l.sede||'')).trim() || '—';
+}
+function localDe(id){ return D.locales.find(function(l){ return l.id===id; }) || {}; }
 function per(p,l){
 	D.periodos[p] = D.periodos[p] || {};
 	D.periodos[p][l] = D.periodos[p][l] || { ajustes:{}, enviado:{} };
@@ -359,11 +375,36 @@ function barraPeriodo(){
 		+ '</div></div>';
 }
 
+/* El local es el contexto de todo el panel, no un filtro de pantalla:
+   por eso vive en la barra lateral y no se repite arriba de cada una.
+   Va agrupado por marca, que es como está armado el negocio, y así
+   escala si mañana abren otro. */
 function selectorLocales(){
-	var b = D.locales.filter(function(l){return l.activo!==false;}).map(function(l){
-		return '<button type="button" data-local="'+l.id+'" aria-pressed="'+(estado.local===l.id)+'">'+esc(l.nombre)+'</button>';
+	var activos = D.locales.filter(function(l){ return l.activo!==false; });
+	var html = '<button class="sede-todas" type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Todas</button>';
+	var grupos = [];
+	activos.forEach(function(l){
+		var g = l.grupo || null, ex = null;
+		for (var i=0;i<grupos.length;i++){ if (grupos[i].g === g) ex = grupos[i]; }
+		if (ex) ex.items.push(l); else grupos.push({ g:g, items:[l] });
+	});
+	grupos.forEach(function(gr){
+		if (gr.g) html += '<p class="sede-grupo">'+esc(gr.g)+'</p>';
+		html += gr.items.map(function(l){
+			var et = gr.g ? (l.sede || nombreLocal(l)) : nombreLocal(l);
+			return '<button type="button" data-local="'+l.id+'" aria-pressed="'+(estado.local===l.id)+'">'+esc(et)+'</button>';
+		}).join('');
+	});
+	return '<div class="sedes">'+html+'</div>';
+}
+
+/* En el teléfono la barra lateral es una pastilla abajo y no cabe el
+   selector, así que arriba del contenido va una tira horizontal. */
+function selectorLocalesMovil(){
+	var b = D.locales.filter(function(l){ return l.activo!==false; }).map(function(l){
+		return '<button type="button" data-local="'+l.id+'" aria-pressed="'+(estado.local===l.id)+'">'+esc(nombreLocal(l))+'</button>';
 	}).join('');
-	return '<div class="locales">'+b+'<button type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Los cuatro</button></div>';
+	return '<div class="sedes-movil"><button type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Todas</button>'+b+'</div>';
 }
 
 function pantallaQuincena(){
@@ -379,7 +420,7 @@ function pantallaQuincena(){
 			tBruto+=q.bruto; tDed+=q.deducciones; tNeto+=q.neto; tPat+=c.costoPatronal/2; n++;
 			filas += '<tr data-emp="'+e.id+'" data-local="'+lid+'">'
 				+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')
-				+ (estado.local==='_todos' ? ' · '+esc(localDe(lid).nombre) : '')+'</small></td>'
+				+ (estado.local==='_todos' ? ' · '+esc(nombreLocal(localDe(lid))) : '')+'</small></td>'
 				+ '<td class="n">'+col(q.base)+'</td>'
 				+ '<td class="n"><input class="mini" type="number" min="0" step="0.5" data-campo="horasExtra" value="'+(q.horas||'')+'" placeholder="0" aria-label="Horas extra de '+esc(e.nombre)+'"></td>'
 				+ '<td class="n"><input class="mini" type="number" min="0" step="1000" data-campo="adelanto" value="'+(q.adelanto||'')+'" placeholder="0" aria-label="Adelanto de '+esc(e.nombre)+'"></td>'
@@ -402,7 +443,7 @@ function pantallaQuincena(){
 		: '<div class="vacio"><h3>Todavía no hay empleados aquí</h3>'
 			+ '<button class="bt fuerte" type="button" data-ir="empleados">Agregar el primero</button></div>';
 
-	return '<div class="top"><h1>Quincena</h1>'+selectorLocales()+'</div>'
+	return '<div class="top"><h1>Quincena</h1></div>'
 		+ barraPeriodo()
 		+ '<dl class="cifras">'
 		+ '<div class="cifra acento"><dt>A pagar esta quincena</dt><dd>'+col(tNeto)+'</dd><small>'+diasQuincena(estado.periodo, estado.q)+'</small></div>'
@@ -421,14 +462,14 @@ function pantallaEmpleados(){
 		return '<tr>'
 			+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')+'</small></td>'
 			+ '<td>'+esc(e.puesto||'—')+'</td>'
-			+ '<td>'+esc(localDe(e.localId).nombre)+'</td>'
+			+ '<td>'+esc(nombreLocal(localDe(e.localId)))+'</td>'
 			+ '<td class="n">'+col(e.salarioMensual)+'</td>'
 			+ '<td>'+esc(e.correo||'—')+'</td>'
 			+ '<td>'+(e.activo===false?'<span class="et off">Inactivo</span>':'<span class="et ok">Activo</span>')+'</td>'
 			+ '<td><button class="bt chico" type="button" data-editar="'+e.id+'">Abrir</button></td></tr>';
 	}).join('');
 
-	return '<div class="top"><h1>Empleados</h1>'+selectorLocales()+'</div>'
+	return '<div class="top"><h1>Empleados</h1></div>'
 		+ '<section class="tarj"><div class="tarj-cab"><h2>'+lista.length+' en total</h2>'
 		+ '<button class="bt fuerte" type="button" id="nuevo-emp">Agregar empleado</button></div>'
 		+ (lista.length
@@ -472,7 +513,7 @@ function pantallaReportes(){
 			var c = calcular(e, ajusteDe(estado.periodo, l.id, e.id));
 			b+=c.brutoMes; d+=c.ccssMes+c.rentaMes; nt+=c.netoMes; pat+=c.costoPatronal;
 		});
-		return '<tr><td class="nombre">'+esc(l.nombre)+'<small>'+emps.length+' empleados</small></td>'
+		return '<tr><td class="nombre">'+esc(nombreLocal(l))+'<small>'+emps.length+' empleados</small></td>'
 			+ '<td class="n">'+col(b)+'</td><td class="n">'+col(d)+'</td><td class="n">'+col(nt)+'</td>'
 			+ '<td class="n">'+col(pat)+'</td><td class="n"><strong>'+col(b+pat)+'</strong></td></tr>';
 	}).join('');
@@ -530,7 +571,7 @@ function fichaEmpleado(id){
 	e = e || { id:'e'+Date.now(), localId: estado.local==='_todos'?D.locales[0].id:estado.local,
 		nombre:'', cedula:'', correo:'', puesto:'', fechaIngreso:'', salarioMensual:0, cuenta:'', activo:true };
 
-	var ops = D.locales.map(function(l){ return '<option value="'+l.id+'"'+(l.id===e.localId?' selected':'')+'>'+esc(l.nombre)+'</option>'; }).join('');
+	var ops = D.locales.map(function(l){ return '<option value="'+l.id+'"'+(l.id===e.localId?' selected':'')+'>'+esc(nombreLocal(l))+'</option>'; }).join('');
 
 	/* historial de pagos del empleado */
 	var hist = '';
@@ -596,7 +637,7 @@ function verBoleta(empId, localId, periodo, q){
 	function f(et,v,resta){ return '<div class="fila"><span>'+et+'</span><span class="'+(resta?'resta':'')+'">'+(resta?'−':'')+col(v)+'</span></div>'; }
 	abrirHoja('Boleta · '+b.emp.nombre,
 		'<div class="boleta">'
-		+ '<div class="enc"><b>'+esc(b.local.nombre)+'</b>'
+		+ '<div class="enc"><b>'+esc(nombreLocal(b.local))+'</b>'
 		+ '<span>'+esc(b.emp.nombre)+' · '+esc(b.emp.cedula||'sin cédula')+'</span>'
 		+ '<span>'+esc(b.emp.puesto||'')+'</span>'
 		+ '<span>Quincena '+b.nq+' · '+diasQuincena(periodo,q)+' de '+periodo.split('-')[0]+'</span></div>'
@@ -636,7 +677,7 @@ function pdfBoleta(b, descargar){
 	d.setFillColor(76,138,46); d.rect(0,0,612,6,'F');
 
 	d.setFont('helvetica','bold'); d.setFontSize(15);
-	d.text(b.local.nombre, M, y); y += 18;
+	d.text(nombreLocal(b.local), M, y); y += 18;
 	d.setFont('helvetica','normal'); d.setFontSize(10); d.setTextColor(110);
 	d.text('Comprobante de pago', M, y); y += 26;
 
@@ -705,7 +746,7 @@ function enviarTodas(){
 		+ '<div class="aviso">El envío por correo se conecta cuando los datos pasen al servidor. Por ahora se descargan los PDF.</div>'
 		+ '<div class="tabla-env" style="margin:0;padding:0"><table style="min-width:0"><thead><tr><th>Empleado</th><th class="n">Neto</th><th>Correo</th></tr></thead><tbody>'
 		+ lista.map(function(b){
-			return '<tr><td class="nombre">'+esc(b.emp.nombre)+'<small>'+esc(b.local.nombre)+'</small></td>'
+			return '<tr><td class="nombre">'+esc(b.emp.nombre)+'<small>'+esc(nombreLocal(b.local))+'</small></td>'
 				+ '<td class="n">'+col(b.q.neto)+'</td>'
 				+ '<td>'+(b.emp.correo?esc(b.emp.correo):'<span class="et esp">falta</span>')+'</td></tr>';
 		}).join('')
@@ -729,7 +770,8 @@ function enviarTodas(){
 var PANTALLAS = { quincena:pantallaQuincena, empleados:pantallaEmpleados, historial:pantallaHistorial, reportes:pantallaReportes, ajustes:pantallaAjustes };
 
 function pintar(){
-	$('#lienzo').innerHTML = PANTALLAS[estado.pantalla]();
+	$('#sedes-env').innerHTML = selectorLocales();
+	$('#lienzo').innerHTML = selectorLocalesMovil() + PANTALLAS[estado.pantalla]();
 	Array.prototype.forEach.call(document.querySelectorAll('#nav button'), function(b){
 		if (b.dataset.ir===estado.pantalla) b.setAttribute('aria-current','page');
 		else b.removeAttribute('aria-current');
@@ -763,8 +805,8 @@ document.addEventListener('click', function(ev){
 	}
 	if (t.dataset.ren){
 		var l = D.locales.find(function(x){return x.id===t.dataset.ren;});
-		var n = prompt('Nombre del local', l.nombre);
-		if (n && n.trim()){ l.nombre=n.trim(); guardar(); pintar(); }
+		var n = prompt('Nombre del local', nombreLocal(l));
+		if (n && n.trim()){ l.nombre=n.trim(); l.grupo=null; guardar(); pintar(); }
 		return;
 	}
 	if (t.dataset.localToggle){

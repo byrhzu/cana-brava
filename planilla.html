@@ -68,7 +68,16 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
 .sedes button{text-align:left;padding:.44rem var(--e3);border-radius:10px;font-size:.87rem;color:var(--txt2);transition:background .18s,color .18s}
 .sedes button:hover{background:var(--ctrl);color:var(--txt)}
 .sedes button[aria-pressed="true"]{background:var(--verde-suave);color:var(--verde-t);font-weight:600}
-.sedes .sede-todas{margin-bottom:.25rem}
+.sedes-par{display:flex;gap:4px;margin-bottom:.45rem}
+.sedes .sedes-par button{flex:1;text-align:center;padding:.44rem .3rem;background:var(--sup2)}
+.sedes .sedes-par button[aria-pressed="true"]{background:var(--verde-suave);color:var(--verde-t)}
+.sedes .marcable{position:relative;padding-left:calc(var(--e3) + 1.4rem)}
+.sedes .marcable::before{content:"";position:absolute;left:var(--e3);top:50%;transform:translateY(-50%);
+	width:14px;height:14px;border-radius:4px;border:1.5px solid var(--linea);background:var(--sup)}
+.sedes .marcable[aria-pressed="true"]{background:none;color:var(--txt);font-weight:500}
+.sedes .marcable[aria-pressed="true"]::before{background:var(--verde);border-color:var(--verde)}
+.sedes .marcable[aria-pressed="true"]::after{content:"";position:absolute;left:calc(var(--e3) + 4.5px);top:50%;
+	width:4px;height:7px;margin-top:-5px;border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(45deg)}
 .sedes .sede-marca{margin-top:.5rem;font-size:.8rem;font-weight:600;color:var(--txt2)}
 .sedes .sede-hija{position:relative;padding-left:calc(var(--e3) + .85rem)}
 .sedes .sede-hija::before{content:"";position:absolute;left:var(--e3);top:50%;width:5px;height:1px;background:var(--linea)}
@@ -139,6 +148,11 @@ td{padding:.7rem .7rem;border-top:1px solid var(--linea);vertical-align:middle}
 tbody tr{transition:background .15s}
 tbody tr:hover td{background:var(--sup2)}
 tbody tr.abrible{cursor:pointer}
+tbody tr.inactiva td{color:var(--tenue)}
+tbody tr.inactiva td.nombre{font-weight:400}
+.valores{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:var(--e3) var(--e4)}
+.valores dt{font-size:.81rem;color:var(--txt2);margin-bottom:.1rem}
+.valores dd{margin:0;font-family:var(--datos);font-size:1.02rem;font-weight:600}
 td.nombre small.ausente{color:var(--esp-tx)}
 tbody tr.abrible:focus-visible{outline:2px solid var(--verde);outline-offset:-2px}
 td.n,th.n{text-align:right}
@@ -284,9 +298,9 @@ var PORDEFECTO = {
 	tasas: {
 		sem:5.50, ivm:4.33, bp:1.00, patronal:26.83,
 		rentaExento:918000, vacDiasMes:1,
-		incDiasPatrono:3, incPctPatrono:50, incPctCcss:60,
-		insDiasPatrono:0, insPctIns:60,
-		matPctPatrono:50, matPctCcss:50,
+		incDias:3, incPct:50,
+		insDias:0, insPct:50,
+		matPct:50,
 		tramos:[{hasta:1347000,pct:10},{hasta:2364000,pct:15},{hasta:4727000,pct:20},{hasta:1e15,pct:25}]
 	}
 };
@@ -298,8 +312,10 @@ function cargar(){
 	if (!D.tasas) D.tasas = JSON.parse(JSON.stringify(PORDEFECTO.tasas));
 	if (D.tasas.vacDiasMes == null) D.tasas.vacDiasMes = 1;
 	delete D.tasas.vacDiasAnio;
-	['incDiasPatrono','incPctPatrono','incPctCcss','insDiasPatrono','insPctIns','matPctPatrono','matPctCcss']
+	['incDias','incPct','insDias','insPct','matPct']
 		.forEach(function(k){ if (D.tasas[k] == null) D.tasas[k] = PORDEFECTO.tasas[k]; });
+	['incDiasPatrono','incPctPatrono','incPctCcss','insDiasPatrono','insPctIns','matPctPatrono','matPctCcss']
+		.forEach(function(k){ delete D.tasas[k]; });
 
 	/* Las vacaciones eran una lista aparte; ahora son un tipo más dentro
 	   del registro único de ausencias. */
@@ -360,19 +376,19 @@ function renta(brutoMes, t){
    Un solo registro para todo el tiempo fuera del puesto. Cada tipo
    dice quién paga esos días:
 
+   Acá solo se calcula lo que le toca pagar a la empresa. Lo que
+   depositen la CCSS o el INS va por su cuenta y no entra a la planilla.
+
    vacaciones  el salario no se toca, solo baja el saldo acumulado
-   ccss        se rebajan los días; los primeros tres los subsidia el
-               patrono al 50 % y del cuarto en adelante la CCSS deposita
-               el 60 % directo al trabajador, fuera de la planilla
-   ins         riesgo laboral; se rebajan los días y el INS deposita su
-               porcentaje directo. Los días a cargo del patrono arrancan
-               en cero porque el INS cubre desde el primero
-   maternidad  cuatro meses pagados a medias: 50 % el patrono por
-               planilla y 50 % la CCSS directo
+   ccss        se rebajan los días y la empresa paga los primeros tres
+               al 50 %. Del cuarto en adelante no debe nada
+   ins         riesgo laboral; se rebajan los días y la empresa no pone
+               nada, salvo que se configuren días a su cargo
+   maternidad  se rebajan los días y la empresa paga la mitad todo el
+               período
    singoce     no se paga nada y no acumula derechos
 
-   Los porcentajes y los días de cada tramo viven en Ajustes, porque las
-   fuentes publicadas no coinciden entre ellas.
+   Los días y los porcentajes viven en Ajustes.
    ------------------------------------------------------------- */
 var AUSENCIAS = {
 	vacaciones: { et:'Vacaciones',             corto:'Vacaciones',   rebaja:false },
@@ -404,7 +420,7 @@ function bordesQuincena(periodo, nq){
 function ausenciaEnQuincena(emp, periodo, nq){
 	var b = bordesQuincena(periodo, nq);
 	var t = D.tasas, diario = salarioDiario(emp);
-	var r = { rebajoDias:0, rebajo:0, subsidio:0, tercero:0, lineas:[] };
+	var r = { rebajoDias:0, rebajo:0, subsidio:0, lineas:[] };
 
 	(emp.ausencias || []).forEach(function(v){
 		var reg = AUSENCIAS[v.tipo];
@@ -419,41 +435,36 @@ function ausenciaEnQuincena(emp, periodo, nq){
 
 		var n = diasEntre(a1, a2) + 1;        // días de esta ausencia dentro de la quincena
 		var corridos = diasEntre(d1, a1);     // días que ya habían pasado antes de la quincena
-		var dPatrono = 0, dTercero = 0, montoPatrono = 0, montoTercero = 0;
+		var dPaga = 0, pct = 0;
 
+		/* Los días a cargo de la empresa se cuentan desde que arrancó la
+		   incapacidad, no desde que arrancó la quincena: si cruza el 15,
+		   no se vuelven a cobrar. */
 		if (v.tipo === 'ccss'){
-			var tope = Number(t.incDiasPatrono) || 0;
-			dPatrono = Math.max(0, Math.min(n, tope - corridos));
-			dTercero = n - dPatrono;
-			montoPatrono = dPatrono * diario * (Number(t.incPctPatrono)||0) / 100;
-			montoTercero = dTercero * diario * (Number(t.incPctCcss)||0) / 100;
+			dPaga = Math.max(0, Math.min(n, (Number(t.incDias)||0) - corridos));
+			pct = Number(t.incPct) || 0;
 		} else if (v.tipo === 'ins'){
-			var topeI = Number(t.insDiasPatrono) || 0;
-			dPatrono = Math.max(0, Math.min(n, topeI - corridos));
-			dTercero = n - dPatrono;
-			montoPatrono = dPatrono * diario * (Number(t.incPctPatrono)||0) / 100;
-			montoTercero = dTercero * diario * (Number(t.insPctIns)||0) / 100;
+			dPaga = Math.max(0, Math.min(n, (Number(t.insDias)||0) - corridos));
+			pct = Number(t.insPct) || 0;
 		} else if (v.tipo === 'maternidad'){
-			dPatrono = n; dTercero = n;
-			montoPatrono = n * diario * (Number(t.matPctPatrono)||0) / 100;
-			montoTercero = n * diario * (Number(t.matPctCcss)||0) / 100;
+			dPaga = n;
+			pct = Number(t.matPct) || 0;
 		}
+		var monto = dPaga * diario * pct / 100;
 
 		r.rebajoDias += n;
 		r.rebajo += n * diario;
-		r.subsidio += montoPatrono;
-		r.tercero += montoTercero;
+		r.subsidio += monto;
 		r.lineas.push({
 			tipo:v.tipo, dias:n, boleta:v.boleta || '',
-			dPatrono:dPatrono, dTercero:dTercero,
-			patrono:montoPatrono, tercero:montoTercero,
+			diasPaga:dPaga, pct:pct, monto:monto,
 			desde:v.desde, hasta:v.hasta || v.desde
 		});
 	});
 	return r;
 }
 
-function sinAusencia(){ return { rebajoDias:0, rebajo:0, subsidio:0, tercero:0, lineas:[] }; }
+function sinAusencia(){ return { rebajoDias:0, rebajo:0, subsidio:0, lineas:[] }; }
 
 function calcular(emp, aj, periodo){
 	var t = D.tasas;
@@ -489,7 +500,7 @@ function calcular(emp, aj, periodo){
 			horas: Number(q.horasExtra)||0, montoExtra: extra(q),
 			base: base/2, salario: salarioQ, bruto: brutoQ,
 			rebajoDias: au.rebajoDias, rebajo: au.rebajo,
-			subsidio: au.subsidio, tercero: au.tercero, ausencias: au.lineas,
+			subsidio: au.subsidio, ausencias: au.lineas,
 			sem: sem/2, ivm: ivm/2, bp: bp/2, ccss: ccss/2, renta: imp/2,
 			dedLey: dedLeyQ, adelanto: adelanto, otras: otras,
 			deducciones: dedLeyQ + adelanto + otras,
@@ -658,15 +669,13 @@ var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c)
 function plural(n, uno, varios){ return n + ' ' + (n === 1 ? uno : varios); }
 function textoRegla(tipo){
 	var t = D.tasas;
-	if (tipo === 'vacaciones') return 'No cambia el pago: el salario es fijo. Solo baja el saldo acumulado.';
-	if (tipo === 'ccss') return 'Se rebajan los días. Los primeros '+t.incDiasPatrono+' los paga la empresa al '
-		+ t.incPctPatrono+' %; del siguiente en adelante la CCSS deposita el '+t.incPctCcss+' % directo al colaborador.';
-	if (tipo === 'ins') return 'Se rebajan los días. '
-		+ (Number(t.insDiasPatrono) ? 'Los primeros '+t.insDiasPatrono+' los paga la empresa al '+t.incPctPatrono+' %. ' : '')
-		+ 'El INS deposita el '+t.insPctIns+' % directo al colaborador.';
-	if (tipo === 'maternidad') return 'Se rebajan los días y la empresa paga el '+t.matPctPatrono
-		+ ' % por planilla. La CCSS deposita el otro '+t.matPctCcss+' % directo.';
-	return 'No se paga nada y ese tiempo no acumula vacaciones.';
+	if (tipo === 'vacaciones') return 'El salario no cambia. Solo baja el saldo.';
+	if (tipo === 'ccss') return 'La empresa paga '+plural(t.incDias,'día','días')+' al '+t.incPct+' %. El resto lo cubre la Caja.';
+	if (tipo === 'ins') return Number(t.insDias)
+		? 'La empresa paga '+plural(t.insDias,'día','días')+' al '+t.insPct+' %. El resto lo cubre el INS.'
+		: 'Lo cubre el INS. La empresa no paga nada.';
+	if (tipo === 'maternidad') return 'La empresa paga el '+t.matPct+' % de cada día.';
+	return 'Sin pago. Ese tiempo no acumula vacaciones.';
 }
 /* Cómo se reparte cada ausencia, para que la boleta lo diga sin que
    nadie tenga que acordarse de la regla. */
@@ -675,13 +684,6 @@ function detalleAusencia(l){
 	var partes = [plural(l.dias,'día','días') + ' de ' + reg.corto.toLowerCase()];
 	if (l.boleta) partes.push('boleta ' + l.boleta);
 	return partes.join(', ');
-}
-function quienPaga(l){
-	var t = D.tasas;
-	if (l.tipo === 'ccss' && l.dTercero) return 'CCSS, ' + plural(l.dTercero,'día','días') + ' al ' + t.incPctCcss + ' %';
-	if (l.tipo === 'ins' && l.dTercero) return 'INS, ' + plural(l.dTercero,'día','días') + ' al ' + t.insPctIns + ' %';
-	if (l.tipo === 'maternidad') return 'CCSS, ' + plural(l.dias,'día','días') + ' al ' + t.matPctCcss + ' %';
-	return '';
 }
 function resumenAusencias(q){
 	var por = {};
@@ -740,7 +742,7 @@ var estado = {
 	local: D.locales[0] ? D.locales[0].id : null,
 	periodo: hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0'),
 	q: hoy.getDate() <= 15 ? 1 : 2,
-	buscar: ''
+	buscar: '', editando: null, sel: []
 };
 
 function coincide(e){
@@ -767,15 +769,23 @@ function marcas(){
 	return g;
 }
 function vistaMarca(){ return String(estado.local).indexOf('g:')===0 ? String(estado.local).slice(2) : null; }
-function unaSedeSola(){ return estado.local !== '_todos' && !vistaMarca(); }
+function eligiendo(){ return estado.local === '_sel'; }
+function unaSedeSola(){ return estado.local !== '_todos' && !eligiendo() && !vistaMarca(); }
 function idsEnVista(){
 	var act = D.locales.filter(function(l){ return l.activo!==false; });
 	var m = vistaMarca();
-	if (m) act = act.filter(function(l){ return l.grupo === m; });
+	if (eligiendo()) act = act.filter(function(l){ return estado.sel.indexOf(l.id) !== -1; });
+	else if (m) act = act.filter(function(l){ return l.grupo === m; });
 	else if (estado.local !== '_todos') act = act.filter(function(l){ return l.id === estado.local; });
 	return act.map(function(l){ return l.id; });
 }
 function tituloVista(){
+	if (eligiendo()){
+		var ids = idsEnVista();
+		if (!ids.length) return 'Ninguna sede elegida';
+		if (ids.length <= 3) return ids.map(function(id){ return esc(nombreLocal(localDe(id))); }).join(' | ');
+		return plural(ids.length, 'sede elegida', 'sedes elegidas');
+	}
 	var m = vistaMarca();
 	if (m){ var k = idsEnVista().length; return esc(m) + (k===1 ? '' : ' | las ' + k + ' sedes'); }
 	if (estado.local === '_todos') return 'Todas las sedes';
@@ -828,7 +838,12 @@ function barraPeriodo(){
    escala si mañana abren otro. */
 function selectorLocales(){
 	var activos = D.locales.filter(function(l){ return l.activo!==false; });
-	var html = '<button class="sede-todas" type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Todas</button>';
+	var elige = eligiendo();
+	var html = '<div class="sedes-par">'
+		+ '<button type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Todas</button>'
+		+ '<button type="button" id="sede-elegir" aria-pressed="'+elige+'">Seleccionar</button>'
+		+ '</div>';
+
 	var grupos = [];
 	activos.forEach(function(l){
 		var g = l.grupo || null, ex = null;
@@ -836,12 +851,20 @@ function selectorLocales(){
 		if (ex) ex.items.push(l); else grupos.push({ g:g, items:[l] });
 	});
 	grupos.forEach(function(gr){
-		if (gr.g) html += '<button class="sede-marca" type="button" data-local="g:'+esc(gr.g)+'"'
-			+ ' aria-pressed="'+(estado.local==='g:'+gr.g)+'">'+esc(gr.g)+'</button>';
+		if (gr.g){
+			var marcada = elige
+				? gr.items.length && gr.items.every(function(l){ return estado.sel.indexOf(l.id) !== -1; })
+				: estado.local === 'g:'+gr.g;
+			html += '<button class="sede-marca'+(elige?' marcable':'')+'" type="button"'
+				+ (elige ? ' data-sel-grupo="'+esc(gr.g)+'"' : ' data-local="g:'+esc(gr.g)+'"')
+				+ ' aria-pressed="'+!!marcada+'">'+esc(gr.g)+'</button>';
+		}
 		html += gr.items.map(function(l){
 			var et = gr.g ? (l.sede || nombreLocal(l)) : nombreLocal(l);
-			return '<button type="button" class="'+(gr.g?'sede-hija':'')+'" data-local="'+l.id+'"'
-				+ ' aria-pressed="'+(estado.local===l.id)+'">'+esc(et)+'</button>';
+			var on = elige ? estado.sel.indexOf(l.id) !== -1 : estado.local === l.id;
+			return '<button type="button" class="'+(gr.g?'sede-hija':'')+(elige?' marcable':'')+'"'
+				+ (elige ? ' data-sel-local="'+l.id+'"' : ' data-local="'+l.id+'"')
+				+ ' aria-pressed="'+on+'">'+esc(et)+'</button>';
 		}).join('');
 	});
 	return '<div class="sedes">'+html+'</div>';
@@ -850,13 +873,22 @@ function selectorLocales(){
 /* En el teléfono la barra lateral es una pastilla abajo y no cabe el
    selector, así que arriba del contenido va una tira horizontal. */
 function selectorLocalesMovil(){
+	var elige = eligiendo();
 	var b = marcas().map(function(g){
-		return '<button type="button" data-local="g:'+esc(g)+'" aria-pressed="'+(estado.local==='g:'+g)+'">'+esc(g)+'</button>';
+		var ids = D.locales.filter(function(l){ return l.activo!==false && l.grupo===g; }).map(function(l){ return l.id; });
+		var on = elige ? ids.length && ids.every(function(id){ return estado.sel.indexOf(id)!==-1; }) : estado.local==='g:'+g;
+		return '<button type="button"'+(elige ? ' data-sel-grupo="'+esc(g)+'"' : ' data-local="g:'+esc(g)+'"')
+			+ ' aria-pressed="'+!!on+'">'+esc(g)+'</button>';
 	}).join('');
 	b += D.locales.filter(function(l){ return l.activo!==false; }).map(function(l){
-		return '<button type="button" data-local="'+l.id+'" aria-pressed="'+(estado.local===l.id)+'">'+esc(nombreLocal(l))+'</button>';
+		var on = elige ? estado.sel.indexOf(l.id)!==-1 : estado.local===l.id;
+		return '<button type="button"'+(elige ? ' data-sel-local="'+l.id+'"' : ' data-local="'+l.id+'"')
+			+ ' aria-pressed="'+on+'">'+esc(nombreLocal(l))+'</button>';
 	}).join('');
-	return '<div class="sedes-movil"><button type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Todas</button>'+b+'</div>';
+	return '<div class="sedes-movil">'
+		+ '<button type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Todas</button>'
+		+ '<button type="button" id="sede-elegir-movil" aria-pressed="'+elige+'">Seleccionar</button>'
+		+ b + '</div>';
 }
 
 function netoQuincenaAnterior(){
@@ -932,9 +964,15 @@ function pantallaQuincena(){
 }
 
 function pantallaEmpleados(){
-	var lista = empleadosEnVista();
+	/* Los inactivos van al final y en gris: siguen estando, pero no
+	   estorban la lectura de los que trabajan hoy. */
+	var lista = empleadosEnVista().slice().sort(function(a,b){
+		var aa = a.activo===false ? 1 : 0, ab = b.activo===false ? 1 : 0;
+		if (aa !== ab) return aa - ab;
+		return a.nombre.toLowerCase() < b.nombre.toLowerCase() ? -1 : 1;
+	});
 	var filas = lista.map(function(e){
-		return '<tr class="abrible" tabindex="0" data-abrir="'+e.id+'">'
+		return '<tr class="abrible'+(e.activo===false?' inactiva':'')+'" tabindex="0" data-abrir="'+e.id+'">'
 			+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')+'</small></td>'
 			+ '<td>'+esc(e.puesto||'—')+'</td>'
 			+ '<td>'+esc(nombreLocal(localDe(e.localId)))+'</td>'
@@ -1012,22 +1050,87 @@ function pantallaReportes(){
 		+ '<div class="aviso">Pendiente.</div></section>';
 }
 
+/* Los valores se ven, no se tocan. Hay que entrar a editar a propósito
+   para cambiarlos: así nadie corre una tasa de la planilla sin querer. */
+function pct(v){ return (Number(v)||0).toLocaleString('es-CR',{maximumFractionDigits:2}) + ' %'; }
+
+var VALORES = {
+	tasas: {
+		titulo: 'Porcentajes del año',
+		campos: [
+			['sem','CCSS'], ['ivm','IVM'], ['bp','Banco Popular'], ['patronal','Carga patronal'],
+			['rentaExento','Renta exenta'], ['vacDiasMes','Vacaciones por mes']
+		],
+		lectura: function(t){
+			return [
+				['CCSS', pct(t.sem)], ['IVM', pct(t.ivm)],
+				['Banco Popular', pct(t.bp)], ['Carga patronal', pct(t.patronal)],
+				['Renta exenta', col(t.rentaExento)],
+				['Vacaciones por mes', plural(Number(t.vacDiasMes)||0,'día','días')]
+			];
+		}
+	},
+	ausencias: {
+		titulo: 'Lo que paga la empresa',
+		campos: [
+			['incDias','CCSS, días'], ['incPct','CCSS, %'],
+			['insDias','INS, días'], ['insPct','INS, %'],
+			['matPct','Maternidad, %']
+		],
+		lectura: function(t){
+			function tramo(dias, p){
+				return Number(dias) ? plural(Number(dias),'día','días') + ' al ' + pct(p) : 'nada';
+			}
+			return [
+				['Incapacidad CCSS', tramo(t.incDias, t.incPct)],
+				['Incapacidad INS', tramo(t.insDias, t.insPct)],
+				['Maternidad', pct(t.matPct) + ' de cada día']
+			];
+		}
+	}
+};
+
+function tarjetaValores(clave){
+	var g = VALORES[clave], t = D.tasas;
+	var editando = estado.editando === clave;
+	var cuerpo = editando
+		? '<div class="rejilla">'
+			+ g.campos.map(function(c){
+				return '<label class="campo"><span>'+c[1]+'</span>'
+					+ '<input type="number" step="0.01" data-tasa="'+c[0]+'" value="'+t[c[0]]+'"></label>';
+			}).join('')
+			+ '</div>'
+			+ '<div class="hoja-pie"><button class="bt fuerte" type="button" data-guardar-val="'+clave+'">Guardar</button>'
+			+ '<button class="bt" type="button" data-cancelar-val="1">Cancelar</button></div>'
+		: '<dl class="valores">'
+			+ g.lectura(t).map(function(r){
+				return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>';
+			}).join('')
+			+ '</dl>';
+
+	return '<section class="tarj"><div class="tarj-cab"><h2>'+g.titulo+'</h2>'
+		+ (editando ? '' : '<button class="bt" type="button" data-editar-val="'+clave+'">Editar</button>')
+		+ '</div>'+cuerpo+'</section>';
+}
+
 function pantallaAjustes(){
-	var t = D.tasas;
-	/* Ordenados por restaurante para que la tabla se lea igual que el
-	   selector de la izquierda. */
+	/* Activos primero y ordenados por restaurante, para que la tabla se
+	   lea igual que el selector de la izquierda. */
 	var orden = D.locales.slice().sort(function(a,b){
+		var aa = a.activo===false ? 1 : 0, ab = b.activo===false ? 1 : 0;
+		if (aa !== ab) return aa - ab;
 		var ga = (a.grupo||a.nombre||'').toLowerCase(), gb = (b.grupo||b.nombre||'').toLowerCase();
 		if (ga !== gb) return ga < gb ? -1 : 1;
 		return (a.sede||'').toLowerCase() < (b.sede||'').toLowerCase() ? -1 : 1;
 	});
 	var locales = orden.map(function(l){
-		return '<tr><td class="nombre">'+esc(l.grupo || l.nombre || '—')+'</td>'
+		var off = l.activo === false;
+		return '<tr'+(off?' class="inactiva"':'')+'><td class="nombre">'+esc(l.grupo || l.nombre || '—')+'</td>'
 			+ '<td>'+esc(l.sede || '—')+'</td>'
-			+ '<td>'+(l.activo===false?'<span class="et off">Inactivo</span>':'<span class="et ok">Activo</span>')+'</td>'
+			+ '<td>'+(off?'<span class="et off">Inactivo</span>':'<span class="et ok">Activo</span>')+'</td>'
 			+ '<td class="n">'+D.empleados.filter(function(e){return e.localId===l.id;}).length+'</td>'
 			+ '<td><button class="bt chico" type="button" data-ren="'+l.id+'">Editar</button> '
-			+ '<button class="bt chico" type="button" data-local-toggle="'+l.id+'">'+(l.activo===false?'Activar':'Desactivar')+'</button></td></tr>';
+			+ '<button class="bt chico" type="button" data-local-toggle="'+l.id+'">'+(off?'Activar':'Desactivar')+'</button></td></tr>';
 	}).join('');
 
 	return cabecera('Ajustes','')
@@ -1037,31 +1140,14 @@ function pantallaAjustes(){
 		+ '<th class="n">Empleados</th><th></th></tr></thead>'
 		+ '<tbody>'+locales+'</tbody></table></div></section>'
 
-		+ '<section class="tarj"><div class="tarj-cab"><h2>Porcentajes del año</h2></div>'
-		+ '<div class="rejilla">'
-		+ num('sem','CCSS (%)',t.sem) + num('ivm','IVM (%)',t.ivm)
-		+ num('bp','Banco Popular (%)',t.bp) + num('patronal','Carga patronal (%)',t.patronal)
-		+ num('rentaExento','Renta: exento mensual',t.rentaExento)
-		+ num('vacDiasMes','Vacaciones: días por mes cumplido',t.vacDiasMes)
-		+ '</div></section>'
-
-		+ '<section class="tarj"><div class="tarj-cab"><h2>Incapacidades y permisos</h2></div>'
-		+ '<div class="rejilla">'
-		+ num('incDiasPatrono','CCSS: días a cargo de la empresa',t.incDiasPatrono)
-		+ num('incPctPatrono','CCSS: % que paga la empresa',t.incPctPatrono)
-		+ num('incPctCcss','CCSS: % que deposita la Caja',t.incPctCcss)
-		+ num('insDiasPatrono','INS: días a cargo de la empresa',t.insDiasPatrono)
-		+ num('insPctIns','INS: % que deposita el INS',t.insPctIns)
-		+ num('matPctPatrono','Maternidad: % de la empresa',t.matPctPatrono)
-		+ num('matPctCcss','Maternidad: % de la Caja',t.matPctCcss)
-		+ '</div></section>'
+		+ tarjetaValores('tasas')
+		+ tarjetaValores('ausencias')
 
 		+ '<section class="tarj"><div class="tarj-cab"><h2>Datos</h2></div>'
 		+ '<div style="display:flex;gap:.5rem;flex-wrap:wrap">'
 		+ '<button class="bt" type="button" id="exportar">Descargar copia</button>'
 		+ '<button class="bt" type="button" id="importar">Restaurar copia</button></div></section>';
 }
-function num(id,et,v){ return '<label class="campo"><span>'+et+'</span><input type="number" step="0.01" data-tasa="'+id+'" value="'+v+'"></label>'; }
 
 /* =============================================================
    5. HOJA LATERAL
@@ -1352,12 +1438,6 @@ function verBoleta(empId, localId, periodo, q){
 		+ (x.adelanto ? f('Adelanto', x.adelanto, true) : '')
 		+ (x.otras ? f('Otras deducciones', x.otras, true) : '')
 		+ '<div class="fila total"><span>Neto a pagar</span><span>'+col(x.neto)+'</span></div>'
-		+ (x.tercero ? '<div class="bloque"><b>Lo que recibe aparte</b>'
-			+ (x.ausencias||[]).filter(function(l){ return l.tercero; }).map(function(l){
-				return '<div class="fila suave"><span>'+quienPaga(l)+'</span><span>'+col(l.tercero)+'</span></div>';
-			}).join('')
-			+ '<p style="margin:.3rem 0 0;font-size:.78rem;color:var(--tenue)">Se deposita en la cuenta del colaborador. No pasa por la planilla.</p>'
-			+ '</div>' : '')
 		+ '<div class="bloque"><b>Vacaciones</b>'
 		+ '<div class="fila suave"><span>Disfrutadas en esta quincena</span><span>'
 		+ (vq.dias ? nDias(vq.dias)+' días | '+vq.detalle : 'ninguna')+'</span></div>'
@@ -1433,23 +1513,6 @@ function pdfBoleta(b, descargar){
 	d.text(colPdf(x.neto), 612-M, y, { align:'right' });
 	y += 30;
 
-	/* Lo que pagan la CCSS o el INS no pasa por la planilla, pero el
-	   colaborador tiene que verlo para cuadrar lo que recibe. */
-	if (x.tercero){
-		d.setFont('helvetica','bold'); d.setFontSize(10); d.setTextColor(20);
-		d.text('Lo que recibe aparte', M, y); y += 15;
-		d.setFont('helvetica','normal'); d.setFontSize(9.5); d.setTextColor(70);
-		(x.ausencias||[]).filter(function(l){ return l.tercero; }).forEach(function(l){
-			d.text(quienPaga(l), M, y);
-			d.text(colPdf(l.tercero), 612-M, y, { align:'right' });
-			y += 14;
-		});
-		d.setFontSize(8); d.setTextColor(140);
-		d.text('Se deposita en la cuenta del colaborador, no pasa por la planilla.', M, y);
-		d.setFontSize(9.5); d.setTextColor(70);
-		y += 24;
-	}
-
 	/* Las vacaciones no cambian el monto de un salario fijo; van en la
 	   boleta como control para el colaborador. */
 	var vq = vacEnQuincena(b.emp, b.periodo, b.nq);
@@ -1515,7 +1578,7 @@ var PANTALLAS = { quincena:pantallaQuincena, empleados:pantallaEmpleados, histor
 function pintar(){
 	/* Si el recorte apunta a algo que ya no existe (se desactivo la sede,
 	   se renombro el restaurante), vuelve a Todas en vez de quedar vacio. */
-	if (estado.local !== '_todos' && !idsEnVista().length) estado.local = '_todos';
+	if (estado.local !== '_todos' && !eligiendo() && !idsEnVista().length) estado.local = '_todos';
 	$('#sedes-env').innerHTML = selectorLocales();
 	var ce = $('#cuenta-emp');
 	if (ce) ce.textContent = empleadosEnVista().filter(function(e){return e.activo!==false;}).length || '';
@@ -1544,6 +1607,26 @@ document.addEventListener('click', function(ev){
 	if (!t) return;
 	if (t.dataset.ir){ estado.pantalla=t.dataset.ir; pintar(); return; }
 	if (t.dataset.local){ estado.local=t.dataset.local; pintar(); return; }
+	if (t.id==='sede-elegir' || t.id==='sede-elegir-movil'){
+		if (!eligiendo()){ estado.sel = idsEnVista().slice(); estado.local = '_sel'; }
+		pintar(); return;
+	}
+	if (t.dataset.selLocal){
+		var k = estado.sel.indexOf(t.dataset.selLocal);
+		if (k === -1) estado.sel.push(t.dataset.selLocal); else estado.sel.splice(k,1);
+		pintar(); return;
+	}
+	if (t.dataset.selGrupo){
+		var ids = D.locales.filter(function(l){ return l.activo!==false && l.grupo===t.dataset.selGrupo; })
+			.map(function(l){ return l.id; });
+		var llenos = ids.length && ids.every(function(id){ return estado.sel.indexOf(id)!==-1; });
+		ids.forEach(function(id){
+			var i = estado.sel.indexOf(id);
+			if (llenos){ if (i!==-1) estado.sel.splice(i,1); }
+			else if (i===-1) estado.sel.push(id);
+		});
+		pintar(); return;
+	}
 	if (t.dataset.q){ estado.q=Number(t.dataset.q); pintar(); return; }
 	if (t.id==='mes-ant'){ moverMes(-1); return; }
 	if (t.id==='mes-sig'){ moverMes(1); return; }
@@ -1564,6 +1647,14 @@ document.addEventListener('click', function(ev){
 		return;
 	}
 	if (t.id==='nuevo-local'){ fichaLocal(null); return; }
+	if (t.dataset.editarVal){ estado.editando = t.dataset.editarVal; pintar(); return; }
+	if (t.dataset.cancelarVal){ estado.editando = null; pintar(); return; }
+	if (t.dataset.guardarVal){
+		Array.prototype.forEach.call(document.querySelectorAll('[data-tasa]'), function(el){
+			D.tasas[el.dataset.tasa] = Number(el.value) || 0;
+		});
+		estado.editando = null; guardar(); pintar(); return;
+	}
 	if (t.id==='exportar'){
 		var a2 = document.createElement('a');
 		a2.href = 'data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(D,null,1));
@@ -1616,7 +1707,8 @@ document.addEventListener('input', function(ev){
 		}, 280);
 		return;
 	}
-	if (el.dataset.tasa){ D.tasas[el.dataset.tasa]=Number(el.value)||0; guardar(); }
+	/* Los campos de valores no guardan al teclear: se confirman con el
+	   botón Guardar de su tarjeta. */
 });
 
 $('#velo').onclick = cerrarHoja;

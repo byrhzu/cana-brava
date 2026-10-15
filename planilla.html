@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Planilla · Caña Brava</title>
+<title>Planilla | Caña Brava</title>
 <link rel="icon" href="assets/img/logo-canabrava.png?v=20260922a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -502,7 +502,7 @@ function pantallaQuincena(){
 			tBruto+=q.bruto; tDed+=q.deducciones; tNeto+=q.neto; tPat+=c.costoPatronal/2; n++;
 			filas += '<tr data-emp="'+e.id+'" data-local="'+lid+'">'
 				+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')
-				+ (estado.local==='_todos' ? ' · '+esc(nombreLocal(localDe(lid))) : '')+'</small></td>'
+				+ (estado.local==='_todos' ? ' | '+esc(nombreLocal(localDe(lid))) : '')+'</small></td>'
 				+ '<td class="n">'+col(q.base)+'</td>'
 				+ '<td class="n"><input class="mini" type="number" min="0" step="0.5" data-campo="horasExtra" value="'+(q.horas||'')+'" placeholder="0" aria-label="Horas extra de '+esc(e.nombre)+'"></td>'
 				+ '<td class="n"><input class="mini" type="number" min="0" step="1000" data-campo="adelanto" value="'+(q.adelanto||'')+'" placeholder="0" aria-label="Adelanto de '+esc(e.nombre)+'"></td>'
@@ -532,9 +532,9 @@ function pantallaQuincena(){
 		+ '<button class="bt oscuro" type="button" id="exportar"><svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar</button></div></div>'
 		+ barraPeriodo()
 		+ '<dl class="cifras">'
-		+ cifra(I.billete,'A pagar esta quincena',col(tNeto), deltaHtml(tNeto, netoQuincenaAnterior()) + diasQuincena(estado.periodo, estado.q))
-		+ cifra(I.resta,'Deducciones',col(tDed),'mitad de las del mes')
-		+ cifra(I.empresa,'Le cuesta a la empresa',col(tBruto+tPat),'bruto + '+D.tasas.patronal+' % patronal')
+		+ cifra(I.billete,'Planilla a Pagar',col(tNeto), deltaHtml(tNeto, netoQuincenaAnterior()) + diasQuincena(estado.periodo, estado.q))
+		+ cifra(I.resta,'Deducciones',col(tDed),'')
+		+ cifra(I.empresa,'Costo para la Empresa',col(tBruto+tPat),'bruto + '+D.tasas.patronal+' % patronal')
 		+ cifra(I.gente,'Empleados',String(n), estado.local==='_todos'?'en las cuatro sedes':'en esta sede')
 		+ '</dl>'
 		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.lista)+'Detalle</h2>'
@@ -585,7 +585,7 @@ function pantallaHistorial(){
 					var c = calcular(e, (pp.ajustes && pp.ajustes[e.id]) || {});
 					return s + (q===1?c.q1.neto:c.q2.neto);
 				},0);
-				return '<tr><td class="nombre">'+nombreMes(p)+' · quincena '+q+'<small>'+esc(nombreLocal(l))+'</small></td>'
+				return '<tr><td class="nombre">'+nombreMes(p)+' | quincena '+q+'<small>'+esc(nombreLocal(l))+'</small></td>'
 					+ '<td class="n">'+col(tot)+'</td>'
 					+ '<td>'+(env?'<span class="et ok">Enviada</span>':'<span class="et esp">Sin enviar</span>')+'</td></tr>';
 			}).join('');
@@ -624,7 +624,7 @@ function pantallaReportes(){
 function pantallaAjustes(){
 	var t = D.tasas;
 	var locales = D.locales.map(function(l){
-		return '<tr><td class="nombre">'+esc(l.nombre)+'</td>'
+		return '<tr><td class="nombre">'+esc(nombreLocal(l))+'</td>'
 			+ '<td>'+(l.activo===false?'<span class="et off">Inactivo</span>':'<span class="et ok">Activo</span>')+'</td>'
 			+ '<td class="n">'+D.empleados.filter(function(e){return e.localId===l.id;}).length+'</td>'
 			+ '<td><button class="bt chico" type="button" data-ren="'+l.id+'">Renombrar</button> '
@@ -638,9 +638,8 @@ function pantallaAjustes(){
 		+ '<tbody>'+locales+'</tbody></table></div></section>'
 
 		+ '<section class="tarj"><div class="tarj-cab"><h2>Porcentajes del año</h2></div>'
-		+ '<div class="aviso">Valores de 2026. Confirmalos en la CCSS y en el decreto de Hacienda antes de pagar con ellos.</div>'
 		+ '<div class="rejilla">'
-		+ num('sem','SEM · salud (%)',t.sem) + num('ivm','IVM · pensión (%)',t.ivm)
+		+ num('sem','CCSS (%)',t.sem) + num('ivm','IVM (%)',t.ivm)
 		+ num('bp','Banco Popular (%)',t.bp) + num('patronal','Carga patronal (%)',t.patronal)
 		+ num('rentaExento','Renta: exento mensual',t.rentaExento)
 		+ '</div></section>'
@@ -728,18 +727,18 @@ function verBoleta(empId, localId, periodo, q){
 	if (!b) return;
 	var x = b.q;
 	function f(et,v,resta){ return '<div class="fila"><span>'+et+'</span><span class="'+(resta?'resta':'')+'">'+(resta?'−':'')+col(v)+'</span></div>'; }
-	abrirHoja('Boleta · '+b.emp.nombre,
+	abrirHoja('Boleta | '+b.emp.nombre,
 		'<div class="boleta">'
 		+ '<div class="enc"><b>'+esc(nombreLocal(b.local))+'</b>'
-		+ '<span>'+esc(b.emp.nombre)+' · '+esc(b.emp.cedula||'sin cédula')+'</span>'
+		+ '<span>'+esc(b.emp.nombre)+' | '+esc(b.emp.cedula||'sin cédula')+'</span>'
 		+ '<span>'+esc(b.emp.puesto||'')+'</span>'
-		+ '<span>Quincena '+b.nq+' · '+diasQuincena(periodo,q)+' de '+periodo.split('-')[0]+'</span></div>'
+		+ '<span>Quincena '+b.nq+' | '+diasQuincena(periodo,q)+' de '+periodo.split('-')[0]+'</span></div>'
 		+ f('Salario de la quincena', x.base)
 		+ (x.montoExtra ? f(x.horas+' horas extra', x.montoExtra) : '')
 		+ '<div class="fila total"><span>Bruto</span><span>'+col(x.bruto)+'</span></div>'
 		+ '<div style="height:.6rem"></div>'
-		+ f('SEM · salud', x.sem, true)
-		+ f('IVM · pensión', x.ivm, true)
+		+ f('CCSS', x.sem, true)
+		+ f('IVM', x.ivm, true)
 		+ f('Banco Popular', x.bp, true)
 		+ (x.renta ? f('Impuesto sobre la renta', x.renta, true) : '')
 		+ (x.adelanto ? f('Adelanto', x.adelanto, true) : '')
@@ -778,8 +777,8 @@ function pdfBoleta(b, descargar){
 	d.setFont('helvetica','bold'); d.setFontSize(11);
 	d.text(b.emp.nombre, M, y); y += 14;
 	d.setFont('helvetica','normal'); d.setFontSize(9.5); d.setTextColor(110);
-	d.text('Cédula ' + (b.emp.cedula || '—') + (b.emp.puesto ? '   ·   ' + b.emp.puesto : ''), M, y); y += 13;
-	d.text('Quincena ' + b.nq + '   ·   ' + diasQuincena(b.periodo, b.nq) + ' de ' + b.periodo.split('-')[0], M, y); y += 24;
+	d.text('Cédula ' + (b.emp.cedula || '—') + (b.emp.puesto ? '   |   ' + b.emp.puesto : ''), M, y); y += 13;
+	d.text('Quincena ' + b.nq + '   |   ' + diasQuincena(b.periodo, b.nq) + ' de ' + b.periodo.split('-')[0], M, y); y += 24;
 
 	d.setDrawColor(76,138,46); d.setLineWidth(1); d.line(M, y, 612-M, y); y += 22;
 
@@ -798,8 +797,8 @@ function pdfBoleta(b, descargar){
 	if (x.montoExtra) fila(x.horas + ' horas extra', x.montoExtra);
 	regla(); fila('Bruto', x.bruto, false, true); y += 6;
 
-	fila('SEM · salud ' + D.tasas.sem + ' %', x.sem, true);
-	fila('IVM · pensión ' + D.tasas.ivm + ' %', x.ivm, true);
+	fila('CCSS ' + D.tasas.sem + ' %', x.sem, true);
+	fila('IVM ' + D.tasas.ivm + ' %', x.ivm, true);
 	fila('Banco Popular ' + D.tasas.bp + ' %', x.bp, true);
 	if (x.renta) fila('Impuesto sobre la renta', x.renta, true);
 	if (x.adelanto) fila('Adelanto', x.adelanto, true);
@@ -834,9 +833,8 @@ function enviarTodas(){
 
 	var sinCorreo = lista.filter(function(b){ return !b.emp.correo; });
 	abrirHoja('Enviar ' + lista.length + ' boletas',
-		'<p style="margin:0 0 var(--e4);color:var(--txt2)">Quincena '+estado.q+' · '+diasQuincena(estado.periodo,estado.q)+'</p>'
+		'<p style="margin:0 0 var(--e4);color:var(--txt2)">Quincena '+estado.q+' | '+diasQuincena(estado.periodo,estado.q)+'</p>'
 		+ (sinCorreo.length ? '<div class="aviso">'+sinCorreo.length+' sin correo: '+sinCorreo.map(function(b){return esc(b.emp.nombre);}).join(', ')+'</div>' : '')
-		+ '<div class="aviso">El envío por correo se conecta cuando los datos pasen al servidor. Por ahora se descargan los PDF.</div>'
 		+ '<div class="tabla-env" style="margin:0;padding:0"><table style="min-width:0"><thead><tr><th>Empleado</th><th class="n">Neto</th><th>Correo</th></tr></thead><tbody>'
 		+ lista.map(function(b){
 			return '<tr><td class="nombre">'+esc(b.emp.nombre)+'<small>'+esc(nombreLocal(b.local))+'</small></td>'

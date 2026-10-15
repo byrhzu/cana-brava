@@ -139,6 +139,7 @@ td{padding:.7rem .7rem;border-top:1px solid var(--linea);vertical-align:middle}
 tbody tr{transition:background .15s}
 tbody tr:hover td{background:var(--sup2)}
 tbody tr.abrible{cursor:pointer}
+td.nombre small.ausente{color:var(--esp-tx)}
 tbody tr.abrible:focus-visible{outline:2px solid var(--verde);outline-offset:-2px}
 td.n,th.n{text-align:right}
 td.n{font-family:var(--datos);font-variant-numeric:tabular-nums}
@@ -283,6 +284,9 @@ var PORDEFECTO = {
 	tasas: {
 		sem:5.50, ivm:4.33, bp:1.00, patronal:26.83,
 		rentaExento:918000, vacDiasMes:1,
+		incDiasPatrono:3, incPctPatrono:50, incPctCcss:60,
+		insDiasPatrono:0, insPctIns:60,
+		matPctPatrono:50, matPctCcss:50,
 		tramos:[{hasta:1347000,pct:10},{hasta:2364000,pct:15},{hasta:4727000,pct:20},{hasta:1e15,pct:25}]
 	}
 };
@@ -294,6 +298,18 @@ function cargar(){
 	if (!D.tasas) D.tasas = JSON.parse(JSON.stringify(PORDEFECTO.tasas));
 	if (D.tasas.vacDiasMes == null) D.tasas.vacDiasMes = 1;
 	delete D.tasas.vacDiasAnio;
+	['incDiasPatrono','incPctPatrono','incPctCcss','insDiasPatrono','insPctIns','matPctPatrono','matPctCcss']
+		.forEach(function(k){ if (D.tasas[k] == null) D.tasas[k] = PORDEFECTO.tasas[k]; });
+
+	/* Las vacaciones eran una lista aparte; ahora son un tipo más dentro
+	   del registro único de ausencias. */
+	(D.empleados || []).forEach(function(e){
+		if (e.vacaciones && !e.ausencias){
+			e.ausencias = e.vacaciones.map(function(v){ v.tipo = v.tipo || 'vacaciones'; return v; });
+		}
+		delete e.vacaciones;
+		if (!e.ausencias) e.ausencias = [];
+	});
 	if (!D.periodos) D.periodos = {};
 }
 function guardar(){ try { localStorage.setItem(LLAVE, JSON.stringify(D)); } catch(e){} }
@@ -309,7 +325,10 @@ if (!D.sembrado){
 			cedula:'7-0123-0456', correo:'ana.vargas@ejemplo.cr', puesto:'Salonera',
 			fechaIngreso:'2025-03-01', salarioMensual:450000, cuenta:'CR05 0000 0000 0000 0000 00',
 			activo:true,
-			vacaciones:[{ id:'v1', desde:'2026-01-05', hasta:'2026-01-10', dias:6, nota:'Fin de año' }]
+			ausencias:[
+				{ id:'v1', tipo:'vacaciones', desde:'2026-01-05', hasta:'2026-01-10', dias:6, nota:'Fin de año' },
+				{ id:'a1', tipo:'ccss', desde:'2026-10-05', hasta:'2026-10-09', dias:5, boleta:'1234567', nota:'Gripe' }
+			]
 		});
 	}
 	guardar();
@@ -336,7 +355,107 @@ function renta(brutoMes, t){
 	return Math.max(0, imp);
 }
 
-function calcular(emp, aj){
+/* -------------------------------------------------------------
+   AUSENCIAS
+   Un solo registro para todo el tiempo fuera del puesto. Cada tipo
+   dice quién paga esos días:
+
+   vacaciones  el salario no se toca, solo baja el saldo acumulado
+   ccss        se rebajan los días; los primeros tres los subsidia el
+               patrono al 50 % y del cuarto en adelante la CCSS deposita
+               el 60 % directo al trabajador, fuera de la planilla
+   ins         riesgo laboral; se rebajan los días y el INS deposita su
+               porcentaje directo. Los días a cargo del patrono arrancan
+               en cero porque el INS cubre desde el primero
+   maternidad  cuatro meses pagados a medias: 50 % el patrono por
+               planilla y 50 % la CCSS directo
+   singoce     no se paga nada y no acumula derechos
+
+   Los porcentajes y los días de cada tramo viven en Ajustes, porque las
+   fuentes publicadas no coinciden entre ellas.
+   ------------------------------------------------------------- */
+var AUSENCIAS = {
+	vacaciones: { et:'Vacaciones',             corto:'Vacaciones',   rebaja:false },
+	ccss:       { et:'Incapacidad CCSS',       corto:'Incapacidad',  rebaja:true },
+	ins:        { et:'Incapacidad INS',        corto:'Riesgo laboral', rebaja:true },
+	maternidad: { et:'Licencia de maternidad', corto:'Maternidad',   rebaja:true },
+	singoce:    { et:'Permiso sin goce',       corto:'Permiso sin goce', rebaja:true }
+};
+
+function diasNaturales(desde, hasta){
+	var d1 = aFecha(desde);
+	if (!d1) return 0;
+	var d2 = aFecha(hasta) || d1;
+	if (d2 < d1) d2 = d1;
+	return diasEntre(d1, d2) + 1;
+}
+
+function bordesQuincena(periodo, nq){
+	var a = periodo.split('-'), y = Number(a[0]), m = Number(a[1]);
+	return {
+		ini: new Date(y, m-1, nq===1 ? 1 : 16),
+		fin: new Date(y, m-1, nq===1 ? 15 : new Date(y, m, 0).getDate())
+	};
+}
+
+/* Lo que una quincena arrastra de las ausencias: días rebajados del
+   salario, lo que pone el patrono y lo que deposita la CCSS o el INS
+   por su cuenta. */
+function ausenciaEnQuincena(emp, periodo, nq){
+	var b = bordesQuincena(periodo, nq);
+	var t = D.tasas, diario = salarioDiario(emp);
+	var r = { rebajoDias:0, rebajo:0, subsidio:0, tercero:0, lineas:[] };
+
+	(emp.ausencias || []).forEach(function(v){
+		var reg = AUSENCIAS[v.tipo];
+		if (!reg || !reg.rebaja) return;
+		var d1 = aFecha(v.desde);
+		if (!d1) return;
+		var d2 = aFecha(v.hasta) || d1;
+		if (d2 < d1) d2 = d1;
+		var a1 = d1 > b.ini ? d1 : b.ini;
+		var a2 = d2 < b.fin ? d2 : b.fin;
+		if (a2 < a1) return;
+
+		var n = diasEntre(a1, a2) + 1;        // días de esta ausencia dentro de la quincena
+		var corridos = diasEntre(d1, a1);     // días que ya habían pasado antes de la quincena
+		var dPatrono = 0, dTercero = 0, montoPatrono = 0, montoTercero = 0;
+
+		if (v.tipo === 'ccss'){
+			var tope = Number(t.incDiasPatrono) || 0;
+			dPatrono = Math.max(0, Math.min(n, tope - corridos));
+			dTercero = n - dPatrono;
+			montoPatrono = dPatrono * diario * (Number(t.incPctPatrono)||0) / 100;
+			montoTercero = dTercero * diario * (Number(t.incPctCcss)||0) / 100;
+		} else if (v.tipo === 'ins'){
+			var topeI = Number(t.insDiasPatrono) || 0;
+			dPatrono = Math.max(0, Math.min(n, topeI - corridos));
+			dTercero = n - dPatrono;
+			montoPatrono = dPatrono * diario * (Number(t.incPctPatrono)||0) / 100;
+			montoTercero = dTercero * diario * (Number(t.insPctIns)||0) / 100;
+		} else if (v.tipo === 'maternidad'){
+			dPatrono = n; dTercero = n;
+			montoPatrono = n * diario * (Number(t.matPctPatrono)||0) / 100;
+			montoTercero = n * diario * (Number(t.matPctCcss)||0) / 100;
+		}
+
+		r.rebajoDias += n;
+		r.rebajo += n * diario;
+		r.subsidio += montoPatrono;
+		r.tercero += montoTercero;
+		r.lineas.push({
+			tipo:v.tipo, dias:n, boleta:v.boleta || '',
+			dPatrono:dPatrono, dTercero:dTercero,
+			patrono:montoPatrono, tercero:montoTercero,
+			desde:v.desde, hasta:v.hasta || v.desde
+		});
+	});
+	return r;
+}
+
+function sinAusencia(){ return { rebajoDias:0, rebajo:0, subsidio:0, tercero:0, lineas:[] }; }
+
+function calcular(emp, aj, periodo){
 	var t = D.tasas;
 	aj = aj || {};
 	var q1 = aj.q1 || {}, q2 = aj.q2 || {};
@@ -346,21 +465,31 @@ function calcular(emp, aj){
 	function extra(q){ return (Number(q.horasExtra)||0) * hora * 1.5; }
 
 	var extraMes = extra(q1) + extra(q2);
-	var brutoMes = base + extraMes;
+
+	/* El salario sujeto a cargas es el de la quincena menos los días de
+	   ausencia. El subsidio que pone el patrono va aparte: no es salario
+	   y por eso no entra a la base de la CCSS ni de la renta. */
+	var au1 = periodo ? ausenciaEnQuincena(emp, periodo, 1) : sinAusencia();
+	var au2 = periodo ? ausenciaEnQuincena(emp, periodo, 2) : sinAusencia();
+	var sal1 = Math.max(0, base/2 - au1.rebajo) + extra(q1);
+	var sal2 = Math.max(0, base/2 - au2.rebajo) + extra(q2);
+	var brutoMes = sal1 + sal2;
 
 	var sem = brutoMes * t.sem/100, ivm = brutoMes * t.ivm/100, bp = brutoMes * t.bp/100;
 	var ccss = sem + ivm + bp;
 	var imp = renta(brutoMes, t);
 	var dedLey = ccss + imp;
 
-	function quincena(q){
-		var brutoQ = base/2 + extra(q);
+	function quincena(q, salarioQ, au){
+		var brutoQ = salarioQ + au.subsidio;
 		var dedLeyQ = dedLey/2;
 		var adelanto = Number(q.adelanto)||0;
 		var otras = Number(q.otras)||0;
 		return {
 			horas: Number(q.horasExtra)||0, montoExtra: extra(q),
-			base: base/2, bruto: brutoQ,
+			base: base/2, salario: salarioQ, bruto: brutoQ,
+			rebajoDias: au.rebajoDias, rebajo: au.rebajo,
+			subsidio: au.subsidio, tercero: au.tercero, ausencias: au.lineas,
 			sem: sem/2, ivm: ivm/2, bp: bp/2, ccss: ccss/2, renta: imp/2,
 			dedLey: dedLeyQ, adelanto: adelanto, otras: otras,
 			deducciones: dedLeyQ + adelanto + otras,
@@ -368,9 +497,9 @@ function calcular(emp, aj){
 		};
 	}
 
-	var c1 = quincena(q1), c2 = quincena(q2);
+	var c1 = quincena(q1, sal1, au1), c2 = quincena(q2, sal2, au2);
 	return {
-		base: base, brutoMes: brutoMes, ccssMes: ccss, rentaMes: imp,
+		base: base, brutoMes: brutoMes, extraMes: extraMes, ccssMes: ccss, rentaMes: imp,
 		netoMes: c1.neto + c2.neto,
 		costoPatronal: brutoMes * t.patronal/100,
 		q1: c1, q2: c2
@@ -414,19 +543,26 @@ function vacaciones(emp, corte){
 	var fin = corte || hoyFecha();
 	var a = antiguedad(emp, fin);
 	var porMes = Number(D.tasas.vacDiasMes) || 1;
-	var movs = [], futuros = [];
-	(emp.vacaciones || []).forEach(function(v){
+	var movs = [], futuros = [], sinGoce = 0;
+	(emp.ausencias || []).forEach(function(v){
 		var d = aFecha(v.desde);
-		if (!d) return;
-		(d <= fin ? movs : futuros).push(v);
+		if (!d || d > fin) {
+			if (v.tipo === 'vacaciones' && d) futuros.push(v);
+			return;
+		}
+		if (v.tipo === 'vacaciones') movs.push(v);
+		else if (v.tipo === 'singoce') sinGoce += diasNaturales(v.desde, v.hasta);
 	});
 	function suma(lista){ return lista.reduce(function(t,v){ return t + (Number(v.dias)||0); }, 0); }
 	var tomados = suma(movs), programados = suma(futuros);
-	var meses = mesesCumplidos(aFecha(emp.fechaIngreso), fin);
+	/* El permiso sin goce suspende el contrato, así que cada mes entero
+	   sin goce no genera día de vacaciones. */
+	var mesesSinGoce = Math.floor(sinGoce / 30);
+	var meses = Math.max(0, mesesCumplidos(aFecha(emp.fechaIngreso), fin) - mesesSinGoce);
 	var ganados = meses * porMes;
 	return {
 		ganados:ganados, tomados:tomados, programados:programados,
-		saldo:ganados - tomados, meses:meses,
+		saldo:ganados - tomados, meses:meses, mesesSinGoce:mesesSinGoce,
 		porMes:porMes, valorDia:salarioDiario(emp),
 		movimientos:movs, futuros:futuros, antiguedad:a, corte:fin
 	};
@@ -439,7 +575,8 @@ function vacEnQuincena(emp, periodo, q){
 	var ini = new Date(y, m-1, q===1 ? 1 : 16);
 	var fin = new Date(y, m-1, q===1 ? 15 : new Date(y, m, 0).getDate());
 	var d = 0, textos = [];
-	(emp.vacaciones || []).forEach(function(v){
+	(emp.ausencias || []).forEach(function(v){
+		if (v.tipo !== 'vacaciones') return;
 		var vd = aFecha(v.desde);
 		if (!vd || vd < ini || vd > fin) return;
 		d += Number(v.dias) || 0;
@@ -519,6 +656,40 @@ var $ = function(s,c){ return (c||document).querySelector(s); };
 var col = function(n){ return '₡' + Math.round(n||0).toLocaleString('es-CR'); };
 var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
 function plural(n, uno, varios){ return n + ' ' + (n === 1 ? uno : varios); }
+function textoRegla(tipo){
+	var t = D.tasas;
+	if (tipo === 'vacaciones') return 'No cambia el pago: el salario es fijo. Solo baja el saldo acumulado.';
+	if (tipo === 'ccss') return 'Se rebajan los días. Los primeros '+t.incDiasPatrono+' los paga la empresa al '
+		+ t.incPctPatrono+' %; del siguiente en adelante la CCSS deposita el '+t.incPctCcss+' % directo al colaborador.';
+	if (tipo === 'ins') return 'Se rebajan los días. '
+		+ (Number(t.insDiasPatrono) ? 'Los primeros '+t.insDiasPatrono+' los paga la empresa al '+t.incPctPatrono+' %. ' : '')
+		+ 'El INS deposita el '+t.insPctIns+' % directo al colaborador.';
+	if (tipo === 'maternidad') return 'Se rebajan los días y la empresa paga el '+t.matPctPatrono
+		+ ' % por planilla. La CCSS deposita el otro '+t.matPctCcss+' % directo.';
+	return 'No se paga nada y ese tiempo no acumula vacaciones.';
+}
+/* Cómo se reparte cada ausencia, para que la boleta lo diga sin que
+   nadie tenga que acordarse de la regla. */
+function detalleAusencia(l){
+	var reg = AUSENCIAS[l.tipo] || {};
+	var partes = [plural(l.dias,'día','días') + ' de ' + reg.corto.toLowerCase()];
+	if (l.boleta) partes.push('boleta ' + l.boleta);
+	return partes.join(', ');
+}
+function quienPaga(l){
+	var t = D.tasas;
+	if (l.tipo === 'ccss' && l.dTercero) return 'CCSS, ' + plural(l.dTercero,'día','días') + ' al ' + t.incPctCcss + ' %';
+	if (l.tipo === 'ins' && l.dTercero) return 'INS, ' + plural(l.dTercero,'día','días') + ' al ' + t.insPctIns + ' %';
+	if (l.tipo === 'maternidad') return 'CCSS, ' + plural(l.dias,'día','días') + ' al ' + t.matPctCcss + ' %';
+	return '';
+}
+function resumenAusencias(q){
+	var por = {};
+	(q.ausencias||[]).forEach(function(l){ por[l.tipo] = (por[l.tipo]||0) + l.dias; });
+	return Object.keys(por).map(function(k){
+		return plural(por[k],'día','días') + ' de ' + AUSENCIAS[k].corto.toLowerCase();
+	}).join(' | ');
+}
 function nDias(n){ return (Math.round((n||0)*10)/10).toLocaleString('es-CR',{maximumFractionDigits:1}); }
 function fechaCorta(s){
 	var d = aFecha(s);
@@ -701,7 +872,7 @@ function netoQuincenaAnterior(){
 		var pp = D.periodos[p] && D.periodos[p][lid];
 		if (!pp) return;
 		empleadosDe(lid).forEach(function(e){
-			var c = calcular(e, (pp.ajustes && pp.ajustes[e.id]) || {});
+			var c = calcular(e, (pp.ajustes && pp.ajustes[e.id]) || {}, p);
 			t += q===1 ? c.q1.neto : c.q2.neto;
 		});
 	});
@@ -714,12 +885,13 @@ function pantallaQuincena(){
 	var filas='', tBruto=0, tDed=0, tNeto=0, tPat=0, n=0;
 	locales.forEach(function(lid){
 		empleadosDe(lid).filter(coincide).forEach(function(e){
-			var c = calcular(e, ajusteDe(estado.periodo, lid, e.id));
+			var c = calcular(e, ajusteDe(estado.periodo, lid, e.id), estado.periodo);
 			var q = estado.q===1 ? c.q1 : c.q2;
 			tBruto+=q.bruto; tDed+=q.deducciones; tNeto+=q.neto; tPat+=c.costoPatronal/2; n++;
 			filas += '<tr data-emp="'+e.id+'" data-local="'+lid+'">'
 				+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')
-				+ (unaSedeSola() ? '' : ' | '+esc(nombreLocal(localDe(lid))))+'</small></td>'
+				+ (unaSedeSola() ? '' : ' | '+esc(nombreLocal(localDe(lid))))+'</small>'
+				+ (q.rebajoDias ? '<small class="ausente">'+resumenAusencias(q)+'</small>' : '')+'</td>'
 				+ '<td class="n">'+col(q.base)+'</td>'
 				+ '<td class="n"><input class="mini" type="number" min="0" step="0.5" data-campo="horasExtra" value="'+(q.horas||'')+'" placeholder="0" aria-label="Horas extra de '+esc(e.nombre)+'"></td>'
 				+ '<td class="n"><input class="mini" type="number" min="0" step="1000" data-campo="adelanto" value="'+(q.adelanto||'')+'" placeholder="0" aria-label="Adelanto de '+esc(e.nombre)+'"></td>'
@@ -800,7 +972,7 @@ function pantallaHistorial(){
 				});
 				if (!env && !tocada) return '';
 				var tot = empleadosDe(lid).reduce(function(s,e){
-					var c = calcular(e, (pp.ajustes && pp.ajustes[e.id]) || {});
+					var c = calcular(e, (pp.ajustes && pp.ajustes[e.id]) || {}, p);
 					return s + (q===1?c.q1.neto:c.q2.neto);
 				},0);
 				return '<tr><td class="nombre">'+nombreMes(p)+' | quincena '+q+'<small>'+esc(nombreLocal(l))+'</small></td>'
@@ -822,7 +994,7 @@ function pantallaReportes(){
 	var filas = D.locales.filter(function(l){ return dentro.indexOf(l.id) !== -1; }).map(function(l){
 		var emps = empleadosDe(l.id), b=0,d=0,nt=0,pat=0;
 		emps.forEach(function(e){
-			var c = calcular(e, ajusteDe(estado.periodo, l.id, e.id));
+			var c = calcular(e, ajusteDe(estado.periodo, l.id, e.id), estado.periodo);
 			b+=c.brutoMes; d+=c.ccssMes+c.rentaMes; nt+=c.netoMes; pat+=c.costoPatronal;
 		});
 		return '<tr><td class="nombre">'+esc(nombreLocal(l))+'<small>'+plural(emps.length,'empleado','empleados')+'</small></td>'
@@ -871,6 +1043,17 @@ function pantallaAjustes(){
 		+ num('bp','Banco Popular (%)',t.bp) + num('patronal','Carga patronal (%)',t.patronal)
 		+ num('rentaExento','Renta: exento mensual',t.rentaExento)
 		+ num('vacDiasMes','Vacaciones: días por mes cumplido',t.vacDiasMes)
+		+ '</div></section>'
+
+		+ '<section class="tarj"><div class="tarj-cab"><h2>Incapacidades y permisos</h2></div>'
+		+ '<div class="rejilla">'
+		+ num('incDiasPatrono','CCSS: días a cargo de la empresa',t.incDiasPatrono)
+		+ num('incPctPatrono','CCSS: % que paga la empresa',t.incPctPatrono)
+		+ num('incPctCcss','CCSS: % que deposita la Caja',t.incPctCcss)
+		+ num('insDiasPatrono','INS: días a cargo de la empresa',t.insDiasPatrono)
+		+ num('insPctIns','INS: % que deposita el INS',t.insPctIns)
+		+ num('matPctPatrono','Maternidad: % de la empresa',t.matPctPatrono)
+		+ num('matPctCcss','Maternidad: % de la Caja',t.matPctCcss)
 		+ '</div></section>'
 
 		+ '<section class="tarj"><div class="tarj-cab"><h2>Datos</h2></div>'
@@ -929,7 +1112,7 @@ function fichaEmpleado(id){
 	e = e || { id:'e'+Date.now(), localId: unaSedeSola()?estado.local:(idsEnVista()[0]||D.locales[0].id),
 		nombre:'', cedula:'', correo:'', puesto:'', fechaIngreso:'', salarioMensual:0, cuenta:'', activo:true };
 	if (nuevo) pestanaFicha = 'datos';
-	if (!e.vacaciones) e.vacaciones = [];
+	if (!e.ausencias) e.ausencias = [];
 
 	var ops = D.locales.map(function(l){ return '<option value="'+l.id+'"'+(l.id===e.localId?' selected':'')+'>'+esc(nombreLocal(l))+'</option>'; }).join('');
 
@@ -950,38 +1133,59 @@ function fichaEmpleado(id){
 		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="f-guardar">Guardar</button>'
 		+ '<button class="bt" type="button" id="f-cancelar">Cancelar</button></div>';
 
-	/* ---------- pestaña: vacaciones ---------- */
+	/* ---------- pestaña: ausencias ----------
+	   Vacaciones, incapacidades y permisos viven en la misma lista: son
+	   todos tiempo fuera del puesto y la quincena los lee de un solo
+	   lugar. Arriba va el saldo de vacaciones, que es lo único que se
+	   acumula. */
 	var v = vacaciones(e);
-	var movs = e.vacaciones.slice().sort(function(a,b){ return a.desde < b.desde ? 1 : -1; }).map(function(m){
+	var movs = e.ausencias.slice().sort(function(a,b){ return a.desde < b.desde ? 1 : -1; }).map(function(m){
+		var reg = AUSENCIAS[m.tipo] || AUSENCIAS.vacaciones;
 		var futura = aFecha(m.desde) > hoyFecha();
-		return '<tr><td class="nombre">'+fechaCorta(m.desde)
-			+ (m.hasta && m.hasta !== m.desde ? '<small>al '+fechaCorta(m.hasta)+'</small>' : '')
+		var cuantos = m.tipo === 'vacaciones' ? Number(m.dias)||0 : diasNaturales(m.desde, m.hasta);
+		return '<tr><td class="nombre">'+esc(reg.et)
+			+ '<small>'+fechaCorta(m.desde)
+			+ (m.hasta && m.hasta !== m.desde ? ' al '+fechaCorta(m.hasta) : '')+'</small>'
+			+ (m.boleta ? '<small>Boleta '+esc(m.boleta)+'</small>' : '')
 			+ (m.nota ? '<small>'+esc(m.nota)+'</small>' : '')+'</td>'
-			+ '<td class="n">'+nDias(m.dias)+'</td>'
-			+ '<td>'+(futura ? '<span class="et esp">Programada</span>' : '<span class="et ok">Disfrutada</span>')+'</td>'
+			+ '<td class="n">'+nDias(cuantos)+'</td>'
+			+ '<td>'+(futura ? '<span class="et esp">Programada</span>' : '<span class="et ok">Registrada</span>')+'</td>'
 			+ '<td><button class="bt chico" type="button" data-vacx="'+m.id+'">Quitar</button></td></tr>';
 	}).join('');
+
+	var tipoSel = e._tipoAus || 'vacaciones';
+	var pideBoleta = tipoSel === 'ccss' || tipoSel === 'ins';
 
 	var panelVac = '<div class="boleta">'
 		+ '<div class="enc"><b>'+textoAntiguedad(v.antiguedad)+' en la empresa</b>'
 		+ '<span>'+(e.fechaIngreso ? 'Ingresó el '+fechaCorta(e.fechaIngreso) : 'Falta la fecha de ingreso')+'</span>'
 		+ '<span>'+plural(v.meses,'mes cumplido','meses cumplidos')+' | el día vale '+col(v.valorDia)+'</span></div>'
-		+ '<div class="fila"><span>Acumulados</span><span>'+nDias(v.ganados)+' días</span></div>'
-		+ '<div class="fila"><span>Disfrutados</span><span class="resta">−'+nDias(v.tomados)+' días</span></div>'
-		+ (v.programados ? '<div class="fila suave"><span>Programados, todavía sin disfrutar</span>'
+		+ '<div class="fila"><span>Vacaciones acumuladas</span><span>'+nDias(v.ganados)+' días</span></div>'
+		+ '<div class="fila"><span>Disfrutadas</span><span class="resta">−'+nDias(v.tomados)+' días</span></div>'
+		+ (v.programados ? '<div class="fila suave"><span>Programadas, todavía sin disfrutar</span>'
 			+ '<span>'+nDias(v.programados)+' días</span></div>' : '')
+		+ (v.mesesSinGoce ? '<div class="fila suave"><span>Meses sin goce que no acumulan</span>'
+			+ '<span>'+v.mesesSinGoce+'</span></div>' : '')
 		+ '<div class="fila total"><span>Saldo</span><span>'+nDias(v.saldo)+' días | '+col(v.saldo * v.valorDia)+'</span></div>'
 		+ '</div>'
-		+ '<h3>Registrar un disfrute</h3>'
+		+ '<h3>Registrar una ausencia</h3>'
 		+ '<div class="rejilla">'
+		+ '<label class="campo"><span>Tipo</span><select id="v-tipo">'
+		+ Object.keys(AUSENCIAS).map(function(k){
+			return '<option value="'+k+'"'+(k===tipoSel?' selected':'')+'>'+AUSENCIAS[k].et+'</option>';
+		}).join('')
+		+ '</select></label>'
 		+ '<label class="campo"><span>Desde</span><input id="v-desde" type="date"></label>'
 		+ '<label class="campo"><span>Hasta</span><input id="v-hasta" type="date"></label>'
-		+ '<label class="campo"><span>Días</span><input id="v-dias" type="number" step="1" min="1"></label>'
+		+ '<label class="campo"><span>Días</span><input id="v-dias" type="number" step="1" min="1"'
+		+ (tipoSel === 'vacaciones' ? '' : ' readonly')+'></label>'
+		+ (pideBoleta ? '<label class="campo"><span>Boleta</span><input id="v-boleta" placeholder="Número"></label>' : '')
 		+ '<label class="campo"><span>Nota</span><input id="v-nota" placeholder="Opcional"></label>'
 		+ '</div>'
+		+ '<p style="margin:var(--e2) 0 0;font-size:.82rem;color:var(--tenue)">'+textoRegla(tipoSel)+'</p>'
 		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="v-agregar">Agregar</button></div>'
-		+ (movs ? '<h3>Movimientos</h3><div class="tabla-env" style="margin:0;padding:0">'
-			+ '<table style="min-width:0"><thead><tr><th>Fechas</th><th class="n">Días</th><th>Estado</th><th></th></tr></thead>'
+		+ (movs ? '<h3>Registro</h3><div class="tabla-env" style="margin:0;padding:0">'
+			+ '<table style="min-width:0"><thead><tr><th>Tipo</th><th class="n">Días</th><th>Estado</th><th></th></tr></thead>'
 			+ '<tbody>'+movs+'</tbody></table></div>' : '');
 
 	/* ---------- pestaña: pagos ---------- */
@@ -989,7 +1193,7 @@ function fichaEmpleado(id){
 	Object.keys(D.periodos).sort().reverse().forEach(function(pe){
 		var pp = D.periodos[pe][e.localId];
 		if (!pp || !pp.ajustes) return;
-		var c = calcular(e, ajusteDe(pe, e.localId, e.id));
+		var c = calcular(e, ajusteDe(pe, e.localId, e.id), pe);
 		[1,2].forEach(function(q){
 			var qq = q===1?c.q1:c.q2;
 			if (!qq.neto) return;
@@ -1036,7 +1240,7 @@ function fichaEmpleado(id){
 				: 'El despido con justa causa no genera preaviso ni cesantía.')+'</p>');
 
 	/* ---------- armado ---------- */
-	var pestanas = [['datos','Datos'],['vacaciones','Vacaciones'],['pagos','Pagos'],['liquidacion','Liquidación']];
+	var pestanas = [['datos','Datos'],['vacaciones','Ausencias'],['pagos','Pagos'],['liquidacion','Liquidación']];
 	var barra = nuevo ? '' : '<div class="pestanas" role="tablist">'
 		+ pestanas.map(function(x){
 			return '<button type="button" role="tab" data-pest="'+x[0]+'" aria-selected="'+(pestanaFicha===x[0])+'">'+x[1]+'</button>';
@@ -1082,18 +1286,25 @@ function fichaEmpleado(id){
 		}
 		$('#v-desde').oninput = proponer;
 		$('#v-hasta').oninput = proponer;
+		$('#v-tipo').onchange = function(){ e._tipoAus = this.value; fichaEmpleado(e.id); };
 		$('#v-agregar').onclick = function(){
 			var d1 = $('#v-desde').value;
 			if (!d1){ $('#v-desde').focus(); return; }
-			e.vacaciones.push({
-				id:'v'+Date.now(), desde:d1, hasta:$('#v-hasta').value || d1,
-				dias:Math.max(1, Math.round(Number($('#v-dias').value)||1)), nota:$('#v-nota').value.trim()
+			var tipo = $('#v-tipo').value;
+			var h1 = $('#v-hasta').value || d1;
+			e.ausencias.push({
+				id:'v'+Date.now(), tipo:tipo, desde:d1, hasta:h1,
+				dias: tipo === 'vacaciones'
+					? Math.max(1, Math.round(Number($('#v-dias').value)||1))
+					: diasNaturales(d1, h1),
+				boleta: $('#v-boleta') ? $('#v-boleta').value.trim() : '',
+				nota: $('#v-nota').value.trim()
 			});
 			guardar(); fichaEmpleado(e.id); pintar();
 		};
 		Array.prototype.forEach.call(document.querySelectorAll('#hoja-cuerpo [data-vacx]'), function(b){
 			b.onclick = function(){
-				e.vacaciones = e.vacaciones.filter(function(m){ return m.id !== b.dataset.vacx; });
+				e.ausencias = e.ausencias.filter(function(m){ return m.id !== b.dataset.vacx; });
 				guardar(); fichaEmpleado(e.id); pintar();
 			};
 		});
@@ -1109,7 +1320,7 @@ function fichaEmpleado(id){
 function datosBoleta(empId, localId, periodo, q){
 	var e = D.empleados.find(function(x){return x.id===empId;});
 	if (!e) return null;
-	var c = calcular(e, ajusteDe(periodo, localId, empId));
+	var c = calcular(e, ajusteDe(periodo, localId, empId), periodo);
 	return { emp:e, local:localDe(localId), q:q===1?c.q1:c.q2, periodo:periodo, nq:q };
 }
 
@@ -1127,7 +1338,11 @@ function verBoleta(empId, localId, periodo, q){
 		+ '<span>'+esc(b.emp.puesto||'')+'</span>'
 		+ '<span>Quincena '+b.nq+' | '+diasQuincena(periodo,q)+' de '+periodo.split('-')[0]+'</span></div>'
 		+ f('Salario de la quincena', x.base)
+		+ (x.ausencias||[]).map(function(l){
+			return f(detalleAusencia(l), l.dias * (x.rebajo / (x.rebajoDias||1)), true);
+		}).join('')
 		+ (x.montoExtra ? f(x.horas+' horas extra', x.montoExtra) : '')
+		+ (x.subsidio ? f('Subsidio de la empresa', x.subsidio) : '')
 		+ '<div class="fila total"><span>Bruto</span><span>'+col(x.bruto)+'</span></div>'
 		+ '<div style="height:.6rem"></div>'
 		+ f('CCSS', x.sem, true)
@@ -1137,6 +1352,12 @@ function verBoleta(empId, localId, periodo, q){
 		+ (x.adelanto ? f('Adelanto', x.adelanto, true) : '')
 		+ (x.otras ? f('Otras deducciones', x.otras, true) : '')
 		+ '<div class="fila total"><span>Neto a pagar</span><span>'+col(x.neto)+'</span></div>'
+		+ (x.tercero ? '<div class="bloque"><b>Lo que recibe aparte</b>'
+			+ (x.ausencias||[]).filter(function(l){ return l.tercero; }).map(function(l){
+				return '<div class="fila suave"><span>'+quienPaga(l)+'</span><span>'+col(l.tercero)+'</span></div>';
+			}).join('')
+			+ '<p style="margin:.3rem 0 0;font-size:.78rem;color:var(--tenue)">Se deposita en la cuenta del colaborador. No pasa por la planilla.</p>'
+			+ '</div>' : '')
 		+ '<div class="bloque"><b>Vacaciones</b>'
 		+ '<div class="fila suave"><span>Disfrutadas en esta quincena</span><span>'
 		+ (vq.dias ? nDias(vq.dias)+' días | '+vq.detalle : 'ninguna')+'</span></div>'
@@ -1192,7 +1413,11 @@ function pdfBoleta(b, descargar){
 	function regla(){ d.setDrawColor(220); d.setLineWidth(.6); d.line(M, y-11, 612-M, y-11); }
 
 	fila('Salario de la quincena', x.base);
+	(x.ausencias||[]).forEach(function(l){
+		fila(detalleAusencia(l), l.dias * (x.rebajo / (x.rebajoDias||1)), true);
+	});
 	if (x.montoExtra) fila(x.horas + ' horas extra', x.montoExtra);
+	if (x.subsidio) fila('Subsidio de la empresa', x.subsidio);
 	regla(); fila('Bruto', x.bruto, false, true); y += 6;
 
 	fila('CCSS ' + D.tasas.sem + ' %', x.sem, true);
@@ -1207,6 +1432,23 @@ function pdfBoleta(b, descargar){
 	d.text('Neto a pagar', M, y);
 	d.text(colPdf(x.neto), 612-M, y, { align:'right' });
 	y += 30;
+
+	/* Lo que pagan la CCSS o el INS no pasa por la planilla, pero el
+	   colaborador tiene que verlo para cuadrar lo que recibe. */
+	if (x.tercero){
+		d.setFont('helvetica','bold'); d.setFontSize(10); d.setTextColor(20);
+		d.text('Lo que recibe aparte', M, y); y += 15;
+		d.setFont('helvetica','normal'); d.setFontSize(9.5); d.setTextColor(70);
+		(x.ausencias||[]).filter(function(l){ return l.tercero; }).forEach(function(l){
+			d.text(quienPaga(l), M, y);
+			d.text(colPdf(l.tercero), 612-M, y, { align:'right' });
+			y += 14;
+		});
+		d.setFontSize(8); d.setTextColor(140);
+		d.text('Se deposita en la cuenta del colaborador, no pasa por la planilla.', M, y);
+		d.setFontSize(9.5); d.setTextColor(70);
+		y += 24;
+	}
 
 	/* Las vacaciones no cambian el monto de un salario fijo; van en la
 	   boleta como control para el colaborador. */

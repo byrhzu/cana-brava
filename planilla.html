@@ -138,6 +138,8 @@ th{font-family:var(--sans);font-size:.8rem;font-weight:500;color:var(--tenue);te
 td{padding:.7rem .7rem;border-top:1px solid var(--linea);vertical-align:middle}
 tbody tr{transition:background .15s}
 tbody tr:hover td{background:var(--sup2)}
+tbody tr.abrible{cursor:pointer}
+tbody tr.abrible:focus-visible{outline:2px solid var(--verde);outline-offset:-2px}
 td.n,th.n{text-align:right}
 td.n{font-family:var(--datos);font-variant-numeric:tabular-nums}
 .nombre{font-weight:500}
@@ -280,7 +282,7 @@ var PORDEFECTO = {
 	periodos: {},
 	tasas: {
 		sem:5.50, ivm:4.33, bp:1.00, patronal:26.83,
-		rentaExento:918000, vacDiasAnio:12,
+		rentaExento:918000, vacDiasMes:1,
 		tramos:[{hasta:1347000,pct:10},{hasta:2364000,pct:15},{hasta:4727000,pct:20},{hasta:1e15,pct:25}]
 	}
 };
@@ -290,7 +292,8 @@ function cargar(){
 	try { D = JSON.parse(localStorage.getItem(LLAVE)) || null; } catch(e){ D = null; }
 	if (!D) D = JSON.parse(JSON.stringify(PORDEFECTO));
 	if (!D.tasas) D.tasas = JSON.parse(JSON.stringify(PORDEFECTO.tasas));
-	if (D.tasas.vacDiasAnio == null) D.tasas.vacDiasAnio = 12;
+	if (D.tasas.vacDiasMes == null) D.tasas.vacDiasMes = 1;
+	delete D.tasas.vacDiasAnio;
 	if (!D.periodos) D.periodos = {};
 }
 function guardar(){ try { localStorage.setItem(LLAVE, JSON.stringify(D)); } catch(e){} }
@@ -377,10 +380,9 @@ function calcular(emp, aj){
 /* =============================================================
    2b. VACACIONES Y LIQUIDACIÓN
 
-   La ley pide dos semanas por cada cincuenta semanas trabajadas. En una
-   semana de seis días eso son doce días hábiles al año, que es el valor
-   por defecto y se cambia en Ajustes. El día vale el salario mensual
-   entre treinta.
+   Se acumula un día entero por cada mes cumplido desde la fecha de
+   ingreso. Nunca hay medios días: el mes se cuenta cuando llega la
+   fecha, no antes. El día vale el salario mensual entre treinta.
 
    La cesantía sale de la tabla del artículo 29 del Código de Trabajo:
    los días cambian según el año de antigüedad alcanzado y el tope son
@@ -390,6 +392,14 @@ var UNDIA = 86400000;
 function aFecha(s){ if (!s) return null; var d = new Date(s + 'T00:00:00'); return isNaN(d) ? null : d; }
 function hoyFecha(){ var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 function diasEntre(a, b){ return Math.round((b - a) / UNDIA); }
+/* Meses cumplidos: el de ingreso no cuenta hasta que vuelve a caer el
+   mismo día del mes. */
+function mesesCumplidos(desde, hasta){
+	if (!desde || !hasta) return 0;
+	var m = (hasta.getFullYear()-desde.getFullYear())*12 + (hasta.getMonth()-desde.getMonth());
+	if (hasta.getDate() < desde.getDate()) m -= 1;
+	return Math.max(0, m);
+}
 function salarioDiario(emp){ return (Number(emp.salarioMensual) || 0) / 30; }
 
 function antiguedad(emp, corte){
@@ -403,7 +413,7 @@ function antiguedad(emp, corte){
 function vacaciones(emp, corte){
 	var fin = corte || hoyFecha();
 	var a = antiguedad(emp, fin);
-	var porAnio = Number(D.tasas.vacDiasAnio) || 12;
+	var porMes = Number(D.tasas.vacDiasMes) || 1;
 	var movs = [], futuros = [];
 	(emp.vacaciones || []).forEach(function(v){
 		var d = aFecha(v.desde);
@@ -412,11 +422,12 @@ function vacaciones(emp, corte){
 	});
 	function suma(lista){ return lista.reduce(function(t,v){ return t + (Number(v.dias)||0); }, 0); }
 	var tomados = suma(movs), programados = suma(futuros);
-	var ganados = a.dias / 365 * porAnio;
+	var meses = mesesCumplidos(aFecha(emp.fechaIngreso), fin);
+	var ganados = meses * porMes;
 	return {
 		ganados:ganados, tomados:tomados, programados:programados,
-		saldo:ganados - tomados,
-		porAnio:porAnio, valorDia:salarioDiario(emp),
+		saldo:ganados - tomados, meses:meses,
+		porMes:porMes, valorDia:salarioDiario(emp),
 		movimientos:movs, futuros:futuros, antiguedad:a, corte:fin
 	};
 }
@@ -751,15 +762,14 @@ function pantallaQuincena(){
 function pantallaEmpleados(){
 	var lista = empleadosEnVista();
 	var filas = lista.map(function(e){
-		return '<tr>'
+		return '<tr class="abrible" tabindex="0" data-abrir="'+e.id+'">'
 			+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')+'</small></td>'
 			+ '<td>'+esc(e.puesto||'—')+'</td>'
 			+ '<td>'+esc(nombreLocal(localDe(e.localId)))+'</td>'
 			+ '<td class="n">'+col(e.salarioMensual)+'</td>'
 			+ '<td class="n">'+nDias(vacaciones(e).saldo)+'</td>'
 			+ '<td>'+esc(e.correo||'—')+'</td>'
-			+ '<td>'+(e.activo===false?'<span class="et off">Inactivo</span>':'<span class="et ok">Activo</span>')+'</td>'
-			+ '<td><button class="bt chico" type="button" data-editar="'+e.id+'">Abrir</button></td></tr>';
+			+ '<td>'+(e.activo===false?'<span class="et off">Inactivo</span>':'<span class="et ok">Activo</span>')+'</td></tr>';
 	}).join('');
 
 	return cabecera('Empleados', tituloVista())
@@ -767,7 +777,7 @@ function pantallaEmpleados(){
 		+ '<button class="bt fuerte" type="button" id="nuevo-emp">Agregar empleado</button></div>'
 		+ (lista.length
 			? '<div class="tabla-env"><table><thead><tr><th>Empleado</th><th>Puesto</th><th>Local</th>'
-				+ '<th class="n">Salario</th><th class="n">Vacaciones</th><th>Correo</th><th>Estado</th><th></th></tr></thead><tbody>'+filas+'</tbody></table></div>'
+				+ '<th class="n">Salario</th><th class="n">Vacaciones</th><th>Correo</th><th>Estado</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
 			: '<div class="vacio"><h3>Sin empleados</h3></div>')
 		+ '</section>';
 }
@@ -860,7 +870,7 @@ function pantallaAjustes(){
 		+ num('sem','CCSS (%)',t.sem) + num('ivm','IVM (%)',t.ivm)
 		+ num('bp','Banco Popular (%)',t.bp) + num('patronal','Carga patronal (%)',t.patronal)
 		+ num('rentaExento','Renta: exento mensual',t.rentaExento)
-		+ num('vacDiasAnio','Vacaciones: días por año',t.vacDiasAnio)
+		+ num('vacDiasMes','Vacaciones: días por mes cumplido',t.vacDiasMes)
 		+ '</div></section>'
 
 		+ '<section class="tarj"><div class="tarj-cab"><h2>Datos</h2></div>'
@@ -955,7 +965,7 @@ function fichaEmpleado(id){
 	var panelVac = '<div class="boleta">'
 		+ '<div class="enc"><b>'+textoAntiguedad(v.antiguedad)+' en la empresa</b>'
 		+ '<span>'+(e.fechaIngreso ? 'Ingresó el '+fechaCorta(e.fechaIngreso) : 'Falta la fecha de ingreso')+'</span>'
-		+ '<span>'+nDias(v.porAnio)+' días por año | el día vale '+col(v.valorDia)+'</span></div>'
+		+ '<span>'+plural(v.meses,'mes cumplido','meses cumplidos')+' | el día vale '+col(v.valorDia)+'</span></div>'
 		+ '<div class="fila"><span>Acumulados</span><span>'+nDias(v.ganados)+' días</span></div>'
 		+ '<div class="fila"><span>Disfrutados</span><span class="resta">−'+nDias(v.tomados)+' días</span></div>'
 		+ (v.programados ? '<div class="fila suave"><span>Programados, todavía sin disfrutar</span>'
@@ -966,7 +976,7 @@ function fichaEmpleado(id){
 		+ '<div class="rejilla">'
 		+ '<label class="campo"><span>Desde</span><input id="v-desde" type="date"></label>'
 		+ '<label class="campo"><span>Hasta</span><input id="v-hasta" type="date"></label>'
-		+ '<label class="campo"><span>Días</span><input id="v-dias" type="number" step="0.5" min="0"></label>'
+		+ '<label class="campo"><span>Días</span><input id="v-dias" type="number" step="1" min="1"></label>'
 		+ '<label class="campo"><span>Nota</span><input id="v-nota" placeholder="Opcional"></label>'
 		+ '</div>'
 		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="v-agregar">Agregar</button></div>'
@@ -1077,7 +1087,7 @@ function fichaEmpleado(id){
 			if (!d1){ $('#v-desde').focus(); return; }
 			e.vacaciones.push({
 				id:'v'+Date.now(), desde:d1, hasta:$('#v-hasta').value || d1,
-				dias:Number($('#v-dias').value)||1, nota:$('#v-nota').value.trim()
+				dias:Math.max(1, Math.round(Number($('#v-dias').value)||1)), nota:$('#v-nota').value.trim()
 			});
 			guardar(); fichaEmpleado(e.id); pintar();
 		};
@@ -1281,6 +1291,13 @@ function moverMes(n){
 }
 
 document.addEventListener('click', function(ev){
+	/* La fila entera del empleado es el botón. Los controles que viven
+	   dentro de una fila siguen mandando ellos. */
+	var fila = ev.target.closest('tr[data-abrir]');
+	if (fila && !ev.target.closest('button, input, select, a')){
+		fichaEmpleado(fila.dataset.abrir);
+		return;
+	}
 	var t = ev.target.closest('button');
 	if (!t) return;
 	if (t.dataset.ir){ estado.pantalla=t.dataset.ir; pintar(); return; }
@@ -1289,7 +1306,6 @@ document.addEventListener('click', function(ev){
 	if (t.id==='mes-ant'){ moverMes(-1); return; }
 	if (t.id==='mes-sig'){ moverMes(1); return; }
 	if (t.id==='nuevo-emp'){ fichaEmpleado(null); return; }
-	if (t.dataset.editar){ fichaEmpleado(t.dataset.editar); return; }
 	if (t.dataset.boleta){ verBoleta(t.dataset.boleta, t.dataset.l, estado.periodo, estado.q); return; }
 	if (t.id==='enviar-todas'){ enviarTodas(); return; }
 	if (t.id==='hoja-x'){ cerrarHoja(); return; }
@@ -1322,6 +1338,14 @@ document.addEventListener('click', function(ev){
 		};
 		inp.click(); return;
 	}
+});
+
+document.addEventListener('keydown', function(ev){
+	if (ev.key !== 'Enter' && ev.key !== ' ') return;
+	var fila = ev.target.closest && ev.target.closest('tr[data-abrir]');
+	if (!fila || ev.target !== fila) return;
+	ev.preventDefault();
+	fichaEmpleado(fila.dataset.abrir);
 });
 
 document.addEventListener('input', function(ev){

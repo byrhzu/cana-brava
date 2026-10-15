@@ -69,7 +69,11 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
 .sedes button:hover{background:var(--ctrl);color:var(--txt)}
 .sedes button[aria-pressed="true"]{background:var(--verde-suave);color:var(--verde-t);font-weight:600}
 .sedes .sede-todas{margin-bottom:.25rem}
-.sedes .sede-grupo{margin:.5rem 0 .1rem;padding:0 var(--e3);font-size:.73rem;color:var(--tenue)}
+.sedes .sede-marca{margin-top:.5rem;font-size:.8rem;font-weight:600;color:var(--txt2)}
+.sedes .sede-hija{padding-left:calc(var(--e3) + .85rem)}
+.sedes .sede-hija::before{content:"";position:absolute;left:var(--e3);top:50%;width:5px;height:1px;background:var(--linea)}
+.sedes .sede-hija{position:relative}
+.sedes .sede-hija[aria-pressed="true"]::before{background:var(--verde)}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav button{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;padding:.56rem var(--e3);border-radius:10px;color:var(--txt2);font-size:.9rem;transition:background .18s,color .18s}
 .nav button:hover{background:var(--ctrl);color:var(--txt)}
@@ -284,6 +288,21 @@ function cargar(){
 function guardar(){ try { localStorage.setItem(LLAVE, JSON.stringify(D)); } catch(e){} }
 cargar();
 
+/* Un empleado de ejemplo con salario de 450.000 para ver los numeros
+   andando. Se siembra una sola vez: si lo borras no vuelve. */
+if (!D.sembrado){
+	D.sembrado = true;
+	if (!D.empleados.some(function(e){ return e.id === 'ejemplo450'; })){
+		D.empleados.push({
+			id:'ejemplo450', localId:'cbgpl', nombre:'Ana Vargas Rojas',
+			cedula:'7-0123-0456', correo:'ana.vargas@ejemplo.cr', puesto:'Salonera',
+			fechaIngreso:'2025-03-01', salarioMensual:450000, cuenta:'CR05 0000 0000 0000 0000 00',
+			activo:true
+		});
+	}
+	guardar();
+}
+
 /* =============================================================
    2. EL CÁLCULO
    La CCSS y la renta son mensuales, así que se calculan sobre el mes
@@ -352,6 +371,7 @@ function calcular(emp, aj){
 var $ = function(s,c){ return (c||document).querySelector(s); };
 var col = function(n){ return '₡' + Math.round(n||0).toLocaleString('es-CR'); };
 var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
+function plural(n, uno, varios){ return n + ' ' + (n === 1 ? uno : varios); }
 var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'];
 function cabecera(titulo, sub){
 	return '<div class="saludo"><div><h1>'+titulo+'</h1>'+(sub?'<p>'+sub+'</p>':'')+'</div></div>';
@@ -403,6 +423,42 @@ function nombreLocal(l){
 	return l.nombre || ((l.grupo?l.grupo+' ':'') + (l.sede||'')).trim() || '—';
 }
 function localDe(id){ return D.locales.find(function(l){ return l.id===id; }) || {}; }
+
+/* El panel siempre mira un recorte: todas las sedes, un restaurante
+   completo (sus dos sedes) o una sola sede. Todo lo demas lee de aqui
+   y no vuelve a preguntar. estado.local guarda '_todos', 'g:<marca>'
+   o el id de un local. */
+function marcas(){
+	var g = [];
+	D.locales.filter(function(l){ return l.activo!==false; }).forEach(function(l){
+		if (l.grupo && g.indexOf(l.grupo) === -1) g.push(l.grupo);
+	});
+	return g;
+}
+function vistaMarca(){ return String(estado.local).indexOf('g:')===0 ? String(estado.local).slice(2) : null; }
+function unaSedeSola(){ return estado.local !== '_todos' && !vistaMarca(); }
+function idsEnVista(){
+	var act = D.locales.filter(function(l){ return l.activo!==false; });
+	var m = vistaMarca();
+	if (m) act = act.filter(function(l){ return l.grupo === m; });
+	else if (estado.local !== '_todos') act = act.filter(function(l){ return l.id === estado.local; });
+	return act.map(function(l){ return l.id; });
+}
+function tituloVista(){
+	var m = vistaMarca();
+	if (m){ var k = idsEnVista().length; return esc(m) + (k===1 ? '' : ' | las ' + k + ' sedes'); }
+	if (estado.local === '_todos') return 'Todas las sedes';
+	return esc(nombreLocal(localDe(estado.local)));
+}
+function pieSedes(){
+	if (unaSedeSola()) return 'en esta sede';
+	var k = idsEnVista().length;
+	return 'en ' + k + (k===1 ? ' sede' : ' sedes');
+}
+function empleadosEnVista(){
+	var ids = idsEnVista();
+	return D.empleados.filter(function(e){ return ids.indexOf(e.localId) !== -1; });
+}
 function per(p,l){
 	D.periodos[p] = D.periodos[p] || {};
 	D.periodos[p][l] = D.periodos[p][l] || { ajustes:{}, enviado:{} };
@@ -449,10 +505,12 @@ function selectorLocales(){
 		if (ex) ex.items.push(l); else grupos.push({ g:g, items:[l] });
 	});
 	grupos.forEach(function(gr){
-		if (gr.g) html += '<p class="sede-grupo">'+esc(gr.g)+'</p>';
+		if (gr.g) html += '<button class="sede-marca" type="button" data-local="g:'+esc(gr.g)+'"'
+			+ ' aria-pressed="'+(estado.local==='g:'+gr.g)+'">'+esc(gr.g)+'</button>';
 		html += gr.items.map(function(l){
 			var et = gr.g ? (l.sede || nombreLocal(l)) : nombreLocal(l);
-			return '<button type="button" data-local="'+l.id+'" aria-pressed="'+(estado.local===l.id)+'">'+esc(et)+'</button>';
+			return '<button type="button" class="'+(gr.g?'sede-hija':'')+'" data-local="'+l.id+'"'
+				+ ' aria-pressed="'+(estado.local===l.id)+'">'+esc(et)+'</button>';
 		}).join('');
 	});
 	return '<div class="sedes">'+html+'</div>';
@@ -461,7 +519,10 @@ function selectorLocales(){
 /* En el teléfono la barra lateral es una pastilla abajo y no cabe el
    selector, así que arriba del contenido va una tira horizontal. */
 function selectorLocalesMovil(){
-	var b = D.locales.filter(function(l){ return l.activo!==false; }).map(function(l){
+	var b = marcas().map(function(g){
+		return '<button type="button" data-local="g:'+esc(g)+'" aria-pressed="'+(estado.local==='g:'+g)+'">'+esc(g)+'</button>';
+	}).join('');
+	b += D.locales.filter(function(l){ return l.activo!==false; }).map(function(l){
 		return '<button type="button" data-local="'+l.id+'" aria-pressed="'+(estado.local===l.id)+'">'+esc(nombreLocal(l))+'</button>';
 	}).join('');
 	return '<div class="sedes-movil"><button type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Todas</button>'+b+'</div>';
@@ -474,9 +535,7 @@ function netoQuincenaAnterior(){
 		p = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
 		q = 2;
 	}
-	var locales = estado.local==='_todos'
-		? D.locales.filter(function(l){return l.activo!==false;}).map(function(l){return l.id;})
-		: [estado.local];
+	var locales = idsEnVista();
 	var t = 0;
 	locales.forEach(function(lid){
 		var pp = D.periodos[p] && D.periodos[p][lid];
@@ -490,9 +549,7 @@ function netoQuincenaAnterior(){
 }
 
 function pantallaQuincena(){
-	var locales = estado.local==='_todos'
-		? D.locales.filter(function(l){return l.activo!==false;}).map(function(l){return l.id;})
-		: [estado.local];
+	var locales = idsEnVista();
 
 	var filas='', tBruto=0, tDed=0, tNeto=0, tPat=0, n=0;
 	locales.forEach(function(lid){
@@ -502,7 +559,7 @@ function pantallaQuincena(){
 			tBruto+=q.bruto; tDed+=q.deducciones; tNeto+=q.neto; tPat+=c.costoPatronal/2; n++;
 			filas += '<tr data-emp="'+e.id+'" data-local="'+lid+'">'
 				+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')
-				+ (estado.local==='_todos' ? ' | '+esc(nombreLocal(localDe(lid))) : '')+'</small></td>'
+				+ (unaSedeSola() ? '' : ' | '+esc(nombreLocal(localDe(lid))))+'</small></td>'
 				+ '<td class="n">'+col(q.base)+'</td>'
 				+ '<td class="n"><input class="mini" type="number" min="0" step="0.5" data-campo="horasExtra" value="'+(q.horas||'')+'" placeholder="0" aria-label="Horas extra de '+esc(e.nombre)+'"></td>'
 				+ '<td class="n"><input class="mini" type="number" min="0" step="1000" data-campo="adelanto" value="'+(q.adelanto||'')+'" placeholder="0" aria-label="Adelanto de '+esc(e.nombre)+'"></td>'
@@ -519,7 +576,7 @@ function pantallaQuincena(){
 			+ '<th class="n">Horas extra</th><th class="n">Adelanto</th><th class="n">Bruto</th>'
 			+ '<th class="n">Deducciones</th><th class="n">Neto</th><th></th></tr></thead>'
 			+ '<tbody>'+filas+'</tbody>'
-			+ '<tfoot><tr><td>'+n+' empleados</td><td></td><td></td><td></td>'
+			+ '<tfoot><tr><td>'+plural(n,'empleado','empleados')+'</td><td></td><td></td><td></td>'
 			+ '<td class="n">'+col(tBruto)+'</td><td class="n">−'+col(tDed)+'</td>'
 			+ '<td class="n">'+col(tNeto)+'</td><td></td></tr></tfoot></table></div>'
 		: '<div class="vacio"><h3>Todavía no hay empleados aquí</h3>'
@@ -527,7 +584,7 @@ function pantallaQuincena(){
 
 	var hoyTxt = new Date().toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 	return '<div class="saludo"><div><h1>Planilla de '+nombreMes(estado.periodo).split(' de ')[0]+'</h1>'
-		+ '<p>'+(estado.local==='_todos' ? 'Todas las sedes' : esc(nombreLocal(localDe(estado.local))))+'</p></div>'
+		+ '<p>'+tituloVista()+'</p></div>'
 		+ '<div class="saludo-acc"><span class="fecha">'+hoyTxt.charAt(0).toUpperCase()+hoyTxt.slice(1)+'</span>'
 		+ '<button class="bt oscuro" type="button" id="exportar"><svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar</button></div></div>'
 		+ barraPeriodo()
@@ -535,15 +592,15 @@ function pantallaQuincena(){
 		+ cifra(I.billete,'Planilla a Pagar',col(tNeto), deltaHtml(tNeto, netoQuincenaAnterior()) + diasQuincena(estado.periodo, estado.q))
 		+ cifra(I.resta,'Deducciones',col(tDed),'')
 		+ cifra(I.empresa,'Costo para la Empresa',col(tBruto+tPat),'bruto + '+D.tasas.patronal+' % patronal')
-		+ cifra(I.gente,'Empleados',String(n), estado.local==='_todos'?'en las cuatro sedes':'en esta sede')
+		+ cifra(I.gente,'Empleados',String(n), pieSedes())
 		+ '</dl>'
 		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.lista)+'Detalle</h2>'
-		+ (n ? '<button class="bt fuerte" type="button" id="enviar-todas">Generar y enviar '+n+' boletas</button>' : '')
+		+ (n ? '<button class="bt fuerte" type="button" id="enviar-todas">Generar y enviar '+plural(n,'boleta','boletas')+'</button>' : '')
 		+ '</div>'+cuerpo+'</section>';
 }
 
 function pantallaEmpleados(){
-	var lista = estado.local==='_todos' ? D.empleados : D.empleados.filter(function(e){ return e.localId===estado.local; });
+	var lista = empleadosEnVista();
 	var filas = lista.map(function(e){
 		return '<tr>'
 			+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')+'</small></td>'
@@ -555,8 +612,8 @@ function pantallaEmpleados(){
 			+ '<td><button class="bt chico" type="button" data-editar="'+e.id+'">Abrir</button></td></tr>';
 	}).join('');
 
-	return cabecera('Empleados', D.empleados.filter(function(e){return e.activo!==false;}).length+' activos')
-		+ '<section class="tarj"><div class="tarj-cab"><h2>'+lista.length+' en total</h2>'
+	return cabecera('Empleados', tituloVista())
+		+ '<section class="tarj"><div class="tarj-cab"><h2>'+plural(lista.length,'empleado','empleados')+'</h2>'
 		+ '<button class="bt fuerte" type="button" id="nuevo-emp">Agregar empleado</button></div>'
 		+ (lista.length
 			? '<div class="tabla-env"><table><thead><tr><th>Empleado</th><th>Puesto</th><th>Local</th>'
@@ -567,9 +624,10 @@ function pantallaEmpleados(){
 
 function pantallaHistorial(){
 	var filas = Object.keys(D.periodos).sort().reverse().map(function(p){
+		var dentro = idsEnVista();
 		return Object.keys(D.periodos[p]).map(function(lid){
 			var l = D.locales.find(function(x){return x.id===lid;});
-			if (!l) return '';
+			if (!l || dentro.indexOf(lid) === -1) return '';
 			var pp = D.periodos[p][lid];
 			return [1,2].map(function(q){
 				/* Solo aparece si esa quincena ya tuvo movimiento: boletas
@@ -592,7 +650,7 @@ function pantallaHistorial(){
 		}).join('');
 	}).join('');
 
-	return cabecera('Historial','Quincenas con movimiento')
+	return cabecera('Historial', tituloVista())
 		+ '<section class="tarj">'
 		+ (filas ? '<div class="tabla-env"><table><thead><tr><th>Período</th><th class="n">Neto pagado</th><th>Boletas</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
 			: '<div class="vacio"><h3>Todavía no hay quincenas con movimiento</h3></div>')
@@ -600,18 +658,19 @@ function pantallaHistorial(){
 }
 
 function pantallaReportes(){
-	var filas = D.locales.filter(function(l){return l.activo!==false;}).map(function(l){
+	var dentro = idsEnVista();
+	var filas = D.locales.filter(function(l){ return dentro.indexOf(l.id) !== -1; }).map(function(l){
 		var emps = empleadosDe(l.id), b=0,d=0,nt=0,pat=0;
 		emps.forEach(function(e){
 			var c = calcular(e, ajusteDe(estado.periodo, l.id, e.id));
 			b+=c.brutoMes; d+=c.ccssMes+c.rentaMes; nt+=c.netoMes; pat+=c.costoPatronal;
 		});
-		return '<tr><td class="nombre">'+esc(nombreLocal(l))+'<small>'+emps.length+' empleados</small></td>'
+		return '<tr><td class="nombre">'+esc(nombreLocal(l))+'<small>'+plural(emps.length,'empleado','empleados')+'</small></td>'
 			+ '<td class="n">'+col(b)+'</td><td class="n">'+col(d)+'</td><td class="n">'+col(nt)+'</td>'
 			+ '<td class="n">'+col(pat)+'</td><td class="n"><strong>'+col(b+pat)+'</strong></td></tr>';
 	}).join('');
 
-	return cabecera('Reportes', nombreMes(estado.periodo))
+	return cabecera('Reportes', nombreMes(estado.periodo) + ' | ' + tituloVista())
 		+ barraPeriodo().replace('<div class="quincenas">','<div class="quincenas" hidden>')
 		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.empresa)+'Costo del mes por local</h2></div>'
 		+ '<div class="tabla-env"><table><thead><tr><th>Local</th><th class="n">Bruto</th><th class="n">Deducciones</th>'
@@ -623,18 +682,27 @@ function pantallaReportes(){
 
 function pantallaAjustes(){
 	var t = D.tasas;
-	var locales = D.locales.map(function(l){
-		return '<tr><td class="nombre">'+esc(nombreLocal(l))+'</td>'
+	/* Ordenados por restaurante para que la tabla se lea igual que el
+	   selector de la izquierda. */
+	var orden = D.locales.slice().sort(function(a,b){
+		var ga = (a.grupo||a.nombre||'').toLowerCase(), gb = (b.grupo||b.nombre||'').toLowerCase();
+		if (ga !== gb) return ga < gb ? -1 : 1;
+		return (a.sede||'').toLowerCase() < (b.sede||'').toLowerCase() ? -1 : 1;
+	});
+	var locales = orden.map(function(l){
+		return '<tr><td class="nombre">'+esc(l.grupo || l.nombre || '—')+'</td>'
+			+ '<td>'+esc(l.sede || '—')+'</td>'
 			+ '<td>'+(l.activo===false?'<span class="et off">Inactivo</span>':'<span class="et ok">Activo</span>')+'</td>'
 			+ '<td class="n">'+D.empleados.filter(function(e){return e.localId===l.id;}).length+'</td>'
-			+ '<td><button class="bt chico" type="button" data-ren="'+l.id+'">Renombrar</button> '
+			+ '<td><button class="bt chico" type="button" data-ren="'+l.id+'">Editar</button> '
 			+ '<button class="bt chico" type="button" data-local-toggle="'+l.id+'">'+(l.activo===false?'Activar':'Desactivar')+'</button></td></tr>';
 	}).join('');
 
 	return cabecera('Ajustes','')
 		+ '<section class="tarj"><div class="tarj-cab"><h2>Locales</h2>'
 		+ '<button class="bt" type="button" id="nuevo-local">Agregar local</button></div>'
-		+ '<div class="tabla-env"><table><thead><tr><th>Nombre</th><th>Estado</th><th class="n">Empleados</th><th></th></tr></thead>'
+		+ '<div class="tabla-env"><table><thead><tr><th>Restaurante</th><th>Sede</th><th>Estado</th>'
+		+ '<th class="n">Empleados</th><th></th></tr></thead>'
 		+ '<tbody>'+locales+'</tbody></table></div></section>'
 
 		+ '<section class="tarj"><div class="tarj-cab"><h2>Porcentajes del año</h2></div>'
@@ -657,10 +725,45 @@ function num(id,et,v){ return '<label class="campo"><span>'+et+'</span><input ty
 function abrirHoja(t,h){ $('#hoja-tit').textContent=t; $('#hoja-cuerpo').innerHTML=h; $('#hoja').classList.add('abierta'); $('#velo').classList.add('abierto'); }
 function cerrarHoja(){ $('#hoja').classList.remove('abierta'); $('#velo').classList.remove('abierto'); }
 
+/* El local se guarda partido en dos: el restaurante (la marca) y la
+   sede. Asi el selector de la izquierda puede agrupar solo, y sumar
+   una sede nueva a un restaurante que ya existe no cuesta nada. */
+function fichaLocal(id){
+	var l = id ? D.locales.find(function(x){return x.id===id;}) : null;
+	var nuevo = !l;
+	l = l || { id:'l'+Date.now(), grupo:'', sede:'', activo:true };
+
+	var sug = marcas().map(function(g){ return '<option value="'+esc(g)+'"></option>'; }).join('');
+
+	abrirHoja(nuevo ? 'Nuevo local' : nombreLocal(l),
+		'<div class="rejilla">'
+		+ '<label class="campo"><span>Restaurante</span>'
+		+ '<input id="l-grupo" list="marcas-sug" value="'+esc(l.grupo || l.nombre || '')+'" placeholder="Caña Brava"></label>'
+		+ '<datalist id="marcas-sug">'+sug+'</datalist>'
+		+ '<label class="campo"><span>Sede</span>'
+		+ '<input id="l-sede" value="'+esc(l.sede||'')+'" placeholder="Guápiles"></label>'
+		+ '<label class="campo"><span>Estado</span><select id="l-activo">'
+		+ '<option value="1"'+(l.activo!==false?' selected':'')+'>Activo</option>'
+		+ '<option value="0"'+(l.activo===false?' selected':'')+'>Inactivo</option></select></label>'
+		+ '</div>'
+		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="l-guardar">Guardar</button>'
+		+ '<button class="bt" type="button" id="l-cancelar">Cancelar</button></div>');
+
+	$('#l-cancelar').onclick = cerrarHoja;
+	$('#l-guardar').onclick = function(){
+		var g = $('#l-grupo').value.trim(), sd = $('#l-sede').value.trim();
+		if (!g){ $('#l-grupo').focus(); return; }
+		l.grupo = g; l.sede = sd; l.activo = $('#l-activo').value==='1';
+		delete l.nombre;
+		if (nuevo) D.locales.push(l);
+		guardar(); cerrarHoja(); pintar();
+	};
+}
+
 function fichaEmpleado(id){
 	var e = id ? D.empleados.find(function(x){return x.id===id;}) : null;
 	var nuevo = !e;
-	e = e || { id:'e'+Date.now(), localId: estado.local==='_todos'?D.locales[0].id:estado.local,
+	e = e || { id:'e'+Date.now(), localId: unaSedeSola()?estado.local:(idsEnVista()[0]||D.locales[0].id),
 		nombre:'', cedula:'', correo:'', puesto:'', fechaIngreso:'', salarioMensual:0, cuenta:'', activo:true };
 
 	var ops = D.locales.map(function(l){ return '<option value="'+l.id+'"'+(l.id===e.localId?' selected':'')+'>'+esc(nombreLocal(l))+'</option>'; }).join('');
@@ -819,9 +922,7 @@ function pdfBoleta(b, descargar){
 }
 
 function enviarTodas(){
-	var locales = estado.local==='_todos'
-		? D.locales.filter(function(l){return l.activo!==false;}).map(function(l){return l.id;})
-		: [estado.local];
+	var locales = idsEnVista();
 	var lista = [];
 	locales.forEach(function(lid){
 		empleadosDe(lid).forEach(function(e){
@@ -832,7 +933,7 @@ function enviarTodas(){
 	if (!lista.length) return;
 
 	var sinCorreo = lista.filter(function(b){ return !b.emp.correo; });
-	abrirHoja('Enviar ' + lista.length + ' boletas',
+	abrirHoja('Enviar ' + plural(lista.length,'boleta','boletas'),
 		'<p style="margin:0 0 var(--e4);color:var(--txt2)">Quincena '+estado.q+' | '+diasQuincena(estado.periodo,estado.q)+'</p>'
 		+ (sinCorreo.length ? '<div class="aviso">'+sinCorreo.length+' sin correo: '+sinCorreo.map(function(b){return esc(b.emp.nombre);}).join(', ')+'</div>' : '')
 		+ '<div class="tabla-env" style="margin:0;padding:0"><table style="min-width:0"><thead><tr><th>Empleado</th><th class="n">Neto</th><th>Correo</th></tr></thead><tbody>'
@@ -842,13 +943,12 @@ function enviarTodas(){
 				+ '<td>'+(b.emp.correo?esc(b.emp.correo):'<span class="et esp">falta</span>')+'</td></tr>';
 		}).join('')
 		+ '</tbody></table></div>'
-		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="bajar-todas">Descargar los '+lista.length+' PDF</button>'
+		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="bajar-todas">'+(lista.length===1?'Descargar el PDF':'Descargar los '+lista.length+' PDF')+'</button>'
 		+ '<button class="bt" type="button" id="e-cerrar">Cerrar</button></div>');
 
 	$('#e-cerrar').onclick = cerrarHoja;
 	$('#bajar-todas').onclick = function(){
 		lista.forEach(function(b,i){ setTimeout(function(){ pdfBoleta(b, true); }, i*260); });
-		var pp = per(estado.periodo, estado.local==='_todos'?locales[0]:estado.local);
 		locales.forEach(function(lid){ var p=per(estado.periodo,lid); p.enviado=p.enviado||{}; p.enviado['q'+estado.q]=new Date().toISOString(); });
 		guardar();
 		setTimeout(function(){ cerrarHoja(); pintar(); }, lista.length*260 + 400);
@@ -861,9 +961,12 @@ function enviarTodas(){
 var PANTALLAS = { quincena:pantallaQuincena, empleados:pantallaEmpleados, historial:pantallaHistorial, reportes:pantallaReportes, ajustes:pantallaAjustes };
 
 function pintar(){
+	/* Si el recorte apunta a algo que ya no existe (se desactivo la sede,
+	   se renombro el restaurante), vuelve a Todas en vez de quedar vacio. */
+	if (estado.local !== '_todos' && !idsEnVista().length) estado.local = '_todos';
 	$('#sedes-env').innerHTML = selectorLocales();
 	var ce = $('#cuenta-emp');
-	if (ce) ce.textContent = (estado.local==='_todos' ? D.empleados.filter(function(e){return e.activo!==false;}) : empleadosDe(estado.local)).length || '';
+	if (ce) ce.textContent = empleadosEnVista().filter(function(e){return e.activo!==false;}).length || '';
 	$('#lienzo').innerHTML = selectorLocalesMovil() + PANTALLAS[estado.pantalla]();
 	Array.prototype.forEach.call(document.querySelectorAll('#nav button'), function(b){
 		if (b.dataset.ir===estado.pantalla) b.setAttribute('aria-current','page');
@@ -896,22 +999,13 @@ document.addEventListener('click', function(ev){
 		if (b) pdfBoleta(b, true);
 		return;
 	}
-	if (t.dataset.ren){
-		var l = D.locales.find(function(x){return x.id===t.dataset.ren;});
-		var n = prompt('Nombre del local', nombreLocal(l));
-		if (n && n.trim()){ l.nombre=n.trim(); l.grupo=null; guardar(); pintar(); }
-		return;
-	}
+	if (t.dataset.ren){ fichaLocal(t.dataset.ren); return; }
 	if (t.dataset.localToggle){
 		var l2 = D.locales.find(function(x){return x.id===t.dataset.localToggle;});
 		if (l2){ l2.activo = l2.activo===false; guardar(); pintar(); }
 		return;
 	}
-	if (t.id==='nuevo-local'){
-		var nn = prompt('Nombre del local');
-		if (nn && nn.trim()){ D.locales.push({id:'l'+Date.now(), nombre:nn.trim(), activo:true}); guardar(); pintar(); }
-		return;
-	}
+	if (t.id==='nuevo-local'){ fichaLocal(null); return; }
 	if (t.id==='exportar'){
 		var a2 = document.createElement('a');
 		a2.href = 'data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(D,null,1));

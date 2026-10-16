@@ -188,6 +188,8 @@ tbody tr.inactiva td.nombre{font-weight:400}
 .pendientes li{margin:.1rem 0}
 .acciones{display:flex;gap:.45rem;flex-wrap:wrap}
 .acciones .bt .et{margin-left:.35rem;font-size:.72rem}
+.periodo button[disabled]{opacity:.35;cursor:default}
+.periodo button[disabled]:hover{background:none;color:var(--txt2)}
 .pie-tarj{margin:var(--e3) 0 0;font-size:.82rem;color:var(--tenue)}
 
 .fecha-ctrl{position:relative}
@@ -903,6 +905,22 @@ function empleadosEnVista(){
 	var ids = idsEnVista();
 	return D.empleados.filter(function(e){ return ids.indexOf(e.localId) !== -1; });
 }
+/* per() crea el registro del período: solo se llama cuando de verdad
+   hay algo que guardar. Para dibujar se usa perLeer() y ajusteLeer(),
+   que devuelven lo que haya o un vacío de paso, sin tocar los datos.
+   Antes bastaba con asomarse a un mes para que quedara escrito. */
+var VACIO = { ajustes:{}, enviado:{} };
+var AJUSTE_VACIO = { q1:{}, q2:{} };
+
+function perLeer(p,l){
+	return (D.periodos[p] && D.periodos[p][l]) || VACIO;
+}
+function ajusteLeer(p,l,empId){
+	var pp = perLeer(p,l);
+	var a = pp.ajustes && pp.ajustes[empId];
+	if (!a) return AJUSTE_VACIO;
+	return { q1: a.q1 || {}, q2: a.q2 || {} };
+}
 function per(p,l){
 	D.periodos[p] = D.periodos[p] || {};
 	D.periodos[p][l] = D.periodos[p][l] || { ajustes:{}, enviado:{} };
@@ -915,6 +933,25 @@ function ajusteDe(p,l,empId){
 	if (!pp.ajustes[empId].q2) pp.ajustes[empId].q2 = {};
 	return pp.ajustes[empId];
 }
+
+/* -------------------------------------------------------------
+   HASTA DÓNDE SE PUEDE LLEGAR
+
+   La quincena 1 se habilita el día 1 y la 2 el día 15. Más allá de eso
+   no hay nada que hacer: el panel guarda lo que pasó, no adelanta meses
+   que todavía no llegaron.
+   ------------------------------------------------------------- */
+function mesDeHoy(){
+	var d = hoyFecha();
+	return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+function quincenaHabilitada(periodo, q){
+	var tope = mesDeHoy();
+	if (periodo < tope) return true;
+	if (periodo > tope) return false;
+	return q === 1 ? true : hoyFecha().getDate() >= 15;
+}
+function periodoHabilitado(periodo){ return periodo <= mesDeHoy(); }
 
 /* -------------------------------------------------------------
    EL ESTADO DE UNA QUINCENA
@@ -961,15 +998,19 @@ function anotar(periodo, lid, texto){
    4. PANTALLAS
    ============================================================= */
 function barraPeriodo(){
+	var haySiguiente = estado.periodo < mesDeHoy();
+	var q2 = quincenaHabilitada(estado.periodo, 2);
 	return '<div class="periodo">'
 		+ '<div class="mes-sel">'
 		+ '<button class="flecha" type="button" id="mes-ant" aria-label="Mes anterior">‹</button>'
 		+ '<b>'+nombreMes(estado.periodo)+'</b>'
-		+ '<button class="flecha" type="button" id="mes-sig" aria-label="Mes siguiente">›</button>'
+		+ '<button class="flecha" type="button" id="mes-sig" aria-label="Mes siguiente"'
+		+ (haySiguiente ? '' : ' disabled')+'>›</button>'
 		+ '</div>'
 		+ '<div class="quincenas">'
 		+ '<button type="button" data-q="1" aria-pressed="'+(estado.q===1)+'">Quincena 1</button>'
-		+ '<button type="button" data-q="2" aria-pressed="'+(estado.q===2)+'">Quincena 2</button>'
+		+ '<button type="button" data-q="2" aria-pressed="'+(estado.q===2)+'"'
+		+ (q2 ? '' : ' disabled title="Se abre el 15"')+'>Quincena 2</button>'
 		+ '<button type="button" data-q="mes" aria-pressed="'+(estado.q==='mes')+'">Mes</button>'
 		+ '</div>'
 		+ '<div class="buscador"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'
@@ -1054,7 +1095,7 @@ function pantallaMes(){
 	var filas='', tBruto=0, tDed=0, tNeto=0, tPat=0, n=0;
 	locales.forEach(function(lid){
 		empleadosDe(lid).filter(coincide).forEach(function(e){
-			var c = calcular(e, ajusteDe(estado.periodo, lid, e.id), estado.periodo);
+			var c = calcular(e, ajusteLeer(estado.periodo, lid, e.id), estado.periodo);
 			var bruto = c.q1.bruto + c.q2.bruto;
 			var ded = c.q1.deducciones + c.q2.deducciones;
 			var neto = c.q1.neto + c.q2.neto;
@@ -1085,6 +1126,7 @@ function pantallaMes(){
 
 	var e1 = estadoQuincena(estado.periodo, 1, locales);
 	var e2 = estadoQuincena(estado.periodo, 2, locales);
+	var hayQ2 = quincenaHabilitada(estado.periodo, 2);
 	var hoyTxt = new Date().toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
 	return cabecera('Planilla de '+nombreMes(estado.periodo).split(' de ')[0],
@@ -1099,7 +1141,8 @@ function pantallaMes(){
 		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.lista)+'Resumen del mes</h2>'
 		+ '<div class="acciones">'
 		+ '<button class="bt" type="button" data-q="1">Quincena 1 '+etiquetaEstado(e1)+'</button>'
-		+ '<button class="bt" type="button" data-q="2">Quincena 2 '+etiquetaEstado(e2)+'</button>'
+		+ (hayQ2 ? '<button class="bt" type="button" data-q="2">Quincena 2 '+etiquetaEstado(e2)+'</button>'
+			: '<span class="et off">Quincena 2 abre el 15</span>')
 		+ '</div></div>'+cuerpo+'</section>'
 		+ bitacoraDelPeriodo(locales);
 }
@@ -1114,7 +1157,7 @@ function pantallaQuincena(){
 	var filas='', tBruto=0, tDed=0, tNeto=0, tPat=0, n=0;
 	locales.forEach(function(lid){
 		empleadosDe(lid).filter(coincide).forEach(function(e){
-			var c = calcular(e, ajusteDe(estado.periodo, lid, e.id), estado.periodo);
+			var c = calcular(e, ajusteLeer(estado.periodo, lid, e.id), estado.periodo);
 			var q = estado.q===1 ? c.q1 : c.q2;
 			tBruto+=q.bruto; tDed+=q.deducciones; tNeto+=q.neto; tPat+=c.costoPatronal/2; n++;
 			filas += '<tr data-emp="'+e.id+'" data-local="'+lid+'">'
@@ -1249,18 +1292,23 @@ function pantallaHistorial(){
 
 	/* Los meses que ya tienen movimiento, más el que se está viendo, para
 	   que el mes en curso aparezca aunque todavía no se haya tocado. */
-	var meses = Object.keys(D.periodos);
-	if (meses.indexOf(estado.periodo) === -1) meses.push(estado.periodo);
+	/* Solo los meses que de verdad tienen algo guardado, más el que se
+	   está viviendo. El resto son cuentas que nadie hizo. */
+	var meses = Object.keys(D.periodos).filter(function(pe){
+		return periodoHabilitado(pe) && locales.some(function(lid){ return D.periodos[pe][lid]; });
+	});
+	if (meses.indexOf(mesDeHoy()) === -1) meses.push(mesDeHoy());
 	meses = meses.sort().reverse();
 
 	var filas = meses.map(function(pe){
 		return [1,2].map(function(q){
+			if (!quincenaHabilitada(pe, q)) return '';
 			var est = estadoQuincena(pe, q, locales);
 			var tot = 0, movida = false;
 			locales.forEach(function(lid){
-				var pp = D.periodos[pe] && D.periodos[pe][lid];
+				var pp = perLeer(pe, lid);
 				empleadosDe(lid).forEach(function(e){
-					var c = calcular(e, (pp && pp.ajustes && pp.ajustes[e.id]) || {}, pe);
+					var c = calcular(e, ajusteLeer(pe, lid, e.id), pe);
 					tot += q===1 ? c.q1.neto : c.q2.neto;
 				});
 				if (pp && pp.ajustes) movida = movida || Object.keys(pp.ajustes).some(function(k){
@@ -1268,7 +1316,12 @@ function pantallaHistorial(){
 					return a && (a.horasExtra || a.adelanto || a.otras);
 				});
 			});
-			if (est.estado === 'abierta' && !movida && !tot) return '';
+			/* Una quincena pasada solo es historia si se cerró o si alguien
+			   le escribió algo. La del mes en curso siempre se muestra,
+			   porque es la que se está armando. */
+			var cerrada = est.estado === 'cerrada' || est.estado === 'parcial';
+			var enCurso = pe === mesDeHoy();
+			if (!cerrada && !movida && !enCurso) return '';
 			var actual = pe === estado.periodo && q === estado.q;
 			if (estado.q === 'mes' && pe === estado.periodo) actual = false;
 			return '<tr class="abrible'+(actual?' aqui':'')+'" tabindex="0" data-periodo="'+pe+'|'+q+'">'
@@ -1292,7 +1345,7 @@ function pantallaReportes(){
 	var filas = D.locales.filter(function(l){ return dentro.indexOf(l.id) !== -1; }).map(function(l){
 		var emps = empleadosDe(l.id), b=0,d=0,nt=0,pat=0;
 		emps.forEach(function(e){
-			var c = calcular(e, ajusteDe(estado.periodo, l.id, e.id), estado.periodo);
+			var c = calcular(e, ajusteLeer(estado.periodo, l.id, e.id), estado.periodo);
 			b+=c.brutoMes; d+=c.ccssMes+c.rentaMes; nt+=c.netoMes; pat+=c.costoPatronal;
 		});
 		return '<tr><td class="nombre">'+esc(nombreLocal(l))+'<small>'+plural(emps.length,'empleado','empleados')+'</small></td>'
@@ -1317,7 +1370,7 @@ function lineasSicere(periodo, ids){
 	var filas = [];
 	ids.forEach(function(lid){
 		empleadosDe(lid).forEach(function(e){
-			var c = calcular(e, ajusteDe(periodo, lid, e.id), periodo);
+			var c = calcular(e, ajusteLeer(periodo, lid, e.id), periodo);
 			var a1 = ausenciaEnQuincena(e, periodo, 1), a2 = ausenciaEnQuincena(e, periodo, 2);
 			var porTipo = {};
 			a1.lineas.concat(a2.lineas).forEach(function(l){ porTipo[l.tipo] = (porTipo[l.tipo]||0) + l.dias; });
@@ -1670,14 +1723,14 @@ function fichaEmpleado(id){
 	var panelVac = '<div class="boleta">'
 		+ '<div class="enc"><b>'+textoAntiguedad(v.antiguedad)+' en la empresa</b>'
 		+ '<span>'+(e.fechaIngreso ? 'Ingresó el '+fechaCorta(e.fechaIngreso) : 'Falta la fecha de ingreso')+'</span>'
-		+ '<span>'+plural(v.meses,'mes cumplido','meses cumplidos')+' | el día vale '+col(v.valorDia)+'</span></div>'
+		+ '<span>'+plural(v.meses,'mes cumplido','meses cumplidos')+'</span></div>'
 		+ '<div class="fila"><span>Vacaciones acumuladas</span><span>'+nDias(v.ganados)+' días</span></div>'
 		+ '<div class="fila"><span>Disfrutadas</span><span class="resta">−'+nDias(v.tomados)+' días</span></div>'
 		+ (v.programados ? '<div class="fila suave"><span>Programadas, todavía sin disfrutar</span>'
 			+ '<span>'+nDias(v.programados)+' días</span></div>' : '')
 		+ (v.mesesSinGoce ? '<div class="fila suave"><span>Meses sin goce que no acumulan</span>'
 			+ '<span>'+v.mesesSinGoce+'</span></div>' : '')
-		+ '<div class="fila total"><span>Saldo</span><span>'+nDias(v.saldo)+' días | '+col(v.saldo * v.valorDia)+'</span></div>'
+		+ '<div class="fila total"><span>Saldo</span><span>'+nDias(v.saldo)+' días</span></div>'
 		+ '</div>'
 		+ '<h3>Registrar una ausencia</h3>'
 		+ '<div class="rejilla">'
@@ -1704,7 +1757,7 @@ function fichaEmpleado(id){
 	Object.keys(D.periodos).sort().reverse().forEach(function(pe){
 		var pp = D.periodos[pe][e.localId];
 		if (!pp || !pp.ajustes) return;
-		var c = calcular(e, ajusteDe(pe, e.localId, e.id), pe);
+		var c = calcular(e, ajusteLeer(pe, e.localId, e.id), pe);
 		[1,2].forEach(function(q){
 			var qq = q===1?c.q1:c.q2;
 			if (!qq.neto) return;
@@ -1846,7 +1899,7 @@ function fichaEmpleado(id){
 function datosBoleta(empId, localId, periodo, q){
 	var e = D.empleados.find(function(x){return x.id===empId;});
 	if (!e) return null;
-	var c = calcular(e, ajusteDe(periodo, localId, empId), periodo);
+	var c = calcular(e, ajusteLeer(periodo, localId, empId), periodo);
 	return { emp:e, local:localDe(localId), q:q===1?c.q1:c.q2, periodo:periodo, nq:q };
 }
 
@@ -2081,6 +2134,9 @@ function pintar(){
 	/* Si el recorte apunta a algo que ya no existe (se desactivo la sede,
 	   se renombro el restaurante), vuelve a Todas en vez de quedar vacio. */
 	if (estado.local !== '_todos' && !eligiendo() && !idsEnVista().length) estado.local = '_todos';
+	/* Nunca dejar la vista parada en un período que todavía no llegó. */
+	if (!periodoHabilitado(estado.periodo)) estado.periodo = mesDeHoy();
+	if (estado.q !== 'mes' && !quincenaHabilitada(estado.periodo, estado.q)) estado.q = 1;
 	var ce = $('#cuenta-emp');
 	if (ce) ce.textContent = empleadosEnVista().filter(function(e){return e.activo!==false;}).length || '';
 	$('#lienzo').innerHTML = PANTALLAS[estado.pantalla]();
@@ -2091,8 +2147,10 @@ function pintar(){
 	window.scrollTo(0,0);
 }
 function moverMes(n){
-	var a=estado.periodo.split('-'), d=new Date(Number(a[0]), Number(a[1])-1+n, 1);
-	estado.periodo = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+	var a = estado.periodo.split('-'), d = new Date(Number(a[0]), Number(a[1])-1+n, 1);
+	var destino = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+	if (!periodoHabilitado(destino)) return;
+	estado.periodo = destino;
 	pintar();
 }
 
@@ -2152,7 +2210,11 @@ document.addEventListener('click', function(ev){
 		});
 		pintar(); return;
 	}
-	if (t.dataset.q){ estado.q = t.dataset.q==='mes' ? 'mes' : Number(t.dataset.q); estado.pantalla='quincena'; pintar(); return; }
+	if (t.dataset.q){
+		var destino = t.dataset.q==='mes' ? 'mes' : Number(t.dataset.q);
+		if (destino !== 'mes' && !quincenaHabilitada(estado.periodo, destino)) return;
+		estado.q = destino; estado.pantalla='quincena'; pintar(); return;
+	}
 	if (t.id==='mes-ant'){ moverMes(-1); return; }
 	if (t.id==='mes-sig'){ moverMes(1); return; }
 	if (t.id==='nuevo-emp'){ fichaEmpleado(null); return; }
@@ -2261,8 +2323,9 @@ document.addEventListener('input', function(ev){
 				guardar();
 			}
 			pintar();
+			/* Un input numérico no admite setSelectionRange: basta el foco. */
 			var nv = document.querySelector('tr[data-emp="'+emp+'"] input[data-campo="'+campo+'"]');
-			if (nv){ nv.focus(); nv.setSelectionRange(nv.value.length, nv.value.length); }
+			if (nv) nv.focus();
 		}, 700);
 		return;
 	}

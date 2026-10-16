@@ -63,25 +63,6 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
 .marca .caja{background:var(--verde-marca);border-radius:10px;padding:7px;display:grid;place-items:center}
 .marca img{height:19px;width:auto}
 .marca b{font-weight:600;font-size:1.02rem}
-.sedes-env{padding-bottom:var(--e3);margin-bottom:var(--e3)}
-.sedes{display:flex;flex-direction:column;gap:1px}
-.sedes button{text-align:left;padding:.44rem var(--e3);border-radius:10px;font-size:.87rem;color:var(--txt2);transition:background .18s,color .18s}
-.sedes button:hover{background:var(--ctrl);color:var(--txt)}
-.sedes button[aria-pressed="true"]{background:var(--verde-suave);color:var(--verde-t);font-weight:600}
-.sedes-par{display:flex;gap:4px;margin-bottom:.45rem}
-.sedes .sedes-par button{flex:1;text-align:center;padding:.44rem .3rem;background:var(--sup2)}
-.sedes .sedes-par button[aria-pressed="true"]{background:var(--verde-suave);color:var(--verde-t)}
-.sedes .marcable{position:relative;padding-left:calc(var(--e3) + 1.4rem)}
-.sedes .marcable::before{content:"";position:absolute;left:var(--e3);top:50%;transform:translateY(-50%);
-	width:14px;height:14px;border-radius:4px;border:1.5px solid var(--linea);background:var(--sup)}
-.sedes .marcable[aria-pressed="true"]{background:none;color:var(--txt);font-weight:500}
-.sedes .marcable[aria-pressed="true"]::before{background:var(--verde);border-color:var(--verde)}
-.sedes .marcable[aria-pressed="true"]::after{content:"";position:absolute;left:calc(var(--e3) + 4.5px);top:50%;
-	width:4px;height:7px;margin-top:-5px;border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(45deg)}
-.sedes .sede-marca{margin-top:.5rem;font-size:.8rem;font-weight:600;color:var(--txt2)}
-.sedes .sede-hija{position:relative;padding-left:calc(var(--e3) + .85rem)}
-.sedes .sede-hija::before{content:"";position:absolute;left:var(--e3);top:50%;width:5px;height:1px;background:var(--linea)}
-.sedes .sede-hija[aria-pressed="true"]::before{background:var(--verde)}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav button{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;padding:.56rem var(--e3);border-radius:10px;color:var(--txt2);font-size:.9rem;transition:background .18s,color .18s}
 .nav button:hover{background:var(--ctrl);color:var(--txt)}
@@ -96,6 +77,39 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
 .saludo{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--e4);flex-wrap:wrap;margin-bottom:var(--e5)}
 .saludo h1{font-size:1.62rem}
 .saludo p{margin:.15rem 0 0;color:var(--tenue);font-size:.88rem}
+
+/* El nombre de la sede es el control: se lee y se toca en el mismo
+   lugar, y el panel se descuelga de ahí. */
+.sede-sel{position:relative;margin-top:.3rem}
+.sede-sel > button{display:inline-flex;align-items:center;gap:.3rem;padding:.26rem .5rem .26rem .62rem;
+	margin-left:-.62rem;border-radius:999px;color:var(--txt2);font-size:.9rem;transition:background .15s}
+.sede-sel > button:hover{background:var(--ctrl);color:var(--txt)}
+.sede-sel > button[aria-expanded="true"]{background:var(--verde-suave);color:var(--verde-t)}
+.sede-sel > button svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;
+	stroke-linecap:round;stroke-linejoin:round;transition:transform .18s}
+.sede-sel > button[aria-expanded="true"] svg{transform:rotate(180deg)}
+
+.panel-sede{position:absolute;top:calc(100% + 6px);left:-.62rem;z-index:40;min-width:244px;
+	background:var(--sup);border-radius:16px;padding:6px;
+	box-shadow:0 14px 34px rgba(20,26,18,.14);animation:caer .16s ease}
+@keyframes caer{from{opacity:0;transform:translateY(-5px)}}
+.sede-op{display:block;width:100%;text-align:left;padding:.44rem .7rem;border-radius:10px;
+	font-size:.87rem;color:var(--txt2);transition:background .15s,color .15s}
+.sede-op:hover{background:var(--ctrl);color:var(--txt)}
+.sede-op[aria-pressed="true"]{background:var(--verde-suave);color:var(--verde-t);font-weight:600}
+.panel-sede .sede-marca{margin-top:.3rem;font-weight:600;color:var(--txt2)}
+.panel-sede .sede-hija{position:relative;padding-left:1.6rem}
+.panel-sede .sede-hija::before{content:"";position:absolute;left:.78rem;top:50%;width:5px;height:1px;background:var(--linea)}
+.panel-sede .sede-hija[aria-pressed="true"]::before{background:var(--verde)}
+.panel-sede .marcable{padding-left:2.1rem}
+.panel-sede .marcable::before{content:"";position:absolute;left:.7rem;top:50%;transform:translateY(-50%);
+	width:14px;height:14px;border-radius:4px;border:1.5px solid var(--linea);background:var(--sup)}
+.panel-sede .marcable{position:relative}
+.panel-sede .marcable[aria-pressed="true"]{background:none;color:var(--txt);font-weight:500}
+.panel-sede .marcable[aria-pressed="true"]::before{background:var(--verde);border-color:var(--verde)}
+.panel-sede .marcable[aria-pressed="true"]::after{content:"";position:absolute;left:1.0rem;top:50%;
+	width:4px;height:7px;margin-top:-5px;border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(45deg)}
+.sede-pie{display:flex;justify-content:flex-end;padding:.35rem .25rem .1rem;margin-top:.25rem;border-top:1px solid var(--linea)}
 .saludo-acc{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
 .fecha{display:inline-flex;align-items:center;gap:.45rem;height:38px;padding:0 .9rem;border-radius:999px;background:var(--sup);font-size:.85rem;color:var(--txt2)}
 
@@ -158,6 +172,7 @@ tbody tr.inactiva td.nombre{font-weight:400}
 .pendientes li{margin:.1rem 0}
 .acciones{display:flex;gap:.45rem;flex-wrap:wrap}
 .pie-tarj{margin:var(--e3) 0 0;font-size:.82rem;color:var(--tenue)}
+.bt.peligro{background:var(--mal-bg);color:var(--mal-tx);font-weight:600}
 .mini[readonly]{background:none;color:var(--tenue);cursor:default}
 .mini[readonly]:focus{outline:none}
 .saludo-acc .et{align-self:center}
@@ -229,17 +244,12 @@ tfoot td{border-top:1px solid var(--linea);font-weight:700;font-family:var(--dat
 
 .aviso{display:flex;gap:.6rem;background:var(--verde-suave);color:var(--verde-t);border-radius:var(--radio-chico);padding:.7rem .9rem;font-size:.84rem;margin-bottom:var(--e4)}
 
-.sedes-movil{display:none;gap:4px;overflow-x:auto;padding:0 0 var(--e4);scrollbar-width:none}
-.sedes-movil::-webkit-scrollbar{display:none}
-.sedes-movil button{flex:none;padding:.4rem .9rem;border-radius:999px;background:var(--sup);font-size:.83rem;color:var(--txt2);white-space:nowrap}
-.sedes-movil button[aria-pressed="true"]{background:var(--verde);color:#fff;font-weight:600}
 
 /* ---------- teléfono ---------- */
 @media (max-width:860px){
 	.app{flex-direction:column;margin:0;border-radius:0;min-height:100vh}
 	.barra{position:fixed;left:.6rem;right:.6rem;top:auto;bottom:calc(.5rem + env(safe-area-inset-bottom));width:auto;flex:none;height:auto;flex-direction:row;z-index:30;padding:.3rem;border-radius:999px;box-shadow:0 10px 30px -12px rgba(20,26,18,.3)}
-	.marca,.barra-pie,.sedes-env{display:none}
-	.sedes-movil{display:flex}
+	.marca,.barra-pie{display:none}
 	.nav{flex-direction:row;width:100%;gap:0}
 	.nav button{flex-direction:column;gap:.1rem;justify-content:center;padding:.4rem .2rem;font-size:.62rem;border-radius:999px}
 	.nav .cuenta{display:none}
@@ -262,7 +272,6 @@ tfoot td{border-top:1px solid var(--linea);font-weight:700;font-family:var(--dat
 			<span class="sep"></span>
 			<b>Planilla</b>
 		</div>
-		<div class="sedes-env" id="sedes-env"></div>
 		<nav class="nav" id="nav">
 			<button type="button" data-ir="quincena" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h10"/></svg><span>Quincena</span></button>
 			<button type="button" data-ir="empleados"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M17 11h4M19 9v4"/></svg><span>Empleados</span><em class="cuenta" id="cuenta-emp"></em></button>
@@ -717,8 +726,23 @@ function textoAntiguedad(a){
 	return plural(anios, 'año', 'años') + (meses ? ' y ' + plural(meses, 'mes', 'meses') : '');
 }
 var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'];
-function cabecera(titulo, sub){
-	return '<div class="saludo"><div><h1>'+titulo+'</h1>'+(sub?'<p>'+sub+'</p>':'')+'</div></div>';
+/* El nombre de la sede es el selector. Lo que se lee arriba es lo mismo
+   que se toca para cambiarlo, así no hacen falta dos menús que se
+   parecen y hacen cosas distintas. */
+function cabecera(titulo, derecha, sinSede){
+	return '<div class="saludo"><div><h1>'+titulo+'</h1>'
+		+ (sinSede ? '' : selectorSede())+'</div>'
+		+ (derecha ? '<div class="saludo-acc">'+derecha+'</div>' : '')
+		+ '</div>';
+}
+
+function selectorSede(){
+	return '<div class="sede-sel">'
+		+ '<button type="button" id="abrir-sedes" aria-expanded="'+(!!estado.abrirSedes)+'">'
+		+ '<span>'+tituloVista()+'</span>'
+		+ '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>'
+		+ (estado.abrirSedes ? panelSedes() : '')
+		+ '</div>';
 }
 function cifra(icono, et, valor, pie){
 	return '<div class="cifra"><div class="arriba">'+ico(icono)+'<dt>'+et+'</dt></div>'
@@ -753,7 +777,7 @@ var estado = {
 	local: D.locales[0] ? D.locales[0].id : null,
 	periodo: hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0'),
 	q: hoy.getDate() <= 15 ? 1 : 2,
-	buscar: '', editando: null, sel: []
+	buscar: '', editando: null, sel: [], abrirSedes: false
 };
 
 function coincide(e){
@@ -888,13 +912,14 @@ function barraPeriodo(){
    por eso vive en la barra lateral y no se repite arriba de cada una.
    Va agrupado por marca, que es como está armado el negocio, y así
    escala si mañana abren otro. */
-function selectorLocales(){
+/* El panel que se descuelga del nombre de la sede. Un solo lugar para
+   elegir: todas, un restaurante completo, una sede, o varias sueltas. */
+function panelSedes(){
 	var activos = D.locales.filter(function(l){ return l.activo!==false; });
 	var elige = eligiendo();
-	var html = '<div class="sedes-par">'
-		+ '<button type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Todas</button>'
-		+ '<button type="button" id="sede-elegir" aria-pressed="'+elige+'">Seleccionar</button>'
-		+ '</div>';
+
+	var html = '<button class="sede-op" type="button" data-local="_todos"'
+		+ ' aria-pressed="'+(estado.local==='_todos')+'">Todas las sedes</button>';
 
 	var grupos = [];
 	activos.forEach(function(l){
@@ -902,45 +927,32 @@ function selectorLocales(){
 		for (var i=0;i<grupos.length;i++){ if (grupos[i].g === g) ex = grupos[i]; }
 		if (ex) ex.items.push(l); else grupos.push({ g:g, items:[l] });
 	});
+
 	grupos.forEach(function(gr){
 		if (gr.g){
 			var marcada = elige
 				? gr.items.length && gr.items.every(function(l){ return estado.sel.indexOf(l.id) !== -1; })
 				: estado.local === 'g:'+gr.g;
-			html += '<button class="sede-marca'+(elige?' marcable':'')+'" type="button"'
+			html += '<button class="sede-op sede-marca'+(elige?' marcable':'')+'" type="button"'
 				+ (elige ? ' data-sel-grupo="'+esc(gr.g)+'"' : ' data-local="g:'+esc(gr.g)+'"')
 				+ ' aria-pressed="'+!!marcada+'">'+esc(gr.g)+'</button>';
 		}
 		html += gr.items.map(function(l){
 			var et = gr.g ? (l.sede || nombreLocal(l)) : nombreLocal(l);
 			var on = elige ? estado.sel.indexOf(l.id) !== -1 : estado.local === l.id;
-			return '<button type="button" class="'+(gr.g?'sede-hija':'')+(elige?' marcable':'')+'"'
+			return '<button type="button" class="sede-op '+(gr.g?'sede-hija':'')+(elige?' marcable':'')+'"'
 				+ (elige ? ' data-sel-local="'+l.id+'"' : ' data-local="'+l.id+'"')
 				+ ' aria-pressed="'+on+'">'+esc(et)+'</button>';
 		}).join('');
 	});
-	return '<div class="sedes">'+html+'</div>';
-}
 
-/* En el teléfono la barra lateral es una pastilla abajo y no cabe el
-   selector, así que arriba del contenido va una tira horizontal. */
-function selectorLocalesMovil(){
-	var elige = eligiendo();
-	var b = marcas().map(function(g){
-		var ids = D.locales.filter(function(l){ return l.activo!==false && l.grupo===g; }).map(function(l){ return l.id; });
-		var on = elige ? ids.length && ids.every(function(id){ return estado.sel.indexOf(id)!==-1; }) : estado.local==='g:'+g;
-		return '<button type="button"'+(elige ? ' data-sel-grupo="'+esc(g)+'"' : ' data-local="g:'+esc(g)+'"')
-			+ ' aria-pressed="'+!!on+'">'+esc(g)+'</button>';
-	}).join('');
-	b += D.locales.filter(function(l){ return l.activo!==false; }).map(function(l){
-		var on = elige ? estado.sel.indexOf(l.id)!==-1 : estado.local===l.id;
-		return '<button type="button"'+(elige ? ' data-sel-local="'+l.id+'"' : ' data-local="'+l.id+'"')
-			+ ' aria-pressed="'+on+'">'+esc(nombreLocal(l))+'</button>';
-	}).join('');
-	return '<div class="sedes-movil">'
-		+ '<button type="button" data-local="_todos" aria-pressed="'+(estado.local==='_todos')+'">Todas</button>'
-		+ '<button type="button" id="sede-elegir-movil" aria-pressed="'+elige+'">Seleccionar</button>'
-		+ b + '</div>';
+	html += '<div class="sede-pie">'
+		+ (elige
+			? '<button class="bt chico fuerte" type="button" id="sede-listo">Listo</button>'
+			: '<button class="bt chico" type="button" id="sede-elegir">Elegir varias</button>')
+		+ '</div>';
+
+	return '<div class="panel-sede">'+html+'</div>';
 }
 
 function netoQuincenaAnterior(){
@@ -1029,10 +1041,8 @@ function pantallaQuincena(){
 				+ '<button class="bt fuerte" type="button" id="enviar-todas">Cerrar quincena</button>';
 
 	var hoyTxt = new Date().toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-	return '<div class="saludo"><div><h1>Planilla de '+nombreMes(estado.periodo).split(' de ')[0]+'</h1>'
-		+ '<p>'+tituloVista()+'</p></div>'
-		+ '<div class="saludo-acc">'+etiquetaEstado(est)
-		+ '<span class="fecha">'+hoyTxt.charAt(0).toUpperCase()+hoyTxt.slice(1)+'</span></div></div>'
+	return cabecera('Planilla de '+nombreMes(estado.periodo).split(' de ')[0],
+			etiquetaEstado(est) + '<span class="fecha">'+hoyTxt.charAt(0).toUpperCase()+hoyTxt.slice(1)+'</span>')
 		+ barraPeriodo()
 		+ avisoFaltan
 		+ '<dl class="cifras">'
@@ -1092,7 +1102,7 @@ function pantallaEmpleados(){
 			+ '<td>'+(e.activo===false?'<span class="et off">Inactivo</span>':'<span class="et ok">Activo</span>')+'</td></tr>';
 	}).join('');
 
-	return cabecera('Empleados', tituloVista())
+	return cabecera('Empleados')
 		+ '<section class="tarj"><div class="tarj-cab"><h2>'+plural(lista.length,'empleado','empleados')+'</h2>'
 		+ '<button class="bt fuerte" type="button" id="nuevo-emp">Agregar empleado</button></div>'
 		+ (lista.length
@@ -1137,7 +1147,7 @@ function pantallaHistorial(){
 		}).join('');
 	}).join('');
 
-	return cabecera('Historial', tituloVista())
+	return cabecera('Historial')
 		+ '<section class="tarj">'
 		+ (filas ? '<div class="tabla-env"><table><thead><tr><th>Período</th><th class="n">Neto pagado</th>'
 			+ '<th>Estado</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
@@ -1159,14 +1169,81 @@ function pantallaReportes(){
 			+ '<td class="n">'+col(pat)+'</td><td class="n"><strong>'+col(b+pat)+'</strong></td></tr>';
 	}).join('');
 
-	return cabecera('Reportes', nombreMes(estado.periodo) + ' | ' + tituloVista())
+	return cabecera('Reportes de '+nombreMes(estado.periodo).split(' de ')[0])
 		+ barraPeriodo().replace('<div class="quincenas">','<div class="quincenas" hidden>')
 		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.empresa)+'Costo del mes por local</h2></div>'
 		+ '<div class="tabla-env"><table><thead><tr><th>Local</th><th class="n">Bruto</th><th class="n">Deducciones</th>'
 		+ '<th class="n">Neto</th><th class="n">Patronal</th><th class="n">Costo total</th></tr></thead>'
 		+ '<tbody>'+filas+'</tbody></table></div></section>'
-		+ '<section class="tarj"><div class="tarj-cab"><h2>Archivo para SICERE</h2></div>'
-		+ '<div class="aviso">Pendiente.</div></section>';
+		+ tarjetaSicere(dentro);
+}
+
+/* Lo que la CCSS pide por empleado cuando se llena la planilla del mes
+   en la Oficina Virtual: identificación, días laborados y el salario
+   reportado. Las ausencias que no se pagan bajan los días; las
+   vacaciones no, porque son tiempo pagado. */
+function lineasSicere(periodo, ids){
+	var filas = [];
+	ids.forEach(function(lid){
+		empleadosDe(lid).forEach(function(e){
+			var c = calcular(e, ajusteDe(periodo, lid, e.id), periodo);
+			var a1 = ausenciaEnQuincena(e, periodo, 1), a2 = ausenciaEnQuincena(e, periodo, 2);
+			var porTipo = {};
+			a1.lineas.concat(a2.lineas).forEach(function(l){ porTipo[l.tipo] = (porTipo[l.tipo]||0) + l.dias; });
+			var fuera = a1.rebajoDias + a2.rebajoDias;
+			filas.push({
+				emp:e, local:localDe(lid),
+				dias: Math.max(0, 30 - fuera),
+				salario: c.brutoMes,
+				inc: (porTipo.ccss||0) + (porTipo.ins||0),
+				mat: porTipo.maternidad||0,
+				sinGoce: porTipo.singoce||0
+			});
+		});
+	});
+	return filas.sort(function(a,b){ return a.emp.nombre.toLowerCase() < b.emp.nombre.toLowerCase() ? -1 : 1; });
+}
+
+function tarjetaSicere(ids){
+	var filas = lineasSicere(estado.periodo, ids);
+	if (!filas.length){
+		return '<section class="tarj"><div class="tarj-cab"><h2>Resumen para SICERE</h2></div>'
+			+ '<div class="vacio"><h3>Sin empleados en esta vista</h3></div></section>';
+	}
+	var t = D.tasas;
+	var totSal = filas.reduce(function(x,f){ return x + f.salario; }, 0);
+	var obrera = totSal * (t.sem + t.ivm + t.bp) / 100;
+	var patronal = totSal * t.patronal / 100;
+	var varias = ids.length > 1;
+
+	return '<section class="tarj"><div class="tarj-cab"><h2>Resumen para SICERE</h2>'
+		+ '<button class="bt" type="button" id="csv-sicere">Descargar CSV</button></div>'
+		+ '<div class="tabla-env"><table><thead><tr><th>Empleado</th><th>Cédula</th>'
+		+ (varias ? '<th>Sede</th>' : '')
+		+ '<th class="n">Días</th><th class="n">Salario del mes</th>'
+		+ '<th class="n">Incap.</th><th class="n">Matern.</th><th class="n">Sin goce</th></tr></thead><tbody>'
+		+ filas.map(function(f){
+			return '<tr><td class="nombre">'+esc(f.emp.nombre)+'</td>'
+				+ '<td>'+(f.emp.cedula ? esc(f.emp.cedula) : '<span class="et esp">falta</span>')+'</td>'
+				+ (varias ? '<td>'+esc(nombreLocal(f.local))+'</td>' : '')
+				+ '<td class="n">'+f.dias+'</td>'
+				+ '<td class="n">'+col(f.salario)+'</td>'
+				+ '<td class="n">'+(f.inc||'—')+'</td>'
+				+ '<td class="n">'+(f.mat||'—')+'</td>'
+				+ '<td class="n">'+(f.sinGoce||'—')+'</td></tr>';
+		}).join('')
+		+ '</tbody><tfoot><tr><td>'+plural(filas.length,'empleado','empleados')+'</td><td></td>'
+		+ (varias ? '<td></td>' : '')
+		+ '<td></td><td class="n">'+col(totSal)+'</td><td></td><td></td><td></td></tr></tfoot></table></div>'
+		+ '<dl class="valores" style="margin-top:var(--e4)">'
+		+ '<div><dt>Salarios del mes</dt><dd>'+col(totSal)+'</dd></div>'
+		+ '<div><dt>Cuota obrera '+pct(t.sem+t.ivm+t.bp)+'</dt><dd>'+col(obrera)+'</dd></div>'
+		+ '<div><dt>Cuota patronal '+pct(t.patronal)+'</dt><dd>'+col(patronal)+'</dd></div>'
+		+ '<div><dt>Total a la Caja</dt><dd>'+col(obrera+patronal)+'</dd></div>'
+		+ '</dl>'
+		+ '<p class="pie-tarj">Las cuotas son para cuadrar contra lo que calcule la Oficina Virtual. '
+		+ 'Los días bajan por incapacidad, maternidad y permiso sin goce; las vacaciones no los bajan.</p>'
+		+ '</section>';
 }
 
 /* Los valores se ven, no se tocan. Hay que entrar a editar a propósito
@@ -1252,7 +1329,7 @@ function pantallaAjustes(){
 			+ '<button class="bt chico" type="button" data-local-toggle="'+l.id+'">'+(off?'Activar':'Desactivar')+'</button></td></tr>';
 	}).join('');
 
-	return cabecera('Ajustes','')
+	return cabecera('Ajustes', '', true)
 		+ '<section class="tarj"><div class="tarj-cab"><h2>Locales</h2>'
 		+ '<button class="bt" type="button" id="nuevo-local">Agregar local</button></div>'
 		+ '<div class="tabla-env"><table><thead><tr><th>Restaurante</th><th>Sede</th><th>Estado</th>'
@@ -1507,8 +1584,23 @@ function fichaEmpleado(id){
 			});
 			guardar(); fichaEmpleado(e.id); pintar();
 		};
+		/* Borrar cambia saldos y montos ya calculados, así que se
+		   pregunta antes. El segundo toque es el que borra. */
 		Array.prototype.forEach.call(document.querySelectorAll('#hoja-cuerpo [data-vacx]'), function(b){
 			b.onclick = function(){
+				if (b.dataset.seguro !== '1'){
+					Array.prototype.forEach.call(document.querySelectorAll('#hoja-cuerpo [data-vacx]'), function(o){
+						o.dataset.seguro = ''; o.textContent = 'Quitar'; o.classList.remove('peligro');
+					});
+					b.dataset.seguro = '1';
+					b.textContent = '¿Seguro?';
+					b.classList.add('peligro');
+					clearTimeout(b._t);
+					b._t = setTimeout(function(){
+						b.dataset.seguro = ''; b.textContent = 'Quitar'; b.classList.remove('peligro');
+					}, 4000);
+					return;
+				}
 				e.ausencias = e.ausencias.filter(function(m){ return m.id !== b.dataset.vacx; });
 				guardar(); fichaEmpleado(e.id); pintar();
 			};
@@ -1711,6 +1803,16 @@ function cerrarQuincena(){
 
 /* La plata sale de acá: a quién, a qué cuenta y cuánto. Se baja en CSV
    para subirlo al banco sin volver a teclear nada. */
+function bajarCsv(filas, nombre){
+	var texto = filas.map(function(f){
+		return f.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+	}).join('\n');
+	var a = document.createElement('a');
+	a.href = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(texto);
+	a.download = nombre;
+	a.click();
+}
+
 function listaDepositos(){
 	var lista = boletasDeLaVista();
 	if (!lista.length) return;
@@ -1737,13 +1839,7 @@ function listaDepositos(){
 		lista.forEach(function(b){
 			filas.push([b.emp.nombre, b.emp.cedula||'', b.emp.cuenta||'', Math.round(b.q.neto), nombreLocal(b.local)]);
 		});
-		var texto = filas.map(function(f){
-			return f.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
-		}).join('\n');
-		var a = document.createElement('a');
-		a.href = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(texto);
-		a.download = 'depositos-'+estado.periodo+'-q'+estado.q+'.csv';
-		a.click();
+		bajarCsv(filas, 'depositos-'+estado.periodo+'-q'+estado.q+'.csv');
 	};
 }
 
@@ -1756,10 +1852,9 @@ function pintar(){
 	/* Si el recorte apunta a algo que ya no existe (se desactivo la sede,
 	   se renombro el restaurante), vuelve a Todas en vez de quedar vacio. */
 	if (estado.local !== '_todos' && !eligiendo() && !idsEnVista().length) estado.local = '_todos';
-	$('#sedes-env').innerHTML = selectorLocales();
 	var ce = $('#cuenta-emp');
 	if (ce) ce.textContent = empleadosEnVista().filter(function(e){return e.activo!==false;}).length || '';
-	$('#lienzo').innerHTML = selectorLocalesMovil() + PANTALLAS[estado.pantalla]();
+	$('#lienzo').innerHTML = PANTALLAS[estado.pantalla]();
 	Array.prototype.forEach.call(document.querySelectorAll('#nav button'), function(b){
 		if (b.dataset.ir===estado.pantalla) b.setAttribute('aria-current','page');
 		else b.removeAttribute('aria-current');
@@ -1773,6 +1868,12 @@ function moverMes(n){
 }
 
 document.addEventListener('click', function(ev){
+	/* El panel de sedes se cierra solo al tocar cualquier otra cosa. */
+	if (estado.abrirSedes && !ev.target.closest('.sede-sel')){
+		estado.abrirSedes = false;
+		pintar();
+	}
+
 	/* La fila entera del empleado es el botón. Los controles que viven
 	   dentro de una fila siguen mandando ellos. */
 	var fila = ev.target.closest('tr[data-abrir]');
@@ -1790,11 +1891,13 @@ document.addEventListener('click', function(ev){
 	var t = ev.target.closest('button');
 	if (!t) return;
 	if (t.dataset.ir){ estado.pantalla=t.dataset.ir; pintar(); return; }
-	if (t.dataset.local){ estado.local=t.dataset.local; pintar(); return; }
-	if (t.id==='sede-elegir' || t.id==='sede-elegir-movil'){
+	if (t.id==='abrir-sedes'){ estado.abrirSedes = !estado.abrirSedes; pintar(); return; }
+	if (t.dataset.local){ estado.local=t.dataset.local; estado.abrirSedes=false; pintar(); return; }
+	if (t.id==='sede-elegir'){
 		if (!eligiendo()){ estado.sel = idsEnVista().slice(); estado.local = '_sel'; }
 		pintar(); return;
 	}
+	if (t.id==='sede-listo'){ estado.abrirSedes = false; pintar(); return; }
 	if (t.dataset.selLocal){
 		var k = estado.sel.indexOf(t.dataset.selLocal);
 		if (k === -1) estado.sel.push(t.dataset.selLocal); else estado.sel.splice(k,1);
@@ -1818,6 +1921,16 @@ document.addEventListener('click', function(ev){
 	if (t.dataset.boleta){ verBoleta(t.dataset.boleta, t.dataset.l, estado.periodo, estado.q); return; }
 	if (t.id==='enviar-todas'){ cerrarQuincena(); return; }
 	if (t.id==='depositos'){ listaDepositos(); return; }
+	if (t.id==='csv-sicere'){
+		var fs = lineasSicere(estado.periodo, idsEnVista());
+		var filas = [['Cedula','Empleado','Dias','Salario','Incapacidad','Maternidad','SinGoce','Local']];
+		fs.forEach(function(f){
+			filas.push([f.emp.cedula||'', f.emp.nombre, f.dias, Math.round(f.salario),
+				f.inc, f.mat, f.sinGoce, nombreLocal(f.local)]);
+		});
+		bajarCsv(filas, 'sicere-'+estado.periodo+'.csv');
+		return;
+	}
 	if (t.id==='bajar-otra-vez'){ bajarBoletas(boletasDeLaVista()); return; }
 	if (t.id==='reabrir'){
 		idsEnVista().forEach(function(lid){

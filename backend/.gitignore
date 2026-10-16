@@ -1,0 +1,4 @@
+# Nada de llaves ni tokens en el repo. Van como secretos del Worker.
+.dev.vars
+.wrangler/
+node_modules/

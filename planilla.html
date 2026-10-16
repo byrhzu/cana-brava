@@ -149,7 +149,18 @@ tbody tr{transition:background .15s}
 tbody tr:hover td{background:var(--sup2)}
 tbody tr.abrible{cursor:pointer}
 tbody tr.inactiva td{color:var(--tenue)}
+tbody tr.aqui td{background:var(--verde-suave)}
+tbody tr.aqui td.nombre{font-weight:600;color:var(--verde-t)}
 tbody tr.inactiva td.nombre{font-weight:400}
+.pendientes{background:var(--esp-bg);color:var(--esp-tx);border-radius:var(--radio);padding:.8rem 1rem;margin-bottom:var(--e4)}
+.pendientes b{display:block;font-size:.86rem;margin-bottom:.25rem}
+.pendientes ul{margin:0;padding-left:1.05rem;font-size:.84rem}
+.pendientes li{margin:.1rem 0}
+.acciones{display:flex;gap:.45rem;flex-wrap:wrap}
+.pie-tarj{margin:var(--e3) 0 0;font-size:.82rem;color:var(--tenue)}
+.mini[readonly]{background:none;color:var(--tenue);cursor:default}
+.mini[readonly]:focus{outline:none}
+.saludo-acc .et{align-self:center}
 .valores{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:var(--e3) var(--e4)}
 .valores dt{font-size:.81rem;color:var(--txt2);margin-bottom:.1rem}
 .valores dd{margin:0;font-family:var(--datos);font-size:1.02rem;font-weight:600}
@@ -813,6 +824,47 @@ function ajusteDe(p,l,empId){
 	return pp.ajustes[empId];
 }
 
+/* -------------------------------------------------------------
+   EL ESTADO DE UNA QUINCENA
+
+   Una quincena está abierta mientras se le puedan tocar los montos, y
+   cerrada cuando ya se generaron las boletas y se pagó. Cerrada no se
+   edita: hay que reabrirla a propósito, y todo lo que se cambie después
+   queda anotado en la bitácora del período.
+
+   El cierre se guarda por local, así que si se está viendo más de una
+   sede la quincena solo cuenta como cerrada cuando lo están todas.
+   ------------------------------------------------------------- */
+function cierreDe(periodo, lid, q){
+	var pp = D.periodos[periodo] && D.periodos[periodo][lid];
+	return (pp && pp.enviado && pp.enviado['q'+q]) || null;
+}
+function estadoQuincena(periodo, q, ids){
+	ids = ids || idsEnVista();
+	if (!ids.length) return { estado:'vacia', fecha:null, cerradas:0, total:0 };
+	var fechas = ids.map(function(lid){ return cierreDe(periodo, lid, q); });
+	var cerradas = fechas.filter(Boolean);
+	if (!cerradas.length) return { estado:'abierta', fecha:null, cerradas:0, total:ids.length };
+	if (cerradas.length < ids.length) return { estado:'parcial', fecha:cerradas.sort()[0], cerradas:cerradas.length, total:ids.length };
+	return { estado:'cerrada', fecha:cerradas.sort().pop(), cerradas:cerradas.length, total:ids.length };
+}
+function etiquetaEstado(e){
+	if (e.estado === 'cerrada') return '<span class="et ok">Cerrada el '+fechaCortaDe(e.fecha)+'</span>';
+	if (e.estado === 'parcial') return '<span class="et esp">Cerrada en '+e.cerradas+' de '+e.total+'</span>';
+	if (e.estado === 'vacia') return '';
+	return '<span class="et esp">Abierta</span>';
+}
+function fechaCortaDe(iso){
+	if (!iso) return '—';
+	var d = new Date(iso);
+	return d.getDate() + ' ' + MESES[d.getMonth()].slice(0,3);
+}
+function anotar(periodo, lid, texto){
+	var pp = per(periodo, lid);
+	pp.bitacora = pp.bitacora || [];
+	pp.bitacora.push({ cuando: new Date().toISOString(), que: texto });
+}
+
 /* =============================================================
    4. PANTALLAS
    ============================================================= */
@@ -913,6 +965,9 @@ function netoQuincenaAnterior(){
 
 function pantallaQuincena(){
 	var locales = idsEnVista();
+	var est = estadoQuincena(estado.periodo, estado.q, locales);
+	var bloqueo = est.estado === 'cerrada' ? ' readonly' : '';
+	var faltan = [];
 
 	var filas='', tBruto=0, tDed=0, tNeto=0, tPat=0, n=0;
 	locales.forEach(function(lid){
@@ -925,8 +980,8 @@ function pantallaQuincena(){
 				+ (unaSedeSola() ? '' : ' | '+esc(nombreLocal(localDe(lid))))+'</small>'
 				+ (q.rebajoDias ? '<small class="ausente">'+resumenAusencias(q)+'</small>' : '')+'</td>'
 				+ '<td class="n">'+col(q.base)+'</td>'
-				+ '<td class="n"><input class="mini" type="number" min="0" step="0.5" data-campo="horasExtra" value="'+(q.horas||'')+'" placeholder="0" aria-label="Horas extra de '+esc(e.nombre)+'"></td>'
-				+ '<td class="n"><input class="mini" type="number" min="0" step="1000" data-campo="adelanto" value="'+(q.adelanto||'')+'" placeholder="0" aria-label="Adelanto de '+esc(e.nombre)+'"></td>'
+				+ '<td class="n"><input class="mini" type="number" min="0" step="0.5" data-campo="horasExtra" value="'+(q.horas||'')+'" placeholder="0"'+bloqueo+' aria-label="Horas extra de '+esc(e.nombre)+'"></td>'
+				+ '<td class="n"><input class="mini" type="number" min="0" step="1000" data-campo="adelanto" value="'+(q.adelanto||'')+'" placeholder="0"'+bloqueo+' aria-label="Adelanto de '+esc(e.nombre)+'"></td>'
 				+ '<td class="n">'+col(q.bruto)+'</td>'
 				+ '<td class="n">−'+col(q.deducciones)+'</td>'
 				+ '<td class="n"><strong>'+col(q.neto)+'</strong></td>'
@@ -934,6 +989,19 @@ function pantallaQuincena(){
 				+ '</tr>';
 		});
 	});
+
+	var sinSalario = [], sinCuenta = [], sinCorreo = [];
+	locales.forEach(function(lid){
+		empleadosDe(lid).forEach(function(e){
+			if (!Number(e.salarioMensual)) sinSalario.push(e.nombre);
+			if (!e.cuenta) sinCuenta.push(e.nombre);
+			if (!e.correo) sinCorreo.push(e.nombre);
+		});
+	});
+	function pega(lista){ return lista.slice(0,3).join(', ') + (lista.length > 3 ? ' y '+(lista.length-3)+' más' : ''); }
+	if (sinSalario.length) faltan.push('Sin salario cargado: '+pega(sinSalario));
+	if (sinCuenta.length) faltan.push('Sin cuenta para el depósito: '+pega(sinCuenta));
+	if (sinCorreo.length) faltan.push('Sin correo para la boleta: '+pega(sinCorreo));
 
 	var cuerpo = n
 		? '<div class="tabla-env"><table><thead><tr><th>Empleado</th><th class="n">Salario</th>'
@@ -946,12 +1014,27 @@ function pantallaQuincena(){
 		: '<div class="vacio"><h3>Todavía no hay empleados aquí</h3>'
 			+ '<button class="bt fuerte" type="button" data-ir="empleados">Agregar el primero</button></div>';
 
+	/* Lo que falta para poder pagar. Solo aparece si hay algo que
+	   arreglar, y solo mientras la quincena siga abierta. */
+	var avisoFaltan = (!bloqueo && faltan.length)
+		? '<div class="pendientes"><b>'+plural(faltan.length,'cosa por revisar','cosas por revisar')+'</b>'
+			+ '<ul>'+faltan.map(function(f){ return '<li>'+f+'</li>'; }).join('')+'</ul></div>'
+		: '';
+
+	var accion = !n ? ''
+		: est.estado === 'cerrada'
+			? '<button class="bt" type="button" id="reabrir">Reabrir para corregir</button>'
+				+ '<button class="bt fuerte" type="button" id="bajar-otra-vez">Descargar boletas</button>'
+			: '<button class="bt" type="button" id="depositos">Lista de depósitos</button>'
+				+ '<button class="bt fuerte" type="button" id="enviar-todas">Cerrar quincena</button>';
+
 	var hoyTxt = new Date().toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 	return '<div class="saludo"><div><h1>Planilla de '+nombreMes(estado.periodo).split(' de ')[0]+'</h1>'
 		+ '<p>'+tituloVista()+'</p></div>'
-		+ '<div class="saludo-acc"><span class="fecha">'+hoyTxt.charAt(0).toUpperCase()+hoyTxt.slice(1)+'</span>'
-		+ '<button class="bt oscuro" type="button" id="exportar"><svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exportar</button></div></div>'
+		+ '<div class="saludo-acc">'+etiquetaEstado(est)
+		+ '<span class="fecha">'+hoyTxt.charAt(0).toUpperCase()+hoyTxt.slice(1)+'</span></div></div>'
 		+ barraPeriodo()
+		+ avisoFaltan
 		+ '<dl class="cifras">'
 		+ cifra(I.billete,'Planilla a Pagar',col(tNeto), deltaHtml(tNeto, netoQuincenaAnterior()) + diasQuincena(estado.periodo, estado.q))
 		+ cifra(I.resta,'Deducciones',col(tDed),'')
@@ -959,8 +1042,35 @@ function pantallaQuincena(){
 		+ cifra(I.gente,'Empleados',String(n), pieSedes())
 		+ '</dl>'
 		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.lista)+'Detalle</h2>'
-		+ (n ? '<button class="bt fuerte" type="button" id="enviar-todas">Generar y enviar '+plural(n,'boleta','boletas')+'</button>' : '')
-		+ '</div>'+cuerpo+'</section>';
+		+ '<div class="acciones">'+accion+'</div></div>'+cuerpo
+		+ (bloqueo ? '<p class="pie-tarj">Esta quincena ya se cerró. Para cambiar un monto hay que reabrirla.</p>' : '')
+		+ '</section>'
+		+ bitacoraDelPeriodo(locales);
+}
+
+/* Todo lo que se tocó después de un cierre queda acá. Es el respaldo de
+   por qué un monto no es el que se pagó. */
+function bitacoraDelPeriodo(locales){
+	var filas = [];
+	locales.forEach(function(lid){
+		var pp = D.periodos[estado.periodo] && D.periodos[estado.periodo][lid];
+		(pp && pp.bitacora || []).forEach(function(b){
+			filas.push({ cuando:b.cuando, que:b.que, local:lid });
+		});
+	});
+	if (!filas.length) return '';
+	filas.sort(function(a,b){ return a.cuando < b.cuando ? 1 : -1; });
+	return '<section class="tarj"><div class="tarj-cab"><h2>Bitácora del mes</h2></div>'
+		+ '<div class="tabla-env"><table><thead><tr><th>Cuándo</th><th>Qué pasó</th>'
+		+ (locales.length > 1 ? '<th>Sede</th>' : '')+'</tr></thead><tbody>'
+		+ filas.map(function(f){
+			var d = new Date(f.cuando);
+			return '<tr><td class="nombre">'+fechaCortaDe(f.cuando)
+				+ '<small>'+d.toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'})+'</small></td>'
+				+ '<td>'+esc(f.que)+'</td>'
+				+ (locales.length > 1 ? '<td>'+esc(nombreLocal(localDe(f.local)))+'</td>' : '')+'</tr>';
+		}).join('')
+		+ '</tbody></table></div></section>';
 }
 
 function pantallaEmpleados(){
@@ -992,37 +1102,46 @@ function pantallaEmpleados(){
 		+ '</section>';
 }
 
+/* El libro de meses: una fila por quincena, con su estado y su total.
+   Es donde se contesta "¿ya cerramos octubre?" sin abrir nada. */
 function pantallaHistorial(){
-	var filas = Object.keys(D.periodos).sort().reverse().map(function(p){
-		var dentro = idsEnVista();
-		return Object.keys(D.periodos[p]).map(function(lid){
-			var l = D.locales.find(function(x){return x.id===lid;});
-			if (!l || dentro.indexOf(lid) === -1) return '';
-			var pp = D.periodos[p][lid];
-			return [1,2].map(function(q){
-				/* Solo aparece si esa quincena ya tuvo movimiento: boletas
-				   enviadas o algún ajuste escrito. Si no, es el mes en curso
-				   y todavía no es historia. */
-				var env = pp.enviado && pp.enviado['q'+q];
-				var tocada = Object.keys(pp.ajustes||{}).some(function(k){
+	var locales = idsEnVista();
+
+	/* Los meses que ya tienen movimiento, más el que se está viendo, para
+	   que el mes en curso aparezca aunque todavía no se haya tocado. */
+	var meses = Object.keys(D.periodos);
+	if (meses.indexOf(estado.periodo) === -1) meses.push(estado.periodo);
+	meses = meses.sort().reverse();
+
+	var filas = meses.map(function(pe){
+		return [1,2].map(function(q){
+			var est = estadoQuincena(pe, q, locales);
+			var tot = 0, movida = false;
+			locales.forEach(function(lid){
+				var pp = D.periodos[pe] && D.periodos[pe][lid];
+				empleadosDe(lid).forEach(function(e){
+					var c = calcular(e, (pp && pp.ajustes && pp.ajustes[e.id]) || {}, pe);
+					tot += q===1 ? c.q1.neto : c.q2.neto;
+				});
+				if (pp && pp.ajustes) movida = movida || Object.keys(pp.ajustes).some(function(k){
 					var a = pp.ajustes[k] && pp.ajustes[k]['q'+q];
 					return a && (a.horasExtra || a.adelanto || a.otras);
 				});
-				if (!env && !tocada) return '';
-				var tot = empleadosDe(lid).reduce(function(s,e){
-					var c = calcular(e, (pp.ajustes && pp.ajustes[e.id]) || {}, p);
-					return s + (q===1?c.q1.neto:c.q2.neto);
-				},0);
-				return '<tr><td class="nombre">'+nombreMes(p)+' | quincena '+q+'<small>'+esc(nombreLocal(l))+'</small></td>'
-					+ '<td class="n">'+col(tot)+'</td>'
-					+ '<td>'+(env?'<span class="et ok">Enviada</span>':'<span class="et esp">Sin enviar</span>')+'</td></tr>';
-			}).join('');
+			});
+			if (est.estado === 'abierta' && !movida && !tot) return '';
+			var actual = pe === estado.periodo && q === estado.q;
+			return '<tr class="abrible'+(actual?' aqui':'')+'" tabindex="0" data-periodo="'+pe+'|'+q+'">'
+				+ '<td class="nombre">'+nombreMes(pe)+'<small>quincena '+q+' | '+diasQuincena(pe,q)+'</small></td>'
+				+ '<td class="n">'+col(tot)+'</td>'
+				+ '<td>'+(etiquetaEstado(est) || '<span class="et off">Sin movimiento</span>')+'</td></tr>';
 		}).join('');
 	}).join('');
 
 	return cabecera('Historial', tituloVista())
 		+ '<section class="tarj">'
-		+ (filas ? '<div class="tabla-env"><table><thead><tr><th>Período</th><th class="n">Neto pagado</th><th>Boletas</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
+		+ (filas ? '<div class="tabla-env"><table><thead><tr><th>Período</th><th class="n">Neto pagado</th>'
+			+ '<th>Estado</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
+			+ '<p class="pie-tarj">Tocá una quincena para abrirla.</p>'
 			: '<div class="vacio"><h3>Todavía no hay quincenas con movimiento</h3></div>')
 		+ '</section>';
 }
@@ -1536,37 +1655,95 @@ function pdfBoleta(b, descargar){
 	return { doc:d, nombre:nombre };
 }
 
-function enviarTodas(){
-	var locales = idsEnVista();
+function boletasDeLaVista(){
 	var lista = [];
-	locales.forEach(function(lid){
+	idsEnVista().forEach(function(lid){
 		empleadosDe(lid).forEach(function(e){
 			var b = datosBoleta(e.id, lid, estado.periodo, estado.q);
 			if (b && b.q.neto) lista.push(b);
 		});
 	});
+	return lista;
+}
+
+function bajarBoletas(lista, alTerminar){
+	lista.forEach(function(b,i){ setTimeout(function(){ pdfBoleta(b, true); }, i*260); });
+	setTimeout(alTerminar || function(){}, lista.length*260 + 400);
+}
+
+/* Cerrar es el acto formal: se congela lo que se va a pagar, se generan
+   las boletas y a partir de ahí los montos no se tocan. */
+function cerrarQuincena(){
+	var locales = idsEnVista();
+	var lista = boletasDeLaVista();
 	if (!lista.length) return;
 
-	var sinCorreo = lista.filter(function(b){ return !b.emp.correo; });
-	abrirHoja('Enviar ' + plural(lista.length,'boleta','boletas'),
-		'<p style="margin:0 0 var(--e4);color:var(--txt2)">Quincena '+estado.q+' | '+diasQuincena(estado.periodo,estado.q)+'</p>'
-		+ (sinCorreo.length ? '<div class="aviso">'+sinCorreo.length+' sin correo: '+sinCorreo.map(function(b){return esc(b.emp.nombre);}).join(', ')+'</div>' : '')
-		+ '<div class="tabla-env" style="margin:0;padding:0"><table style="min-width:0"><thead><tr><th>Empleado</th><th class="n">Neto</th><th>Correo</th></tr></thead><tbody>'
-		+ lista.map(function(b){
-			return '<tr><td class="nombre">'+esc(b.emp.nombre)+'<small>'+esc(nombreLocal(b.local))+'</small></td>'
-				+ '<td class="n">'+col(b.q.neto)+'</td>'
-				+ '<td>'+(b.emp.correo?esc(b.emp.correo):'<span class="et esp">falta</span>')+'</td></tr>';
-		}).join('')
-		+ '</tbody></table></div>'
-		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="bajar-todas">'+(lista.length===1?'Descargar el PDF':'Descargar los '+lista.length+' PDF')+'</button>'
-		+ '<button class="bt" type="button" id="e-cerrar">Cerrar</button></div>');
+	var total = lista.reduce(function(t,b){ return t + b.q.neto; }, 0);
+	var sinCuenta = lista.filter(function(b){ return !b.emp.cuenta; });
+
+	abrirHoja('Cerrar la quincena',
+		'<div class="boleta">'
+		+ '<div class="enc"><b>'+nombreMes(estado.periodo)+', quincena '+estado.q+'</b>'
+		+ '<span>'+diasQuincena(estado.periodo, estado.q)+'</span>'
+		+ '<span>'+tituloVista()+'</span></div>'
+		+ '<div class="fila"><span>Boletas</span><span>'+lista.length+'</span></div>'
+		+ '<div class="fila total"><span>Total a depositar</span><span>'+col(total)+'</span></div>'
+		+ '</div>'
+		+ (sinCuenta.length ? '<p class="pie-tarj">'+plural(sinCuenta.length,'persona','personas')
+			+ ' sin cuenta cargada: '+sinCuenta.map(function(b){return esc(b.emp.nombre);}).join(', ')+'</p>' : '')
+		+ '<p class="pie-tarj">Al cerrar se descarga '+(lista.length===1 ? 'la boleta' : 'n las '+lista.length+' boletas')
+		+ ' y los montos quedan fijos. Siempre se puede reabrir.</p>'
+		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="bajar-todas">Cerrar y descargar</button>'
+		+ '<button class="bt" type="button" id="e-cerrar">Cancelar</button></div>');
 
 	$('#e-cerrar').onclick = cerrarHoja;
 	$('#bajar-todas').onclick = function(){
-		lista.forEach(function(b,i){ setTimeout(function(){ pdfBoleta(b, true); }, i*260); });
-		locales.forEach(function(lid){ var p=per(estado.periodo,lid); p.enviado=p.enviado||{}; p.enviado['q'+estado.q]=new Date().toISOString(); });
+		locales.forEach(function(lid){
+			var pp = per(estado.periodo, lid);
+			pp.enviado = pp.enviado || {};
+			pp.enviado['q'+estado.q] = new Date().toISOString();
+			anotar(estado.periodo, lid, 'Se cerró la quincena '+estado.q+' por '+col(total)+'.');
+		});
 		guardar();
-		setTimeout(function(){ cerrarHoja(); pintar(); }, lista.length*260 + 400);
+		bajarBoletas(lista, function(){ cerrarHoja(); pintar(); });
+	};
+}
+
+/* La plata sale de acá: a quién, a qué cuenta y cuánto. Se baja en CSV
+   para subirlo al banco sin volver a teclear nada. */
+function listaDepositos(){
+	var lista = boletasDeLaVista();
+	if (!lista.length) return;
+	var total = lista.reduce(function(t,b){ return t + b.q.neto; }, 0);
+
+	abrirHoja('Lista de depósitos',
+		'<p class="pie-tarj" style="margin-top:0">'+nombreMes(estado.periodo)+', quincena '+estado.q
+		+ ' | '+col(total)+' en '+plural(lista.length,'depósito','depósitos')+'</p>'
+		+ '<div class="tabla-env" style="margin:0;padding:0"><table style="min-width:0">'
+		+ '<thead><tr><th>Empleado</th><th>Cuenta</th><th class="n">Monto</th></tr></thead><tbody>'
+		+ lista.map(function(b){
+			return '<tr><td class="nombre">'+esc(b.emp.nombre)+'<small>'+esc(nombreLocal(b.local))+'</small></td>'
+				+ '<td>'+(b.emp.cuenta ? esc(b.emp.cuenta) : '<span class="et esp">falta</span>')+'</td>'
+				+ '<td class="n">'+col(b.q.neto)+'</td></tr>';
+		}).join('')
+		+ '</tbody><tfoot><tr><td>'+plural(lista.length,'depósito','depósitos')+'</td><td></td>'
+		+ '<td class="n">'+col(total)+'</td></tr></tfoot></table></div>'
+		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="csv-depositos">Descargar CSV</button>'
+		+ '<button class="bt" type="button" id="e-cerrar">Cerrar</button></div>');
+
+	$('#e-cerrar').onclick = cerrarHoja;
+	$('#csv-depositos').onclick = function(){
+		var filas = [['Empleado','Cedula','Cuenta','Monto','Local']];
+		lista.forEach(function(b){
+			filas.push([b.emp.nombre, b.emp.cedula||'', b.emp.cuenta||'', Math.round(b.q.neto), nombreLocal(b.local)]);
+		});
+		var texto = filas.map(function(f){
+			return f.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+		}).join('\n');
+		var a = document.createElement('a');
+		a.href = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(texto);
+		a.download = 'depositos-'+estado.periodo+'-q'+estado.q+'.csv';
+		a.click();
 	};
 }
 
@@ -1603,6 +1780,13 @@ document.addEventListener('click', function(ev){
 		fichaEmpleado(fila.dataset.abrir);
 		return;
 	}
+	var filaP = ev.target.closest('tr[data-periodo]');
+	if (filaP && !ev.target.closest('button, input, select, a')){
+		var par = filaP.dataset.periodo.split('|');
+		estado.periodo = par[0]; estado.q = Number(par[1]); estado.pantalla = 'quincena';
+		pintar();
+		return;
+	}
 	var t = ev.target.closest('button');
 	if (!t) return;
 	if (t.dataset.ir){ estado.pantalla=t.dataset.ir; pintar(); return; }
@@ -1632,7 +1816,19 @@ document.addEventListener('click', function(ev){
 	if (t.id==='mes-sig'){ moverMes(1); return; }
 	if (t.id==='nuevo-emp'){ fichaEmpleado(null); return; }
 	if (t.dataset.boleta){ verBoleta(t.dataset.boleta, t.dataset.l, estado.periodo, estado.q); return; }
-	if (t.id==='enviar-todas'){ enviarTodas(); return; }
+	if (t.id==='enviar-todas'){ cerrarQuincena(); return; }
+	if (t.id==='depositos'){ listaDepositos(); return; }
+	if (t.id==='bajar-otra-vez'){ bajarBoletas(boletasDeLaVista()); return; }
+	if (t.id==='reabrir'){
+		idsEnVista().forEach(function(lid){
+			var pp = per(estado.periodo, lid);
+			if (pp.enviado) delete pp.enviado['q'+estado.q];
+			pp.reabierta = pp.reabierta || {};
+			pp.reabierta['q'+estado.q] = true;
+			anotar(estado.periodo, lid, 'Se reabrió la quincena '+estado.q+' para corregir.');
+		});
+		guardar(); pintar(); return;
+	}
 	if (t.id==='hoja-x'){ cerrarHoja(); return; }
 	if (t.dataset.pdfHist){
 		var a = t.dataset.pdfHist.split('|');
@@ -1675,10 +1871,13 @@ document.addEventListener('click', function(ev){
 
 document.addEventListener('keydown', function(ev){
 	if (ev.key !== 'Enter' && ev.key !== ' ') return;
-	var fila = ev.target.closest && ev.target.closest('tr[data-abrir]');
+	var fila = ev.target.closest && ev.target.closest('tr[data-abrir], tr[data-periodo]');
 	if (!fila || ev.target !== fila) return;
 	ev.preventDefault();
-	fichaEmpleado(fila.dataset.abrir);
+	if (fila.dataset.abrir){ fichaEmpleado(fila.dataset.abrir); return; }
+	var par = fila.dataset.periodo.split('|');
+	estado.periodo = par[0]; estado.q = Number(par[1]); estado.pantalla = 'quincena';
+	pintar();
 });
 
 document.addEventListener('input', function(ev){
@@ -1686,11 +1885,30 @@ document.addEventListener('input', function(ev){
 	if (el.dataset.campo){
 		var fila = el.closest('tr');
 		var aj = ajusteDe(estado.periodo, fila.dataset.local, fila.dataset.emp);
+		var pp = per(estado.periodo, fila.dataset.local);
+		/* El valor de partida se guarda una sola vez por racha de tecleo,
+		   para que la bitácora diga "de 0 a 20.000" y no un renglón por
+		   cada dígito. */
+		if (el._antes == null) el._antes = Number(aj['q'+estado.q][el.dataset.campo]) || 0;
 		aj['q'+estado.q][el.dataset.campo] = Number(el.value)||0;
 		guardar();
 		clearTimeout(el._t);
 		el._t = setTimeout(function(){
-			var campo=el.dataset.campo, emp=fila.dataset.emp;
+			var campo = el.dataset.campo, emp = fila.dataset.emp, lid = fila.dataset.local;
+			var ahora = Number(el.value) || 0, antes = el._antes;
+			el._antes = null;
+			/* Si la quincena ya se cerró alguna vez, el cambio deja rastro:
+			   es la respuesta a "¿por qué este monto no es el que pagamos?". */
+			if (pp.reabierta && pp.reabierta['q'+estado.q] && ahora !== antes){
+				var quien = D.empleados.find(function(x){ return x.id === emp; });
+				var dicho = campo === 'adelanto'
+					? function(v){ return col(v); }
+					: function(v){ return nDias(v) + ' h'; };
+				anotar(estado.periodo, lid, (quien ? quien.nombre : 'Empleado') + ': '
+					+ (campo === 'adelanto' ? 'adelanto' : 'horas extra')
+					+ ' de ' + dicho(antes) + ' a ' + dicho(ahora) + '.');
+				guardar();
+			}
 			pintar();
 			var nv = document.querySelector('tr[data-emp="'+emp+'"] input[data-campo="'+campo+'"]');
 			if (nv){ nv.focus(); nv.setSelectionRange(nv.value.length, nv.value.length); }

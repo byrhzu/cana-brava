@@ -81,10 +81,75 @@ instalar nada.
 
 ---
 
+## Verificado el 16 de octubre
+
+| Qué | Resultado |
+|-----|-----------|
+| El dominio pasa por Cloudflare | sí — `server: cloudflare`, IP 104.21.81.254 |
+| Portada, menú y www | 200, sin bucle de redirecciones |
+| `robots.txt`, `sitemap.xml`, imágenes, GA4 | 200, abiertos como siempre |
+| Título, canonical y JSON-LD de la portada | intactos |
+| `planilla.html` sin sesión | 302 al login de Access, el panel no se sirve |
+
+Equipo de Access: `yellow-shape-6214.cloudflareaccess.com`
+
+---
+
+# Paso 2 — La base de datos
+
+## 2.1 — Crear la base
+
+Cloudflare → **Storage & Databases** → **D1 SQL Database** → **Create**.
+
+Nombre: `planilla-canabrava`. Ubicación: la que ofrezca por defecto.
+
+## 2.2 — Cargarle las tablas
+
+Entrar a la base recién creada → pestaña **Console**.
+
+Pegar ahí **todo** el contenido de `backend/esquema.sql` y ejecutar.
+
+Debería crear ocho tablas y dejar cargados los cuatro locales y los
+valores de las tasas.
+
+Para comprobar, en la misma consola:
+
+```sql
+SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;
+SELECT * FROM locales;
+```
+
+---
+
+# Paso 3 — Que Cloudflare publique solo
+
+Como en esta Mac no hay Node ni wrangler, en vez de subir el Worker a
+mano cada vez, se conecta el repositorio: yo hago `git push` y
+Cloudflare publica.
+
+Cloudflare → **Workers & Pages** → **Create** → pestaña **Workers** →
+**Import a repository**.
+
+Elegir `byrhzu/cana-brava`. Cuando pregunte por la configuración:
+
+| Campo              | Qué poner  |
+|--------------------|------------|
+| Project name       | planilla-api |
+| Root directory     | backend    |
+
+Después, en el Worker creado → **Settings** → **Bindings** →
+**Add** → **D1 database**:
+
+| Campo        | Qué poner           |
+|--------------|---------------------|
+| Variable name| `DB`                |
+| D1 database  | planilla-canabrava  |
+
+---
+
 ## Lo que viene
 
 | Paso | Qué |
 |------|-----|
-| 2 | Crear la base D1 y cargarle `esquema.sql` |
-| 3 | El Worker con la API, y el panel leyendo de ahí |
-| 4 | Resend para mandar las boletas por correo |
+| 4 | La API y el panel leyendo de ahí |
+| 5 | Resend para mandar las boletas por correo |

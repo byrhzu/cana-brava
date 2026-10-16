@@ -42,6 +42,8 @@
 	--ok-bg:#e8f5ed;  --ok-tx:#1c7a46;
 	--esp-bg:#fdf3dc; --esp-tx:#8a6d12;
 	--mal-bg:#fdeceb; --mal-tx:#b3362f;
+	--cb-bg:#e7f0e6; --cb-tx:#2c6b38;
+	--pb-bg:#f8efd9; --pb-tx:#8a6510;
 	--off-bg:#eeefec; --off-tx:#6b7366;
 
 	--e1:.25rem; --e2:.5rem; --e3:.75rem; --e4:1rem; --e5:1.5rem; --e6:2rem;
@@ -59,10 +61,12 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
 
 /* ---------- barra lateral ---------- */
 .barra{width:var(--barra);flex:0 0 var(--barra);display:flex;flex-direction:column;padding:var(--e5) var(--e3);background:var(--sup)}
-.marca{display:flex;align-items:center;gap:.55rem;padding:0 var(--e3) var(--e5)}
-.marca .caja{background:var(--verde-marca);border-radius:10px;padding:7px;display:grid;place-items:center}
-.marca img{height:19px;width:auto}
-.marca b{font-weight:600;font-size:1.02rem}
+/* Las dos marcas, del mismo peso visual. Los logos son negro sobre
+   blanco, así que el multiply se come el fondo y quedan sobre el papel
+   de la barra sin recuadro. */
+.marca{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:.7rem;padding:0 var(--e3) var(--e5)}
+.marca img{width:100%;height:30px;object-fit:contain}
+.marca .sep{width:1px;height:26px;background:var(--linea)}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav button{display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;padding:.56rem var(--e3);border-radius:10px;color:var(--txt2);font-size:.9rem;transition:background .18s,color .18s}
 .nav button:hover{background:var(--ctrl);color:var(--txt)}
@@ -80,14 +84,26 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
 
 /* El nombre de la sede es el control: se lee y se toca en el mismo
    lugar, y el panel se descuelga de ahí. */
-.sede-sel{position:relative;margin-top:.3rem}
-.sede-sel > button{display:inline-flex;align-items:center;gap:.3rem;padding:.26rem .5rem .26rem .62rem;
-	margin-left:-.62rem;border-radius:999px;color:var(--txt2);font-size:.9rem;transition:background .15s}
-.sede-sel > button:hover{background:var(--ctrl);color:var(--txt)}
-.sede-sel > button[aria-expanded="true"]{background:var(--verde-suave);color:var(--verde-t)}
+.sede-sel{position:relative;margin-top:.45rem}
+.sede-sel > button{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem .75rem .4rem .62rem;
+	border-radius:999px;background:var(--sup2);color:var(--txt);font-size:.93rem;font-weight:500;
+	transition:background .18s,color .18s,box-shadow .18s}
+.sede-sel > button:hover{box-shadow:inset 0 0 0 1px var(--linea)}
 .sede-sel > button svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;
-	stroke-linecap:round;stroke-linejoin:round;transition:transform .18s}
+	stroke-linecap:round;stroke-linejoin:round;opacity:.65;transition:transform .18s}
 .sede-sel > button[aria-expanded="true"] svg{transform:rotate(180deg)}
+
+/* Un tono por marca: verde para Caña Brava, mostaza para Pollo Bravo y
+   los dos cuando se ven juntas. Apenas un fondo, nada más. */
+.sede-sel > button[data-tono="cb"]{background:var(--cb-bg);color:var(--cb-tx)}
+.sede-sel > button[data-tono="pb"]{background:var(--pb-bg);color:var(--pb-tx)}
+.sede-sel > button[data-tono="mix"]{background:linear-gradient(100deg,var(--cb-bg) 0%,var(--cb-bg) 42%,var(--pb-bg) 58%,var(--pb-bg) 100%)}
+.sede-sel .logos{display:inline-flex;align-items:center;gap:.4rem}
+.logo-marca{height:17px;width:auto;object-fit:contain}
+.logo-fila{height:14px;width:auto;object-fit:contain}
+.panel-sede .sede-marca{display:flex;align-items:center;gap:.45rem}
+.panel-sede .sede-marca[data-tono="cb"][aria-pressed="true"]{background:var(--cb-bg);color:var(--cb-tx)}
+.panel-sede .sede-marca[data-tono="pb"][aria-pressed="true"]{background:var(--pb-bg);color:var(--pb-tx)}
 
 .panel-sede{position:absolute;top:calc(100% + 6px);left:-.62rem;z-index:40;min-width:244px;
 	background:var(--sup);border-radius:16px;padding:6px;
@@ -171,7 +187,34 @@ tbody tr.inactiva td.nombre{font-weight:400}
 .pendientes ul{margin:0;padding-left:1.05rem;font-size:.84rem}
 .pendientes li{margin:.1rem 0}
 .acciones{display:flex;gap:.45rem;flex-wrap:wrap}
+.acciones .bt .et{margin-left:.35rem;font-size:.72rem}
 .pie-tarj{margin:var(--e3) 0 0;font-size:.82rem;color:var(--tenue)}
+
+.fecha-ctrl{position:relative}
+.fecha-bt{display:flex;align-items:center;justify-content:space-between;gap:.5rem;width:100%;height:40px;
+	padding:0 .8rem;border-radius:var(--radio-chico);background:var(--sup2);
+	font-family:var(--datos);font-size:.9rem;color:var(--txt);text-align:left}
+.fecha-bt svg{width:15px;height:15px;flex:none;stroke:var(--tenue);fill:none;stroke-width:1.7;
+	stroke-linecap:round;stroke-linejoin:round}
+.fecha-bt:hover{box-shadow:inset 0 0 0 1px var(--linea)}
+.fecha-bt:focus-visible{outline:2px solid var(--verde);outline-offset:1px}
+
+.calendario{position:absolute;top:calc(100% + 6px);left:0;z-index:70;width:252px;
+	background:var(--sup);border-radius:16px;padding:.7rem;
+	box-shadow:0 14px 34px rgba(20,26,18,.16);animation:caer .16s ease}
+.cal-cab{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
+.cal-cab b{font-size:.9rem}
+.cal-cab .flecha{width:26px;height:26px;border-radius:50%;color:var(--txt2);font-size:1.05rem;line-height:1}
+.cal-cab .flecha:hover{background:var(--ctrl);color:var(--txt)}
+.cal-sem,.cal-dias{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-sem span{text-align:center;font-size:.7rem;color:var(--tenue);padding:.2rem 0}
+.cal-dias button{height:30px;border-radius:9px;font-family:var(--datos);font-size:.84rem;color:var(--txt2);
+	transition:background .14s,color .14s}
+.cal-dias button:hover{background:var(--ctrl);color:var(--txt)}
+.cal-dias .hoy{color:var(--verde-t);font-weight:700}
+.cal-dias .puesto{background:var(--verde);color:#fff;font-weight:600}
+.cal-dias .puesto:hover{background:var(--verde);color:#fff}
+.cal-pie{display:flex;gap:.35rem;justify-content:flex-end;margin-top:.45rem;padding-top:.45rem;border-top:1px solid var(--linea)}
 .bt.peligro{background:var(--mal-bg);color:var(--mal-tx);font-weight:600}
 .mini[readonly]{background:none;color:var(--tenue);cursor:default}
 .mini[readonly]:focus{outline:none}
@@ -268,12 +311,12 @@ tfoot td{border-top:1px solid var(--linea);font-weight:700;font-family:var(--dat
 <div class="app">
 	<aside class="barra">
 		<div class="marca">
-			<span class="caja"><img src="assets/img/logo-canabrava.png?v=20260922a" alt="Caña Brava"></span>
+			<img src="assets/img/logo-cana-brava.png" alt="Caña Brava">
 			<span class="sep"></span>
-			<b>Planilla</b>
+			<img src="assets/img/logo-pollo-bravo.png" alt="Pollo Bravo">
 		</div>
 		<nav class="nav" id="nav">
-			<button type="button" data-ir="quincena" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h10"/></svg><span>Quincena</span></button>
+			<button type="button" data-ir="quincena" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h10"/></svg><span>Planilla</span></button>
 			<button type="button" data-ir="empleados"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M17 11h4M19 9v4"/></svg><span>Empleados</span><em class="cuenta" id="cuenta-emp"></em></button>
 			<button type="button" data-ir="historial"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.2 2"/></svg><span>Historial</span></button>
 			<button type="button" data-ir="reportes"><svg viewBox="0 0 24 24"><path d="M5 20V9M12 20V4M19 20v-7"/></svg><span>Reportes</span></button>
@@ -736,10 +779,35 @@ function cabecera(titulo, derecha, sinSede){
 		+ '</div>';
 }
 
+function marcasEnVista(){
+	var g = [];
+	idsEnVista().forEach(function(id){
+		var l = localDe(id);
+		if (l.grupo && g.indexOf(l.grupo) === -1) g.push(l.grupo);
+	});
+	return g;
+}
+function claveMarca(g){
+	var t = (g || '').toLowerCase();
+	if (t.indexOf('ca\u00f1a') === 0 || t.indexOf('cana') === 0) return 'cb';
+	if (t.indexOf('pollo') === 0) return 'pb';
+	return '';
+}
+function logoMarca(g, clase){
+	var k = claveMarca(g);
+	if (!k) return '';
+	return '<img class="'+(clase||'logo-marca')+'" src="assets/img/logo-'
+		+ (k === 'cb' ? 'cana-brava' : 'pollo-bravo') + '.png" alt="'+esc(g)+'">';
+}
+
 function selectorSede(){
+	var ms = marcasEnVista();
+	var tono = ms.length === 1 ? claveMarca(ms[0]) : (ms.length > 1 ? 'mix' : '');
+	var logos = ms.map(function(g){ return logoMarca(g); }).join('');
 	return '<div class="sede-sel">'
-		+ '<button type="button" id="abrir-sedes" aria-expanded="'+(!!estado.abrirSedes)+'">'
-		+ '<span>'+tituloVista()+'</span>'
+		+ '<button type="button" id="abrir-sedes" data-tono="'+tono+'" aria-expanded="'+(!!estado.abrirSedes)+'">'
+		+ (logos ? '<span class="logos">'+logos+'</span>' : '')
+		+ '<span class="nombre">'+tituloVista()+'</span>'
 		+ '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>'
 		+ (estado.abrirSedes ? panelSedes() : '')
 		+ '</div>';
@@ -902,6 +970,7 @@ function barraPeriodo(){
 		+ '<div class="quincenas">'
 		+ '<button type="button" data-q="1" aria-pressed="'+(estado.q===1)+'">Quincena 1</button>'
 		+ '<button type="button" data-q="2" aria-pressed="'+(estado.q===2)+'">Quincena 2</button>'
+		+ '<button type="button" data-q="mes" aria-pressed="'+(estado.q==='mes')+'">Mes</button>'
 		+ '</div>'
 		+ '<div class="buscador"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'
 		+ '<input type="search" id="buscar" placeholder="Buscar empleado" value="'+esc(estado.buscar||'')+'"></div>'
@@ -934,8 +1003,10 @@ function panelSedes(){
 				? gr.items.length && gr.items.every(function(l){ return estado.sel.indexOf(l.id) !== -1; })
 				: estado.local === 'g:'+gr.g;
 			html += '<button class="sede-op sede-marca'+(elige?' marcable':'')+'" type="button"'
+				+ ' data-tono="'+claveMarca(gr.g)+'"'
 				+ (elige ? ' data-sel-grupo="'+esc(gr.g)+'"' : ' data-local="g:'+esc(gr.g)+'"')
-				+ ' aria-pressed="'+!!marcada+'">'+esc(gr.g)+'</button>';
+				+ ' aria-pressed="'+!!marcada+'">'
+				+ logoMarca(gr.g, 'logo-fila') + '<span>'+esc(gr.g)+'</span></button>';
 		}
 		html += gr.items.map(function(l){
 			var et = gr.g ? (l.sede || nombreLocal(l)) : nombreLocal(l);
@@ -956,6 +1027,7 @@ function panelSedes(){
 }
 
 function netoQuincenaAnterior(){
+	if (estado.q === 'mes') return 0;
 	var p = estado.periodo, q = estado.q - 1;
 	if (q < 1){
 		var a = p.split('-'), d = new Date(Number(a[0]), Number(a[1])-2, 1);
@@ -975,7 +1047,65 @@ function netoQuincenaAnterior(){
 	return t;
 }
 
+/* La vista del mes suma las dos quincenas. Es de consulta: cerrar,
+   reabrir y las boletas siguen siendo cosa de cada quincena. */
+function pantallaMes(){
+	var locales = idsEnVista();
+	var filas='', tBruto=0, tDed=0, tNeto=0, tPat=0, n=0;
+	locales.forEach(function(lid){
+		empleadosDe(lid).filter(coincide).forEach(function(e){
+			var c = calcular(e, ajusteDe(estado.periodo, lid, e.id), estado.periodo);
+			var bruto = c.q1.bruto + c.q2.bruto;
+			var ded = c.q1.deducciones + c.q2.deducciones;
+			var neto = c.q1.neto + c.q2.neto;
+			var horas = c.q1.horas + c.q2.horas;
+			var adel = c.q1.adelanto + c.q2.adelanto;
+			tBruto += bruto; tDed += ded; tNeto += neto; tPat += c.costoPatronal; n++;
+			filas += '<tr>'
+				+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')
+				+ (unaSedeSola() ? '' : ' | '+esc(nombreLocal(localDe(lid))))+'</small></td>'
+				+ '<td class="n">'+col(e.salarioMensual)+'</td>'
+				+ '<td class="n">'+(horas ? nDias(horas)+' h' : '—')+'</td>'
+				+ '<td class="n">'+(adel ? col(adel) : '—')+'</td>'
+				+ '<td class="n">'+col(bruto)+'</td>'
+				+ '<td class="n">−'+col(ded)+'</td>'
+				+ '<td class="n"><strong>'+col(neto)+'</strong></td></tr>';
+		});
+	});
+
+	var cuerpo = n
+		? '<div class="tabla-env"><table><thead><tr><th>Empleado</th><th class="n">Salario</th>'
+			+ '<th class="n">Horas extra</th><th class="n">Adelantos</th><th class="n">Bruto</th>'
+			+ '<th class="n">Deducciones</th><th class="n">Neto</th></tr></thead>'
+			+ '<tbody>'+filas+'</tbody>'
+			+ '<tfoot><tr><td>'+plural(n,'empleado','empleados')+'</td><td></td><td></td><td></td>'
+			+ '<td class="n">'+col(tBruto)+'</td><td class="n">−'+col(tDed)+'</td>'
+			+ '<td class="n">'+col(tNeto)+'</td></tr></tfoot></table></div>'
+		: '<div class="vacio"><h3>Todavía no hay empleados aquí</h3></div>';
+
+	var e1 = estadoQuincena(estado.periodo, 1, locales);
+	var e2 = estadoQuincena(estado.periodo, 2, locales);
+	var hoyTxt = new Date().toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+	return cabecera('Planilla de '+nombreMes(estado.periodo).split(' de ')[0],
+			'<span class="fecha">'+hoyTxt.charAt(0).toUpperCase()+hoyTxt.slice(1)+'</span>')
+		+ barraPeriodo()
+		+ '<dl class="cifras">'
+		+ cifra(I.billete,'Planilla del mes',col(tNeto),'las dos quincenas')
+		+ cifra(I.resta,'Deducciones',col(tDed),'')
+		+ cifra(I.empresa,'Costo para la empresa',col(tBruto+tPat),'bruto + '+D.tasas.patronal+' % patronal')
+		+ cifra(I.gente,'Empleados',String(n), pieSedes())
+		+ '</dl>'
+		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.lista)+'Resumen del mes</h2>'
+		+ '<div class="acciones">'
+		+ '<button class="bt" type="button" data-q="1">Quincena 1 '+etiquetaEstado(e1)+'</button>'
+		+ '<button class="bt" type="button" data-q="2">Quincena 2 '+etiquetaEstado(e2)+'</button>'
+		+ '</div></div>'+cuerpo+'</section>'
+		+ bitacoraDelPeriodo(locales);
+}
+
 function pantallaQuincena(){
+	if (estado.q === 'mes') return pantallaMes();
 	var locales = idsEnVista();
 	var est = estadoQuincena(estado.periodo, estado.q, locales);
 	var bloqueo = est.estado === 'cerrada' ? ' readonly' : '';
@@ -1048,7 +1178,7 @@ function pantallaQuincena(){
 		+ '<dl class="cifras">'
 		+ cifra(I.billete,'Planilla a Pagar',col(tNeto), deltaHtml(tNeto, netoQuincenaAnterior()) + diasQuincena(estado.periodo, estado.q))
 		+ cifra(I.resta,'Deducciones',col(tDed),'')
-		+ cifra(I.empresa,'Costo para la Empresa',col(tBruto+tPat),'bruto + '+D.tasas.patronal+' % patronal')
+		+ cifra(I.empresa,'Costo para la empresa',col(tBruto+tPat),'bruto + '+D.tasas.patronal+' % patronal')
 		+ cifra(I.gente,'Empleados',String(n), pieSedes())
 		+ '</dl>'
 		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.lista)+'Detalle</h2>'
@@ -1070,7 +1200,7 @@ function bitacoraDelPeriodo(locales){
 	});
 	if (!filas.length) return '';
 	filas.sort(function(a,b){ return a.cuando < b.cuando ? 1 : -1; });
-	return '<section class="tarj"><div class="tarj-cab"><h2>Bitácora del mes</h2></div>'
+	return '<section class="tarj"><div class="tarj-cab"><h2>Bitácora</h2></div>'
 		+ '<div class="tabla-env"><table><thead><tr><th>Cuándo</th><th>Qué pasó</th>'
 		+ (locales.length > 1 ? '<th>Sede</th>' : '')+'</tr></thead><tbody>'
 		+ filas.map(function(f){
@@ -1140,6 +1270,7 @@ function pantallaHistorial(){
 			});
 			if (est.estado === 'abierta' && !movida && !tot) return '';
 			var actual = pe === estado.periodo && q === estado.q;
+			if (estado.q === 'mes' && pe === estado.periodo) actual = false;
 			return '<tr class="abrible'+(actual?' aqui':'')+'" tabindex="0" data-periodo="'+pe+'|'+q+'">'
 				+ '<td class="nombre">'+nombreMes(pe)+'<small>quincena '+q+' | '+diasQuincena(pe,q)+'</small></td>'
 				+ '<td class="n">'+col(tot)+'</td>'
@@ -1171,7 +1302,7 @@ function pantallaReportes(){
 
 	return cabecera('Reportes de '+nombreMes(estado.periodo).split(' de ')[0])
 		+ barraPeriodo().replace('<div class="quincenas">','<div class="quincenas" hidden>')
-		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.empresa)+'Costo del mes por local</h2></div>'
+		+ '<section class="tarj"><div class="tarj-cab"><h2>'+ico(I.empresa)+'Costo mensual por local</h2></div>'
 		+ '<div class="tabla-env"><table><thead><tr><th>Local</th><th class="n">Bruto</th><th class="n">Deducciones</th>'
 		+ '<th class="n">Neto</th><th class="n">Patronal</th><th class="n">Costo total</th></tr></thead>'
 		+ '<tbody>'+filas+'</tbody></table></div></section>'
@@ -1241,8 +1372,6 @@ function tarjetaSicere(ids){
 		+ '<div><dt>Cuota patronal '+pct(t.patronal)+'</dt><dd>'+col(patronal)+'</dd></div>'
 		+ '<div><dt>Total a la Caja</dt><dd>'+col(obrera+patronal)+'</dd></div>'
 		+ '</dl>'
-		+ '<p class="pie-tarj">Las cuotas son para cuadrar contra lo que calcule la Oficina Virtual. '
-		+ 'Los días bajan por incapacidad, maternidad y permiso sin goce; las vacaciones no los bajan.</p>'
 		+ '</section>';
 }
 
@@ -1252,7 +1381,7 @@ function pct(v){ return (Number(v)||0).toLocaleString('es-CR',{maximumFractionDi
 
 var VALORES = {
 	tasas: {
-		titulo: 'Porcentajes del año',
+		titulo: 'Cargas y deducciones',
 		campos: [
 			['sem','CCSS'], ['ivm','IVM'], ['bp','Banco Popular'], ['patronal','Carga patronal'],
 			['rentaExento','Renta exenta'], ['vacDiasMes','Vacaciones por mes']
@@ -1267,7 +1396,7 @@ var VALORES = {
 		}
 	},
 	ausencias: {
-		titulo: 'Lo que paga la empresa',
+		titulo: 'Costo para la empresa',
 		campos: [
 			['incDias','CCSS, días'], ['incPct','CCSS, %'],
 			['insDias','INS, días'], ['insPct','INS, %'],
@@ -1339,10 +1468,110 @@ function pantallaAjustes(){
 		+ tarjetaValores('tasas')
 		+ tarjetaValores('ausencias')
 
-		+ '<section class="tarj"><div class="tarj-cab"><h2>Datos</h2></div>'
+		+ '<section class="tarj"><div class="tarj-cab"><h2>Respaldo</h2></div>'
 		+ '<div style="display:flex;gap:.5rem;flex-wrap:wrap">'
 		+ '<button class="bt" type="button" id="exportar">Descargar copia</button>'
 		+ '<button class="bt" type="button" id="importar">Restaurar copia</button></div></section>';
+}
+
+/* =============================================================
+   4b. CALENDARIO
+   Un campo de fecha propio en vez del del navegador, que cambia de cara
+   según el sistema y no se puede vestir. Guarda el valor en un input
+   escondido, así el resto del código sigue leyendo .value como siempre.
+   ============================================================= */
+var DIASEM = ['L','M','M','J','V','S','D'];
+
+function campoFecha(id, etiqueta, valor){
+	return '<label class="campo"><span>'+etiqueta+'</span>'
+		+ '<div class="fecha-ctrl">'
+		+ '<input type="hidden" id="'+id+'" value="'+esc(valor||'')+'">'
+		+ '<button type="button" class="fecha-bt" data-cal="'+id+'">'
+		+ '<span>'+(valor ? fechaLarga(valor) : 'Elegir fecha')+'</span>'
+		+ '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/>'
+		+ '<path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button>'
+		+ '</div></label>';
+}
+
+function fechaLarga(iso){
+	var d = aFecha(iso);
+	if (!d) return 'Elegir fecha';
+	return d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
+}
+function isoDe(d){
+	return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function cerrarCalendario(){
+	var v = document.querySelector('.calendario');
+	if (v) v.parentNode.removeChild(v);
+}
+
+function abrirCalendario(id, boton){
+	cerrarCalendario();
+	var input = document.getElementById(id);
+	var elegido = aFecha(input.value);
+	var vista = elegido ? new Date(elegido.getFullYear(), elegido.getMonth(), 1)
+		: new Date(hoyFecha().getFullYear(), hoyFecha().getMonth(), 1);
+
+	var caja = document.createElement('div');
+	caja.className = 'calendario';
+	boton.parentNode.appendChild(caja);
+
+	function pintarCal(){
+		var y = vista.getFullYear(), m = vista.getMonth();
+		var primero = new Date(y, m, 1);
+		/* La semana arranca el lunes, como el calendario de pared. */
+		var hueco = (primero.getDay() + 6) % 7;
+		var largo = new Date(y, m+1, 0).getDate();
+		var hoy = hoyFecha();
+
+		var celdas = '';
+		for (var i = 0; i < hueco; i++) celdas += '<span></span>';
+		for (var d = 1; d <= largo; d++){
+			var f = new Date(y, m, d);
+			var clases = [];
+			if (elegido && f.getTime() === elegido.getTime()) clases.push('puesto');
+			if (f.getTime() === hoy.getTime()) clases.push('hoy');
+			celdas += '<button type="button" class="'+clases.join(' ')+'" data-dia="'+isoDe(f)+'">'+d+'</button>';
+		}
+
+		caja.innerHTML = '<div class="cal-cab">'
+			+ '<button type="button" class="flecha" data-mes="-1" aria-label="Mes anterior">‹</button>'
+			+ '<b>'+MESES[m].charAt(0).toUpperCase()+MESES[m].slice(1)+' '+y+'</b>'
+			+ '<button type="button" class="flecha" data-mes="1" aria-label="Mes siguiente">›</button></div>'
+			+ '<div class="cal-sem">'+DIASEM.map(function(x){ return '<span>'+x+'</span>'; }).join('')+'</div>'
+			+ '<div class="cal-dias">'+celdas+'</div>'
+			+ '<div class="cal-pie"><button type="button" class="bt chico" data-dia="'+isoDe(hoy)+'">Hoy</button>'
+			+ (input.value ? '<button type="button" class="bt chico" data-dia="">Borrar</button>' : '')+'</div>';
+	}
+
+	caja.onclick = function(ev){
+		var b = ev.target.closest('button');
+		if (!b) return;
+		ev.stopPropagation();
+		if (b.dataset.mes){
+			vista = new Date(vista.getFullYear(), vista.getMonth() + Number(b.dataset.mes), 1);
+			pintarCal();
+			return;
+		}
+		if (b.dataset.dia != null){
+			input.value = b.dataset.dia;
+			boton.querySelector('span').textContent = b.dataset.dia ? fechaLarga(b.dataset.dia) : 'Elegir fecha';
+			input.dispatchEvent(new Event('input', { bubbles:true }));
+			input.dispatchEvent(new Event('change', { bubbles:true }));
+			cerrarCalendario();
+		}
+	};
+
+	pintarCal();
+
+	/* Si se sale por la derecha de la hoja, se cuelga del otro lado. */
+	var limite = (boton.closest('.hoja') || document.body).getBoundingClientRect();
+	if (caja.getBoundingClientRect().right > limite.right - 8){
+		caja.style.left = 'auto';
+		caja.style.right = '0';
+	}
 }
 
 /* =============================================================
@@ -1405,7 +1634,7 @@ function fichaEmpleado(id){
 		+ '<label class="campo"><span>Correo</span><input id="f-correo" type="email" value="'+esc(e.correo)+'"></label>'
 		+ '<label class="campo"><span>Puesto</span><input id="f-puesto" value="'+esc(e.puesto)+'"></label>'
 		+ '<label class="campo"><span>Local</span><select id="f-local">'+ops+'</select></label>'
-		+ '<label class="campo"><span>Fecha de ingreso</span><input id="f-ingreso" type="date" value="'+esc(e.fechaIngreso)+'"></label>'
+		+ campoFecha('f-ingreso','Fecha de ingreso', e.fechaIngreso)
 		+ '<label class="campo"><span>Salario mensual</span><input id="f-salario" type="number" step="1000" value="'+(e.salarioMensual||'')+'"></label>'
 		+ '<label class="campo"><span>Cuenta o SINPE</span><input id="f-cuenta" value="'+esc(e.cuenta)+'"></label>'
 		+ '<label class="campo"><span>Estado</span><select id="f-activo">'
@@ -1457,8 +1686,8 @@ function fichaEmpleado(id){
 			return '<option value="'+k+'"'+(k===tipoSel?' selected':'')+'>'+AUSENCIAS[k].et+'</option>';
 		}).join('')
 		+ '</select></label>'
-		+ '<label class="campo"><span>Desde</span><input id="v-desde" type="date"></label>'
-		+ '<label class="campo"><span>Hasta</span><input id="v-hasta" type="date"></label>'
+		+ campoFecha('v-desde','Desde','')
+		+ campoFecha('v-hasta','Hasta','')
 		+ '<label class="campo"><span>Días</span><input id="v-dias" type="number" step="1" min="1"'
 		+ (tipoSel === 'vacaciones' ? '' : ' readonly')+'></label>'
 		+ (pideBoleta ? '<label class="campo"><span>Boleta</span><input id="v-boleta" placeholder="Número"></label>' : '')
@@ -1506,7 +1735,7 @@ function fichaEmpleado(id){
 			return '<option value="'+k+'"'+(k===mot?' selected':'')+'>'+MOTIVOS[k]+'</option>';
 		}).join('')
 		+ '</select></label>'
-		+ '<label class="campo"><span>Fecha de salida</span><input id="q-salida" type="date" value="'+esc(fsal)+'"></label>'
+		+ campoFecha('q-salida','Fecha de salida', fsal)
 		+ '</div>'
 		+ '<div class="boleta">'
 		+ '<div class="enc"><b>'+textoAntiguedad(q.antiguedad)+'</b>'
@@ -1868,6 +2097,15 @@ function moverMes(n){
 }
 
 document.addEventListener('click', function(ev){
+	var abreCal = ev.target.closest('[data-cal]');
+	if (abreCal){
+		var yaAbierto = abreCal.parentNode.querySelector('.calendario');
+		cerrarCalendario();
+		if (!yaAbierto) abrirCalendario(abreCal.dataset.cal, abreCal);
+		return;
+	}
+	if (!ev.target.closest('.calendario')) cerrarCalendario();
+
 	/* El panel de sedes se cierra solo al tocar cualquier otra cosa. */
 	if (estado.abrirSedes && !ev.target.closest('.sede-sel')){
 		estado.abrirSedes = false;
@@ -1914,7 +2152,7 @@ document.addEventListener('click', function(ev){
 		});
 		pintar(); return;
 	}
-	if (t.dataset.q){ estado.q=Number(t.dataset.q); pintar(); return; }
+	if (t.dataset.q){ estado.q = t.dataset.q==='mes' ? 'mes' : Number(t.dataset.q); estado.pantalla='quincena'; pintar(); return; }
 	if (t.id==='mes-ant'){ moverMes(-1); return; }
 	if (t.id==='mes-sig'){ moverMes(1); return; }
 	if (t.id==='nuevo-emp'){ fichaEmpleado(null); return; }

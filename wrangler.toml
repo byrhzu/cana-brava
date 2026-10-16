@@ -1,0 +1,27 @@
+# El Worker vive en backend/, pero la configuración va en la raíz del
+# repositorio para que Cloudflare no necesite que le digan en qué
+# carpeta buscar: con "npx wrangler deploy" desde la raíz alcanza.
+
+name = "planilla-api"
+main = "backend/src/index.js"
+compatibility_date = "2026-09-01"
+
+# La ruta queda en el mismo dominio que el panel. Así el navegador
+# manda solo la galleta de Access en cada llamada: misma casa, misma
+# sesión. Si la API viviera en otro dominio habría que pelear con CORS
+# y con un segundo login.
+routes = [
+	{ pattern = "canabravacr.com/api/*", zone_name = "canabravacr.com" }
+]
+
+[vars]
+ACCESS_TEAM = "yellow-shape-6214.cloudflareaccess.com"
+# Los identificadores de las aplicaciones de Access que pueden llamar.
+# El primero es el de planilla.html; cuando se cree la de /api se
+# agrega acá separado por coma.
+ACCESS_AUD = "f49ebc468e9f0b82725a827e1b1750031c8aa84f9210329635638da40e18bb2b"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "planilla-canabrava"
+database_id = "PEGAR_AQUI_EL_ID_DE_LA_BASE"

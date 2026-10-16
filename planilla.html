@@ -396,24 +396,6 @@ function cargar(){
 function guardar(){ try { localStorage.setItem(LLAVE, JSON.stringify(D)); } catch(e){} }
 cargar();
 
-/* Un empleado de ejemplo con salario de 450.000 para ver los numeros
-   andando. Se siembra una sola vez: si lo borras no vuelve. */
-if (!D.sembrado){
-	D.sembrado = true;
-	if (!D.empleados.some(function(e){ return e.id === 'ejemplo450'; })){
-		D.empleados.push({
-			id:'ejemplo450', localId:'cbgpl', nombre:'Ana Vargas Rojas',
-			cedula:'7-0123-0456', correo:'ana.vargas@ejemplo.cr', puesto:'Salonera',
-			fechaIngreso:'2025-03-01', salarioMensual:450000, cuenta:'CR05 0000 0000 0000 0000 00',
-			activo:true,
-			ausencias:[
-				{ id:'v1', tipo:'vacaciones', desde:'2026-01-05', hasta:'2026-01-10', dias:6, nota:'Fin de año' },
-				{ id:'a1', tipo:'ccss', desde:'2026-10-05', hasta:'2026-10-09', dias:5, boleta:'1234567', nota:'Gripe' }
-			]
-		});
-	}
-	guardar();
-}
 
 /* =============================================================
    2. EL CÁLCULO
@@ -460,7 +442,10 @@ var AUSENCIAS = {
 	ccss:       { et:'Incapacidad CCSS',       corto:'Incapacidad',  rebaja:true },
 	ins:        { et:'Incapacidad INS',        corto:'Riesgo laboral', rebaja:true },
 	maternidad: { et:'Licencia de maternidad', corto:'Maternidad',   rebaja:true },
-	singoce:    { et:'Permiso sin goce',       corto:'Permiso sin goce', rebaja:true }
+	singoce:    { et:'Permiso sin goce',       corto:'Permiso sin goce', rebaja:true },
+	/* No se registra: lo pone solo el sistema con la fecha de ingreso y
+	   la de salida. Por eso no aparece en la lista de tipos. */
+	fuera:      { et:'Fuera de planilla',      corto:'fuera de planilla', rebaja:false, oculto:true }
 };
 
 function diasNaturales(desde, hasta){
@@ -486,6 +471,21 @@ function ausenciaEnQuincena(emp, periodo, nq){
 	var b = bordesQuincena(periodo, nq);
 	var t = D.tasas, diario = salarioDiario(emp);
 	var r = { rebajoDias:0, rebajo:0, subsidio:0, lineas:[] };
+	var largo = diasEntre(b.ini, b.fin) + 1;
+
+	/* Los días fuera del contrato no se pagan: los de antes de entrar y
+	   los de después del último día. */
+	var entra = aFecha(emp.fechaIngreso), sale = aFecha(emp.fechaSalida);
+	var fuera = 0;
+	if (entra && entra > b.ini) fuera += Math.min(diasEntre(b.ini, entra), largo);
+	if (sale && sale < b.fin) fuera += Math.min(diasEntre(sale, b.fin), largo);
+	fuera = Math.min(fuera, largo);
+	if (fuera > 0){
+		r.rebajoDias += fuera;
+		r.rebajo += fuera * diario;
+		r.lineas.push({ tipo:'fuera', dias:fuera, boleta:'', diasPaga:0, pct:0, monto:0,
+			desde:emp.fechaIngreso || '', hasta:emp.fechaSalida || '' });
+	}
 
 	(emp.ausencias || []).forEach(function(v){
 		var reg = AUSENCIAS[v.tipo];
@@ -746,7 +746,8 @@ function textoRegla(tipo){
    nadie tenga que acordarse de la regla. */
 function detalleAusencia(l){
 	var reg = AUSENCIAS[l.tipo] || {};
-	var partes = [plural(l.dias,'día','días') + ' de ' + reg.corto.toLowerCase()];
+	var partes = [plural(l.dias,'día','días')
+		+ (l.tipo === 'fuera' ? ' ' : ' de ') + reg.corto.toLowerCase()];
 	if (l.boleta) partes.push('boleta ' + l.boleta);
 	return partes.join(', ');
 }
@@ -754,7 +755,8 @@ function resumenAusencias(q){
 	var por = {};
 	(q.ausencias||[]).forEach(function(l){ por[l.tipo] = (por[l.tipo]||0) + l.dias; });
 	return Object.keys(por).map(function(k){
-		return plural(por[k],'día','días') + ' de ' + AUSENCIAS[k].corto.toLowerCase();
+		return plural(por[k],'día','días')
+			+ (k === 'fuera' ? ' ' : ' de ') + AUSENCIAS[k].corto.toLowerCase();
 	}).join(' | ');
 }
 function nDias(n){ return (Math.round((n||0)*10)/10).toLocaleString('es-CR',{maximumFractionDigits:1}); }
@@ -855,7 +857,23 @@ function coincide(e){
 	if (!t) return true;
 	return (e.nombre+' '+(e.cedula||'')+' '+(e.puesto||'')).toLowerCase().indexOf(t) !== -1;
 }
-function empleadosDe(id){ return D.empleados.filter(function(e){ return e.localId===id && e.activo!==false; }); }
+/* Quién estaba en planilla en una quincena. Sin fecha de salida, un
+   empleado inactivo desaparece de todos lados y eso cambiaría quincenas
+   ya cerradas; con la fecha, sigue apareciendo hasta el día que se fue. */
+function trabajabaEn(e, periodo, q){
+	if (!periodo) return e.activo !== false;
+	var b = bordesQuincena(periodo, q);
+	var entra = aFecha(e.fechaIngreso);
+	if (entra && entra > b.fin) return false;
+	var sale = aFecha(e.fechaSalida);
+	if (sale) return sale >= b.ini;
+	return e.activo !== false;
+}
+function empleadosEnQuincena(lid, periodo, q){
+	return D.empleados.filter(function(e){
+		return e.localId === lid && trabajabaEn(e, periodo, q);
+	});
+}
 function nombreLocal(l){
 	if (!l) return '—';
 	return l.nombre || ((l.grupo?l.grupo+' ':'') + (l.sede||'')).trim() || '—';
@@ -1080,8 +1098,8 @@ function netoQuincenaAnterior(){
 	locales.forEach(function(lid){
 		var pp = D.periodos[p] && D.periodos[p][lid];
 		if (!pp) return;
-		empleadosDe(lid).forEach(function(e){
-			var c = calcular(e, (pp.ajustes && pp.ajustes[e.id]) || {}, p);
+		empleadosEnQuincena(lid, p, q).forEach(function(e){
+			var c = calcular(e, ajusteLeer(p, lid, e.id), p);
 			t += q===1 ? c.q1.neto : c.q2.neto;
 		});
 	});
@@ -1094,7 +1112,10 @@ function pantallaMes(){
 	var locales = idsEnVista();
 	var filas='', tBruto=0, tDed=0, tNeto=0, tPat=0, n=0;
 	locales.forEach(function(lid){
-		empleadosDe(lid).filter(coincide).forEach(function(e){
+		D.empleados.filter(function(e){
+			return e.localId === lid && coincide(e)
+				&& (trabajabaEn(e, estado.periodo, 1) || trabajabaEn(e, estado.periodo, 2));
+		}).forEach(function(e){
 			var c = calcular(e, ajusteLeer(estado.periodo, lid, e.id), estado.periodo);
 			var bruto = c.q1.bruto + c.q2.bruto;
 			var ded = c.q1.deducciones + c.q2.deducciones;
@@ -1156,7 +1177,7 @@ function pantallaQuincena(){
 
 	var filas='', tBruto=0, tDed=0, tNeto=0, tPat=0, n=0;
 	locales.forEach(function(lid){
-		empleadosDe(lid).filter(coincide).forEach(function(e){
+		empleadosEnQuincena(lid, estado.periodo, estado.q).filter(coincide).forEach(function(e){
 			var c = calcular(e, ajusteLeer(estado.periodo, lid, e.id), estado.periodo);
 			var q = estado.q===1 ? c.q1 : c.q2;
 			tBruto+=q.bruto; tDed+=q.deducciones; tNeto+=q.neto; tPat+=c.costoPatronal/2; n++;
@@ -1177,7 +1198,7 @@ function pantallaQuincena(){
 
 	var sinSalario = [], sinCuenta = [], sinCorreo = [];
 	locales.forEach(function(lid){
-		empleadosDe(lid).forEach(function(e){
+		empleadosEnQuincena(lid, estado.periodo, estado.q).forEach(function(e){
 			if (!Number(e.salarioMensual)) sinSalario.push(e.nombre);
 			if (!e.cuenta) sinCuenta.push(e.nombre);
 			if (!e.correo) sinCorreo.push(e.nombre);
@@ -1266,7 +1287,8 @@ function pantallaEmpleados(){
 	});
 	var filas = lista.map(function(e){
 		return '<tr class="abrible'+(e.activo===false?' inactiva':'')+'" tabindex="0" data-abrir="'+e.id+'">'
-			+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')+'</small></td>'
+			+ '<td class="nombre">'+esc(e.nombre)+'<small>'+esc(e.cedula||'sin cédula')
+			+ (e.activo===false && e.fechaSalida ? ' | salió el '+fechaCorta(e.fechaSalida) : '')+'</small></td>'
 			+ '<td>'+esc(e.puesto||'—')+'</td>'
 			+ '<td>'+esc(nombreLocal(localDe(e.localId)))+'</td>'
 			+ '<td class="n">'+col(e.salarioMensual)+'</td>'
@@ -1307,7 +1329,9 @@ function pantallaHistorial(){
 			var tot = 0, movida = false;
 			locales.forEach(function(lid){
 				var pp = perLeer(pe, lid);
-				empleadosDe(lid).forEach(function(e){
+				var fijo = pp.pagado && pp.pagado['q'+q];
+				if (fijo) tot += fijo.total;
+				else empleadosEnQuincena(lid, pe, q).forEach(function(e){
 					var c = calcular(e, ajusteLeer(pe, lid, e.id), pe);
 					tot += q===1 ? c.q1.neto : c.q2.neto;
 				});
@@ -1343,7 +1367,11 @@ function pantallaHistorial(){
 function pantallaReportes(){
 	var dentro = idsEnVista();
 	var filas = D.locales.filter(function(l){ return dentro.indexOf(l.id) !== -1; }).map(function(l){
-		var emps = empleadosDe(l.id), b=0,d=0,nt=0,pat=0;
+		var emps = D.empleados.filter(function(e){
+			return e.localId === l.id
+				&& (trabajabaEn(e, estado.periodo, 1) || trabajabaEn(e, estado.periodo, 2));
+		});
+		var b=0,d=0,nt=0,pat=0;
 		emps.forEach(function(e){
 			var c = calcular(e, ajusteLeer(estado.periodo, l.id, e.id), estado.periodo);
 			b+=c.brutoMes; d+=c.ccssMes+c.rentaMes; nt+=c.netoMes; pat+=c.costoPatronal;
@@ -1369,15 +1397,27 @@ function pantallaReportes(){
 function lineasSicere(periodo, ids){
 	var filas = [];
 	ids.forEach(function(lid){
-		empleadosDe(lid).forEach(function(e){
+		D.empleados.filter(function(e){
+			return e.localId === lid && (trabajabaEn(e, periodo, 1) || trabajabaEn(e, periodo, 2));
+		}).forEach(function(e){
 			var c = calcular(e, ajusteLeer(periodo, lid, e.id), periodo);
 			var a1 = ausenciaEnQuincena(e, periodo, 1), a2 = ausenciaEnQuincena(e, periodo, 2);
 			var porTipo = {};
 			a1.lineas.concat(a2.lineas).forEach(function(l){ porTipo[l.tipo] = (porTipo[l.tipo]||0) + l.dias; });
-			var fuera = a1.rebajoDias + a2.rebajoDias;
+			/* Los días laborados salen del contrato dentro del mes, con el
+			   tope de 30 que usa la Caja, menos las ausencias que no se
+			   pagan. Los días fuera de planilla ya están en ese tramo. */
+			var aa = periodo.split('-'), y = Number(aa[0]), m = Number(aa[1]);
+			var diasMes = new Date(y, m, 0).getDate();
+			var mIni = new Date(y, m-1, 1), mFin = new Date(y, m-1, diasMes);
+			var entra = aFecha(e.fechaIngreso), sale = aFecha(e.fechaSalida);
+			var desde = (entra && entra > mIni) ? entra : mIni;
+			var hasta = (sale && sale < mFin) ? sale : mFin;
+			var tramo = hasta < desde ? 0 : Math.min(30, diasEntre(desde, hasta) + 1);
+			var ausentes = (porTipo.ccss||0) + (porTipo.ins||0) + (porTipo.maternidad||0) + (porTipo.singoce||0);
 			filas.push({
 				emp:e, local:localDe(lid),
-				dias: Math.max(0, 30 - fuera),
+				dias: Math.max(0, tramo - ausentes),
 				salario: c.brutoMes,
 				inc: (porTipo.ccss||0) + (porTipo.ins||0),
 				mat: porTipo.maternidad||0,
@@ -1535,8 +1575,8 @@ function pantallaAjustes(){
    ============================================================= */
 var DIASEM = ['L','M','M','J','V','S','D'];
 
-function campoFecha(id, etiqueta, valor){
-	return '<label class="campo"><span>'+etiqueta+'</span>'
+function campoFecha(id, etiqueta, valor, attr){
+	return '<label class="campo" id="campo-'+id+'"'+(attr||'')+'><span>'+etiqueta+'</span>'
 		+ '<div class="fecha-ctrl">'
 		+ '<input type="hidden" id="'+id+'" value="'+esc(valor||'')+'">'
 		+ '<button type="button" class="fecha-bt" data-cal="'+id+'">'
@@ -1676,6 +1716,7 @@ function fichaEmpleado(id){
 	e = e || { id:'e'+Date.now(), localId: unaSedeSola()?estado.local:(idsEnVista()[0]||D.locales[0].id),
 		nombre:'', cedula:'', correo:'', puesto:'', fechaIngreso:'', salarioMensual:0, cuenta:'', activo:true };
 	if (nuevo) pestanaFicha = 'datos';
+	if (estado.liqEmp !== e.id){ estado.liqEmp = e.id; estado.liqMotivo = null; estado.liqFecha = null; }
 	if (!e.ausencias) e.ausencias = [];
 
 	var ops = D.locales.map(function(l){ return '<option value="'+l.id+'"'+(l.id===e.localId?' selected':'')+'>'+esc(nombreLocal(l))+'</option>'; }).join('');
@@ -1693,6 +1734,7 @@ function fichaEmpleado(id){
 		+ '<label class="campo"><span>Estado</span><select id="f-activo">'
 		+ '<option value="1"'+(e.activo!==false?' selected':'')+'>Activo</option>'
 		+ '<option value="0"'+(e.activo===false?' selected':'')+'>Inactivo</option></select></label>'
+		+ campoFecha('f-salida','Último día', e.fechaSalida, e.activo===false ? '' : ' hidden')
 		+ '</div>'
 		+ '<div class="hoja-pie"><button class="bt fuerte" type="button" id="f-guardar">Guardar</button>'
 		+ '<button class="bt" type="button" id="f-cancelar">Cancelar</button></div>';
@@ -1735,7 +1777,7 @@ function fichaEmpleado(id){
 		+ '<h3>Registrar una ausencia</h3>'
 		+ '<div class="rejilla">'
 		+ '<label class="campo"><span>Tipo</span><select id="v-tipo">'
-		+ Object.keys(AUSENCIAS).map(function(k){
+		+ Object.keys(AUSENCIAS).filter(function(k){ return !AUSENCIAS[k].oculto; }).map(function(k){
 			return '<option value="'+k+'"'+(k===tipoSel?' selected':'')+'>'+AUSENCIAS[k].et+'</option>';
 		}).join('')
 		+ '</select></label>'
@@ -1753,18 +1795,27 @@ function fichaEmpleado(id){
 			+ '<tbody>'+movs+'</tbody></table></div>' : '');
 
 	/* ---------- pestaña: pagos ---------- */
+	/* Un pago existe cuando la quincena se cerró. Antes bastaba con que
+	   el mes estuviera guardado para listar las dos quincenas con el
+	   monto proyectado, aunque nadie hubiera pagado nada. */
 	var hist = '';
 	Object.keys(D.periodos).sort().reverse().forEach(function(pe){
-		var pp = D.periodos[pe][e.localId];
-		if (!pp || !pp.ajustes) return;
-		var c = calcular(e, ajusteLeer(pe, e.localId, e.id), pe);
+		var pp = perLeer(pe, e.localId);
 		[1,2].forEach(function(q){
-			var qq = q===1?c.q1:c.q2;
-			if (!qq.neto) return;
 			var env = pp.enviado && pp.enviado['q'+q];
+			if (!env) return;
+			var fijo = pp.pagado && pp.pagado['q'+q] && pp.pagado['q'+q].empleados;
+			var monto;
+			if (fijo && fijo[e.id] != null) monto = fijo[e.id];
+			else {
+				if (!trabajabaEn(e, pe, q)) return;
+				var c = calcular(e, ajusteLeer(pe, e.localId, e.id), pe);
+				monto = (q===1 ? c.q1 : c.q2).neto;
+			}
+			if (!monto) return;
 			hist += '<tr><td class="nombre">'+nombreMes(pe)+'<small>quincena '+q+'</small></td>'
-				+ '<td class="n">'+col(qq.neto)+'</td>'
-				+ '<td>'+(env?'<span class="et ok">Enviada</span>':'<span class="et off">—</span>')+'</td>'
+				+ '<td class="n">'+col(monto)+'</td>'
+				+ '<td><span class="et ok">Pagada el '+fechaCortaDe(env)+'</span></td>'
 				+ '<td><button class="bt chico" type="button" data-pdf-hist="'+pe+'|'+q+'|'+e.id+'|'+e.localId+'">PDF</button></td></tr>';
 		});
 	});
@@ -1772,11 +1823,13 @@ function fichaEmpleado(id){
 		? '<div class="tabla-env" style="margin:0;padding:0">'
 			+ '<table style="min-width:0"><thead><tr><th>Período</th><th class="n">Neto</th><th>Boleta</th><th></th></tr></thead>'
 			+ '<tbody>'+hist+'</tbody></table></div>'
-		: '<div class="vacio"><h3>Todavía no hay pagos registrados</h3></div>';
+		: '<div class="vacio"><h3>Todavía no hay pagos cerrados</h3></div>';
 
 	/* ---------- pestaña: liquidación ---------- */
-	var mot = e._motivo || 'renuncia';
-	var fsal = e._salida || hoyFecha().toISOString().slice(0,10);
+	/* El motivo y la fecha son de la pantalla, no del empleado: no tienen
+	   por qué quedar guardados en su ficha. */
+	var mot = estado.liqMotivo || 'renuncia';
+	var fsal = estado.liqFecha || e.fechaSalida || hoyFecha().toISOString().slice(0,10);
 	var q = liquidacion(e, mot, aFecha(fsal));
 	function fl(et, valor, pie){
 		return '<div class="fila"><span>'+et+(pie?'<br><small style="color:var(--tenue)">'+pie+'</small>':'')+'</span>'
@@ -1823,12 +1876,21 @@ function fichaEmpleado(id){
 		e.puesto = $('#f-puesto').value.trim(); e.localId = $('#f-local').value;
 		e.fechaIngreso = $('#f-ingreso').value; e.salarioMensual = Number($('#f-salario').value)||0;
 		e.cuenta = $('#f-cuenta').value.trim(); e.activo = $('#f-activo').value==='1';
+		/* Sin el último día no se puede saber hasta qué quincena entró en
+		   planilla, así que es obligatorio al desactivar. */
+		if (!e.activo && !$('#f-salida').value) return 'falta-salida';
+		e.fechaSalida = e.activo ? '' : $('#f-salida').value;
 		return true;
 	}
 
+	if ($('#f-activo')) $('#f-activo').onchange = function(){
+		var caja = $('#campo-f-salida');
+		if (caja) caja.hidden = this.value !== '0';
+	};
+
 	Array.prototype.forEach.call(document.querySelectorAll('#hoja-cuerpo [data-pest]'), function(b){
 		b.onclick = function(){
-			if (pestanaFicha === 'datos') { if (recoger()) guardar(); }
+			if (pestanaFicha === 'datos') { if (recoger() === true) guardar(); }
 			pestanaFicha = b.dataset.pest;
 			fichaEmpleado(e.id);
 		};
@@ -1836,7 +1898,15 @@ function fichaEmpleado(id){
 
 	if ($('#f-cancelar')) $('#f-cancelar').onclick = cerrarHoja;
 	if ($('#f-guardar')) $('#f-guardar').onclick = function(){
-		if (!recoger()){ $('#f-nombre').focus(); return; }
+		var r = recoger();
+		if (r === 'falta-salida'){
+			$('#campo-f-salida').hidden = false;
+			/* Al turno siguiente: si se abre dentro de este clic, el mismo
+			   clic que lo abre llega al documento y lo vuelve a cerrar. */
+			setTimeout(function(){ var b = $('[data-cal="f-salida"]'); if (b) b.click(); }, 0);
+			return;
+		}
+		if (r !== true){ $('#f-nombre').focus(); return; }
 		if (nuevo) D.empleados.push(e);
 		guardar(); cerrarHoja(); pintar();
 	};
@@ -1891,8 +1961,8 @@ function fichaEmpleado(id){
 
 	/* liquidación: recalcula al cambiar motivo o fecha */
 	if ($('#q-motivo')){
-		$('#q-motivo').onchange = function(){ e._motivo = this.value; fichaEmpleado(e.id); };
-		$('#q-salida').onchange = function(){ e._salida = this.value; fichaEmpleado(e.id); };
+		$('#q-motivo').onchange = function(){ estado.liqMotivo = this.value; fichaEmpleado(e.id); };
+		$('#q-salida').onchange = function(){ estado.liqFecha = this.value; fichaEmpleado(e.id); };
 	}
 }
 
@@ -2032,7 +2102,7 @@ function pdfBoleta(b, descargar){
 function boletasDeLaVista(){
 	var lista = [];
 	idsEnVista().forEach(function(lid){
-		empleadosDe(lid).forEach(function(e){
+		empleadosEnQuincena(lid, estado.periodo, estado.q).forEach(function(e){
 			var b = datosBoleta(e.id, lid, estado.periodo, estado.q);
 			if (b && b.q.neto) lista.push(b);
 		});
@@ -2072,11 +2142,22 @@ function cerrarQuincena(){
 
 	$('#e-cerrar').onclick = cerrarHoja;
 	$('#bajar-todas').onclick = function(){
+		/* Al cerrar se guarda el monto de cada boleta. Después puede
+		   cambiar un salario o una fecha y la cuenta daría otra cosa;
+		   el historial tiene que seguir diciendo lo que se pagó. */
 		locales.forEach(function(lid){
 			var pp = per(estado.periodo, lid);
 			pp.enviado = pp.enviado || {};
 			pp.enviado['q'+estado.q] = new Date().toISOString();
-			anotar(estado.periodo, lid, 'Se cerró la quincena '+estado.q+' por '+col(total)+'.');
+			pp.pagado = pp.pagado || {};
+			var porEmp = {}, sumaLocal = 0;
+			lista.forEach(function(b){
+				if (b.local.id !== lid) return;
+				porEmp[b.emp.id] = b.q.neto;
+				sumaLocal += b.q.neto;
+			});
+			pp.pagado['q'+estado.q] = { total: sumaLocal, empleados: porEmp };
+			anotar(estado.periodo, lid, 'Se cerró la quincena '+estado.q+' por '+col(sumaLocal)+'.');
 		});
 		guardar();
 		bajarBoletas(lista, function(){ cerrarHoja(); pintar(); });
@@ -2236,6 +2317,7 @@ document.addEventListener('click', function(ev){
 		idsEnVista().forEach(function(lid){
 			var pp = per(estado.periodo, lid);
 			if (pp.enviado) delete pp.enviado['q'+estado.q];
+			if (pp.pagado) delete pp.pagado['q'+estado.q];
 			pp.reabierta = pp.reabierta || {};
 			pp.reabierta['q'+estado.q] = true;
 			anotar(estado.periodo, lid, 'Se reabrió la quincena '+estado.q+' para corregir.');

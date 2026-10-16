@@ -36,6 +36,12 @@ export default {
 		}
 		if (!quien) return json({ error: 'Sesión inválida' }, 401);
 
+		/* Pulso: sirve para comprobar que el Worker esta publicado y que
+		   la sesion de Access llega bien, aunque la base no este todavia. */
+		if (url.pathname.replace(/\/+$/, '') === '/api/yo') {
+			return json({ correo: quien, base: !!env.DB });
+		}
+
 		if (!env.DB) return json({ error: 'La base no está conectada al Worker' }, 503);
 
 		try {

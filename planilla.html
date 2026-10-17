@@ -367,6 +367,9 @@ var TRAMOS_RENTA = [
 
 var D = { locales:[], empleados:[], periodos:{}, tasas:{ tramos:TRAMOS_RENTA } };
 var correoDeQuienEntro = '';
+/* Una sola recarga por sesión vencida: si no, un error que se repite
+   deja la pantalla recargándose para siempre. */
+var reintentoDeSesion = false;
 
 function api(ruta, metodo, cuerpo){
 	return fetch('/api/' + ruta, {
@@ -378,9 +381,21 @@ function api(ruta, metodo, cuerpo){
 		return r.text().then(function(t){
 			var j = null;
 			try { j = JSON.parse(t); } catch(e){}
+
 			/* Si la sesión venció, Cloudflare contesta con la página de
-			   login en vez de JSON. Recargar deja que haga su trabajo. */
-			if (!j){ location.reload(); throw new Error('sesion'); }
+			   login en vez de JSON. Recargar deja que haga su trabajo,
+			   pero solo en ese caso: recargar ante cualquier respuesta
+			   rara deja la pantalla en un bucle del que no se sale. */
+			var esLogin = r.redirected
+				|| r.status === 401 || r.status === 403
+				|| (!j && /cloudflareaccess|cdn-cgi\/access/.test(t));
+			if (esLogin && !reintentoDeSesion){
+				reintentoDeSesion = true;
+				location.reload();
+				throw new Error('sesion');
+			}
+
+			if (!j) throw new Error('El servidor contestó algo que no se entiende (' + r.status + ')');
 			if (!r.ok) throw new Error(j.error || ('Error ' + r.status));
 			return j;
 		});
@@ -408,7 +423,7 @@ function mandar(ruta, metodo, cuerpo, despues){
 	}).catch(function(e){
 		if (e && e.message === 'sesion') return;
 		avisarFallo(e);
-		recargarTodo();
+		recargarTodo().catch(function(){});
 	});
 }
 
@@ -2185,8 +2200,11 @@ function cerrarQuincena(){
 		   que el cierre quedó guardado, no antes. */
 		var tareas = locales.map(function(lid){
 			var pagos = lista.filter(function(b){ return b.local.id === lid; }).map(function(b){
-				return { empleadoId: b.emp.id, neto: b.q.neto, correo: b.emp.correo || '' };
+				return { empleadoId: b.emp.id, neto: Math.round(b.q.neto), correo: b.emp.correo || '' };
 			});
+			/* Una sede sin nada que pagar no se cierra: no hay planilla
+			   que cerrar ahí y quedaría un registro de algo que no pasó. */
+			if (!pagos.length) return Promise.resolve(null);
 			return api('cerrar', 'POST', {
 				periodo: estado.periodo, localId: lid, q: estado.q, pagos: pagos
 			});
@@ -2199,7 +2217,7 @@ function cerrarQuincena(){
 			if (e && e.message === 'sesion') return;
 			avisarFallo(e);
 			cerrarHoja();
-			recargarTodo();
+			recargarTodo().catch(function(){});
 		});
 	};
 }
@@ -2361,7 +2379,7 @@ document.addEventListener('click', function(ev){
 			return api('reabrir', 'POST', { periodo: pq, localId: lid, q: qq });
 		})).then(recargarTodo).catch(function(e){
 			if (e && e.message === 'sesion') return;
-			avisarFallo(e); recargarTodo();
+			avisarFallo(e); recargarTodo().catch(function(){});
 		});
 		return;
 	}
@@ -2470,7 +2488,7 @@ document.addEventListener('input', function(ev){
 				anotar: nota
 			}).catch(function(e){
 				if (e && e.message === 'sesion') return;
-				avisarFallo(e); recargarTodo();
+				avisarFallo(e); recargarTodo().catch(function(){});
 			});
 
 			pintar();

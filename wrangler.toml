@@ -16,10 +16,10 @@ routes = [
 
 [vars]
 ACCESS_TEAM = "yellow-shape-6214.cloudflareaccess.com"
-# Los identificadores de las aplicaciones de Access que pueden llamar.
-# El primero es el de planilla.html; cuando se cree la de /api se
-# agrega acá separado por coma.
-ACCESS_AUD = "f49ebc468e9f0b82725a827e1b1750031c8aa84f9210329635638da40e18bb2b"
+# Los identificadores de las aplicaciones de Access que pueden llamar:
+# la de planilla.html y la de /api. Access limita su galleta a la ruta
+# de cada aplicacion, por eso /api necesita la suya.
+ACCESS_AUD = "f49ebc468e9f0b82725a827e1b1750031c8aa84f9210329635638da40e18bb2b,05e19b88adec04f06a8abc9de89bcb11e8509077b22d0ce7988d032d7c126a46"
 
 [[d1_databases]]
 binding = "DB"

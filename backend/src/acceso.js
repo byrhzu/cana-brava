@@ -36,55 +36,65 @@ function textoDeBase64url(s) {
 }
 
 /* Devuelve el correo de quien entró, o null si el token no sirve. */
-function galleta(req, nombre) {
-	var crudo = req.headers.get('cookie') || '';
-	var partes = crudo.split(';');
-	for (var i = 0; i < partes.length; i++) {
-		var p = partes[i].trim();
-		if (p.indexOf(nombre + '=') === 0) return p.slice(nombre.length + 1);
-	}
-	return null;
+function galletas(req) {
+	var out = {};
+	(req.headers.get('cookie') || '').split(';').forEach(function (p) {
+		var i = p.indexOf('=');
+		if (i > 0) out[p.slice(0, i).trim()] = p.slice(i + 1).trim();
+	});
+	return out;
 }
+function galleta(req, nombre) { return galletas(req)[nombre] || null; }
 
-export async function quienEntra(req, env) {
+export async function revisar(req, env) {
 	/* Access pone la cabecera solo en las rutas que cubre una de sus
 	   aplicaciones. La galleta, en cambio, viaja a todo el dominio, así
 	   que sirve igual y evita tener que crear una aplicación aparte
 	   para /api. Es el mismo token firmado por el mismo equipo. */
 	var token = req.headers.get('Cf-Access-Jwt-Assertion') || galleta(req, 'CF_Authorization');
-	if (!token) return null;
+	if (!token) return { correo: null, motivo: 'no llego ni cabecera ni galleta', visto: Object.keys(galletas(req)) };
 
 	var partes = token.split('.');
-	if (partes.length !== 3) return null;
+	if (partes.length !== 3) return { correo: null, motivo: 'el token no tiene tres partes' };
 
 	var cabecera, cuerpo;
 	try {
 		cabecera = JSON.parse(textoDeBase64url(partes[0]));
 		cuerpo = JSON.parse(textoDeBase64url(partes[1]));
-	} catch (e) { return null; }
+	} catch (e) { return { correo: null, motivo: 'no se pudo leer el token' }; }
 
 	/* Para qué aplicación se emitió. Sin esto, un token de cualquier
 	   otra aplicación del mismo equipo entraría igual. */
 	var permitidas = String(env.ACCESS_AUD || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
 	var aud = Array.isArray(cuerpo.aud) ? cuerpo.aud : [cuerpo.aud];
-	if (permitidas.length && !aud.some(function (a) { return permitidas.indexOf(a) !== -1; })) return null;
+	if (permitidas.length && !aud.some(function (a) { return permitidas.indexOf(a) !== -1; })) {
+		return { correo: null, motivo: 'el token es de otra aplicacion', aud: aud, esperados: permitidas };
+	}
 
-	if (cuerpo.iss !== 'https://' + env.ACCESS_TEAM) return null;
+	if (cuerpo.iss !== 'https://' + env.ACCESS_TEAM) {
+		return { correo: null, motivo: 'otro equipo', iss: cuerpo.iss, esperado: 'https://' + env.ACCESS_TEAM };
+	}
 
 	var ahora = Math.floor(Date.now() / 1000);
-	if (!cuerpo.exp || cuerpo.exp < ahora) return null;
-	if (cuerpo.nbf && cuerpo.nbf > ahora + 60) return null;
+	if (!cuerpo.exp || cuerpo.exp < ahora) return { correo: null, motivo: 'token vencido' };
+	if (cuerpo.nbf && cuerpo.nbf > ahora + 60) return { correo: null, motivo: 'token del futuro' };
 
 	var llaves = await llavesDelEquipo(env.ACCESS_TEAM);
 	var jwk = llaves.find(function (k) { return k.kid === cabecera.kid; });
-	if (!jwk) return null;
+	if (!jwk) return { correo: null, motivo: 'no esta la llave que firmo', kid: cabecera.kid };
 
 	var llave = await crypto.subtle.importKey(
 		'jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']
 	);
 	var firmado = new TextEncoder().encode(partes[0] + '.' + partes[1]);
 	var bien = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', llave, bytesDeBase64url(partes[2]), firmado);
-	if (!bien) return null;
+	if (!bien) return { correo: null, motivo: 'la firma no cuadra' };
 
-	return cuerpo.email || cuerpo.common_name || null;
+	return { correo: cuerpo.email || cuerpo.common_name || null, motivo: 'ok' };
+}
+
+/* Compatibilidad: devuelve solo el correo. */
+export async function quienEntra(req, env) {
+	var r = await revisar(req, env);
+	return r && r.correo;
 }

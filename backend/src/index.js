@@ -8,9 +8,11 @@
    que hay del otro lado son salarios y cédulas.
    ============================================================ */
 
-import { quienEntra } from './acceso.js';
+import { revisar } from './acceso.js';
 import * as datos from './datos.js';
 import { ESQUEMA } from './esquema.js';
+
+var VERSION = 'd4';
 
 function json(cuerpo, estado) {
 	return new Response(JSON.stringify(cuerpo), {
@@ -29,13 +31,14 @@ export default {
 
 		if (req.method === 'OPTIONS') return new Response(null, { status: 204 });
 
-		var quien;
+		var r;
 		try {
-			quien = await quienEntra(req, env);
+			r = await revisar(req, env);
 		} catch (e) {
-			return json({ error: 'No se pudo verificar la sesión' }, 503);
+			return json({ error: 'No se pudo verificar la sesión', detalle: String(e && e.message || e) }, 503);
 		}
-		if (!quien) return json({ error: 'Sesión inválida' }, 401);
+		var quien = r && r.correo;
+		if (!quien) return json({ error: 'Sesión inválida', version: VERSION, por: r }, 401);
 
 		/* Pulso: sirve para comprobar que el Worker esta publicado y que
 		   la sesion de Access llega bien, aunque la base no este todavia. */

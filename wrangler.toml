@@ -21,10 +21,7 @@ ACCESS_TEAM = "yellow-shape-6214.cloudflareaccess.com"
 # agrega acá separado por coma.
 ACCESS_AUD = "f49ebc468e9f0b82725a827e1b1750031c8aa84f9210329635638da40e18bb2b"
 
-# La base se conecta en cuanto exista: wrangler no despliega si le
-# falta el identificador, asi que hasta entonces va comentada y el
-# Worker responde que la base no esta conectada.
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "planilla-canabrava"
-# database_id = ""
+[[d1_databases]]
+binding = "DB"
+database_name = "planilla-canabrava"
+database_id = "9ebdf693-d820-48cb-9de7-5dd6c85be47f"

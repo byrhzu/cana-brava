@@ -10,6 +10,7 @@
 
 import { quienEntra } from './acceso.js';
 import * as datos from './datos.js';
+import { ESQUEMA } from './esquema.js';
 
 function json(cuerpo, estado) {
 	return new Response(JSON.stringify(cuerpo), {
@@ -57,6 +58,22 @@ async function atender(req, env, ruta, url, quien) {
 	var cuerpo = null;
 	if (req.method === 'POST' || req.method === 'PUT') {
 		try { cuerpo = await req.json(); } catch (e) { return json({ error: 'Cuerpo inválido' }, 400); }
+	}
+
+	/* ---------- crear las tablas ----------
+	   La consola de D1 del panel de Cloudflare se niega a leer el
+	   archivo, así que el esquema se aplica desde acá. Se puede llamar
+	   las veces que haga falta: todo es CREATE IF NOT EXISTS e
+	   INSERT OR IGNORE. */
+	if (ruta === 'instalar') {
+		var hechas = [];
+		for (var i = 0; i < ESQUEMA.length; i++) {
+			await db.prepare(ESQUEMA[i]).run();
+			hechas.push(ESQUEMA[i].split('\n')[0].slice(0, 60));
+		}
+		var t = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all();
+		var l = await db.prepare('SELECT * FROM locales ORDER BY grupo, sede').all();
+		return json({ ok: true, ejecutadas: hechas.length, tablas: t.results.map(function (x) { return x.name; }), locales: l.results });
 	}
 
 	/* ---------- quién soy ---------- */

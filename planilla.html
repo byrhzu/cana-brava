@@ -307,6 +307,59 @@ tfoot td{border-top:1px solid var(--linea);font-weight:700;font-family:var(--dat
 	.buscador input{width:100%}
 	.hoja{top:0;right:0;bottom:0;border-radius:22px 0 0 22px;width:min(480px,100%)}
 }
+/* ---------- la boleta, hoja A4 ----------
+   Medidas en milímetros para que lo que se ve sea lo que se imprime.
+   La franja y el logo cambian con la marca del local. */
+.bol-marco{background:var(--sup2);border-radius:var(--radio);padding:var(--e3);overflow:hidden}
+.bol-zoom{width:210mm;transform:scale(.52);transform-origin:top left;height:calc(297mm * .52)}
+@media (max-width:520px){ .bol-zoom{transform:scale(.4);height:calc(297mm * .4)} }
+
+.hoja-bol{position:relative;width:210mm;min-height:297mm;padding:16mm;background:#fff;color:#1b1917;
+	font-family:var(--sans);font-size:9.5pt;line-height:1.5;display:flex;flex-direction:column;box-sizing:border-box}
+.hoja-bol::before{content:"";position:absolute;top:0;left:0;right:0;height:6mm;background:var(--cb-tx)}
+.hoja-bol[data-marca="pb"]::before{background:var(--pb-tx)}
+
+.bol-cab{display:flex;align-items:center;justify-content:space-between;gap:8mm;padding-top:4mm}
+.bol-logo{width:42mm;height:auto;display:block}
+.bol-local{margin:0;font-size:8pt;color:#7d766e;text-align:right}
+
+.bol-folio{display:flex;align-items:flex-end;justify-content:space-between;gap:8mm;
+	margin-top:5mm;padding-top:4mm;border-top:1.5pt solid #1b1917}
+.bol-folio h1{margin:0;font-size:23pt;font-weight:700;line-height:.95}
+.bol-per{margin:1mm 0 0;font-size:10pt;font-weight:600;color:var(--cb-tx)}
+.hoja-bol[data-marca="pb"] .bol-per{color:var(--pb-tx)}
+.bol-folio dl{margin:0;display:grid;grid-template-columns:auto auto;gap:.6mm 4mm;font-size:7.6pt}
+.bol-folio dt{color:#7d766e;text-align:right}
+.bol-folio dd{margin:0;font-weight:600}
+
+.bol-et{font-size:8.2pt;font-weight:700;color:#1b1917;margin:0 0 2mm}
+.bol-partes{display:grid;grid-template-columns:1fr 1fr;gap:8mm;margin-top:7mm}
+.bol-partes dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:.8mm 3mm;font-size:8.4pt}
+.bol-partes dt{color:#7d766e}
+.bol-partes dd{margin:0;font-weight:600}
+
+.bol-tabla{width:100%;border-collapse:collapse;margin-top:7mm}
+.bol-tabla th{background:var(--cb-tx);color:#fff;text-align:left;font-size:8.2pt;font-weight:700;
+	padding:2mm 3mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hoja-bol[data-marca="pb"] .bol-tabla th{background:var(--pb-tx)}
+.bol-tabla th.der{text-align:right}
+.bol-tabla td{padding:2mm 3mm;border-bottom:.4pt solid #e0dbd4;vertical-align:top}
+.bol-tabla .cn{display:block;font-size:9.5pt}
+.bol-tabla .sb{display:block;margin-top:.5mm;font-size:7.4pt;color:#7d766e}
+.bol-tabla .mt{text-align:right;font-weight:600;white-space:nowrap}
+.bol-tabla .mt.rs{color:#b3362f}
+.bol-tabla tbody+thead th{padding-top:2mm}
+
+.bol-cuentas{margin-top:6mm;margin-left:auto;width:85mm}
+.bol-linea{display:flex;justify-content:space-between;gap:4mm;padding:1.4mm 0;font-size:9.5pt}
+.bol-total{margin-top:1mm;padding-top:2mm;border-top:1.5pt solid #1b1917;font-size:13pt;font-weight:700}
+
+.bol-vac{margin-top:8mm;padding-top:4mm;border-top:.4pt solid #e0dbd4}
+.bol-vac .bol-linea{font-size:8.6pt;color:#3a3733;padding:.8mm 0}
+
+.bol-pie{margin-top:auto;padding-top:6mm;font-size:7.4pt;color:#7d766e}
+.bol-pie p{margin:0 0 .8mm}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -2023,130 +2076,164 @@ function datosBoleta(empId, localId, periodo, q){
 	return { emp:e, local:localDe(localId), q:q===1?c.q1:c.q2, periodo:periodo, nq:q };
 }
 
+/* =============================================================
+   6. LA BOLETA
+
+   Se arma como una hoja A4 en HTML y de ahí sale el PDF, igual que los
+   documentos de Sanitarios Ticos. Escribir el PDF línea por línea daba
+   un papel de máquina de escribir: sin logo, sin tabla, sin jerarquía.
+   Así lo que se ve en pantalla es exactamente lo que se descarga.
+   ============================================================= */
+
+function hojaBoleta(b){
+	var x = b.q;
+	var marca = claveMarca(b.local.grupo) || 'cb';
+	var vq = vacEnQuincena(b.emp, b.periodo, b.nq);
+	var vs = vacaciones(b.emp, vq.cierre);
+	var t = D.tasas;
+
+	function fila(et, sub, monto, resta){
+		return '<tr><td><span class="cn">'+et+'</span>'
+			+ (sub ? '<span class="sb">'+sub+'</span>' : '')+'</td>'
+			+ '<td class="mt'+(resta?' rs':'')+'">'+(resta?'−':'')+col(monto)+'</td></tr>';
+	}
+
+	var ingresos = fila('Salario de la quincena', diasQuincena(b.periodo, b.nq), x.base);
+	(x.ausencias || []).forEach(function(l){
+		ingresos += fila(detalleAusencia(l), '', l.dias * (x.rebajo / (x.rebajoDias || 1)), true);
+	});
+	if (x.montoExtra) ingresos += fila(plural(x.horas,'hora extra','horas extra'), 'a tiempo y medio', x.montoExtra);
+	if (x.subsidio) ingresos += fila('Subsidio de la empresa', '', x.subsidio);
+
+	var deducciones = fila('Seguro de salud', 'CCSS, '+pct(t.sem), x.sem, true)
+		+ fila('Pensión', 'IVM, '+pct(t.ivm), x.ivm, true)
+		+ fila('Banco Popular', pct(t.bp), x.bp, true)
+		+ (x.renta ? fila('Impuesto sobre la renta', '', x.renta, true) : '')
+		+ (x.adelanto ? fila('Adelanto', '', x.adelanto, true) : '')
+		+ (x.otras ? fila('Otras deducciones', '', x.otras, true) : '');
+
+	function dato(et, v){ return v ? '<dt>'+et+'</dt><dd>'+esc(v)+'</dd>' : ''; }
+
+	return '<article class="hoja-bol" data-marca="'+marca+'">'
+		+ '<header class="bol-cab">'
+		+ '<img class="bol-logo" src="assets/img/logo-'+(marca==='cb'?'cana-brava':'pollo-bravo')+'.png" alt="'+esc(b.local.grupo||'')+'">'
+		+ '<p class="bol-local">'+esc(nombreLocal(b.local))+'</p>'
+		+ '</header>'
+
+		+ '<div class="bol-folio">'
+		+ '<div><h1>Boleta de pago</h1>'
+		+ '<p class="bol-per">'+nombreMes(b.periodo)+' · quincena '+b.nq+'</p></div>'
+		+ '<dl><dt>Período</dt><dd>'+diasQuincena(b.periodo, b.nq)+'</dd>'
+		+ '<dt>Emitida</dt><dd>'+fechaCorta(isoDe(hoyFecha()))+'</dd></dl>'
+		+ '</div>'
+
+		+ '<section class="bol-partes">'
+		+ '<div><p class="bol-et">Colaborador</p><dl>'
+		+ dato('Nombre', b.emp.nombre)
+		+ dato('Cédula', b.emp.cedula)
+		+ dato('Puesto', b.emp.puesto)
+		+ dato('Ingresó', b.emp.fechaIngreso ? fechaCorta(b.emp.fechaIngreso) : '')
+		+ '</dl></div>'
+		+ '<div><p class="bol-et">Depósito</p><dl>'
+		+ dato('Cuenta', b.emp.cuenta || '—')
+		+ dato('Local', nombreLocal(b.local))
+		+ '</dl></div>'
+		+ '</section>'
+
+		+ '<table class="bol-tabla">'
+		+ '<thead><tr><th>Ingresos</th><th class="der">Monto</th></tr></thead>'
+		+ '<tbody>'+ingresos+'</tbody>'
+		+ '<thead><tr><th>Deducciones</th><th class="der">Monto</th></tr></thead>'
+		+ '<tbody>'+deducciones+'</tbody>'
+		+ '</table>'
+
+		+ '<div class="bol-cuentas">'
+		+ '<div class="bol-linea"><span>Bruto</span><span>'+col(x.bruto)+'</span></div>'
+		+ '<div class="bol-linea"><span>Deducciones</span><span>−'+col(x.deducciones)+'</span></div>'
+		+ '<div class="bol-linea bol-total"><span>Neto a pagar</span><span>'+col(x.neto)+'</span></div>'
+		+ '</div>'
+
+		+ '<section class="bol-vac">'
+		+ '<p class="bol-et">Vacaciones</p>'
+		+ '<div class="bol-linea"><span>Disfrutadas en esta quincena</span><span>'
+		+ (vq.dias ? nDias(vq.dias)+' días' : 'ninguna')+'</span></div>'
+		+ '<div class="bol-linea"><span>Saldo acumulado al cierre</span><span>'+nDias(vs.saldo)+' días</span></div>'
+		+ '</section>'
+
+		+ '<footer class="bol-pie">'
+		+ '<p>Las deducciones de ley se calculan sobre el salario del mes y se reparten entre las dos quincenas.</p>'
+		+ '<p>'+esc(nombreLocal(b.local))+' · Documento generado el '+fechaCorta(isoDe(hoyFecha()))+'</p>'
+		+ '</footer>'
+		+ '</article>';
+}
+
 function verBoleta(empId, localId, periodo, q){
 	var b = datosBoleta(empId, localId, periodo, q);
 	if (!b) return;
-	var x = b.q;
-	var vq = vacEnQuincena(b.emp, periodo, q);
-	var vs = vacaciones(b.emp, vq.cierre);
-	function f(et,v,resta){ return '<div class="fila"><span>'+et+'</span><span class="'+(resta?'resta':'')+'">'+(resta?'−':'')+col(v)+'</span></div>'; }
 	abrirHoja('Boleta | '+b.emp.nombre,
-		'<div class="boleta">'
-		+ '<div class="enc"><b>'+esc(nombreLocal(b.local))+'</b>'
-		+ '<span>'+esc(b.emp.nombre)+' | '+esc(b.emp.cedula||'sin cédula')+'</span>'
-		+ '<span>'+esc(b.emp.puesto||'')+'</span>'
-		+ '<span>Quincena '+b.nq+' | '+diasQuincena(periodo,q)+' de '+periodo.split('-')[0]+'</span></div>'
-		+ f('Salario de la quincena', x.base)
-		+ (x.ausencias||[]).map(function(l){
-			return f(detalleAusencia(l), l.dias * (x.rebajo / (x.rebajoDias||1)), true);
-		}).join('')
-		+ (x.montoExtra ? f(x.horas+' horas extra', x.montoExtra) : '')
-		+ (x.subsidio ? f('Subsidio de la empresa', x.subsidio) : '')
-		+ '<div class="fila total"><span>Bruto</span><span>'+col(x.bruto)+'</span></div>'
-		+ '<div style="height:.6rem"></div>'
-		+ f('CCSS', x.sem, true)
-		+ f('IVM', x.ivm, true)
-		+ f('Banco Popular', x.bp, true)
-		+ (x.renta ? f('Impuesto sobre la renta', x.renta, true) : '')
-		+ (x.adelanto ? f('Adelanto', x.adelanto, true) : '')
-		+ (x.otras ? f('Otras deducciones', x.otras, true) : '')
-		+ '<div class="fila total"><span>Neto a pagar</span><span>'+col(x.neto)+'</span></div>'
-		+ '<div class="bloque"><b>Vacaciones</b>'
-		+ '<div class="fila suave"><span>Disfrutadas en esta quincena</span><span>'
-		+ (vq.dias ? nDias(vq.dias)+' días | '+vq.detalle : 'ninguna')+'</span></div>'
-		+ '<div class="fila suave"><span>Saldo acumulado al cierre</span><span>'+nDias(vs.saldo)+' días</span></div>'
-		+ '</div>'
-		+ '</div>'
+		'<div class="bol-marco"><div class="bol-zoom">'+hojaBoleta(b)+'</div></div>'
 		+ '<div class="hoja-pie">'
 		+ '<button class="bt fuerte" type="button" id="b-pdf">Descargar PDF</button>'
 		+ '<button class="bt" type="button" id="b-cerrar">Cerrar</button></div>');
 	$('#b-cerrar').onclick = cerrarHoja;
-	$('#b-pdf').onclick = function(){ pdfBoleta(b, true); };
+	$('#b-pdf').onclick = function(){
+		var bt = this;
+		bt.disabled = true; bt.textContent = 'Un momento…';
+		pdfBoleta(b).then(function(){ bt.disabled = false; bt.textContent = 'Descargar PDF'; })
+			.catch(function(e){ bt.disabled = false; bt.textContent = 'Descargar PDF'; avisarFallo(e); });
+	};
 }
 
-/* =============================================================
-   6. PDF
-   ============================================================= */
-/* El símbolo ₡ (U+20A1) no existe en las fuentes estándar del PDF y se
-   pierde al generarlo. El ¢ sí está y es el que se usa a diario en
-   Costa Rica, así que dentro del PDF se escribe con ese. */
-function colPdf(n){ return '¢' + Math.round(n||0).toLocaleString('es-CR'); }
-
-function pdfBoleta(b, descargar){
-	var JS = window.jspdf && window.jspdf.jsPDF;
-	if (!JS){ alert('No se pudo cargar el generador de PDF. Revisá la conexión.'); return null; }
-	var d = new JS({ unit:'pt', format:'letter' });
-	var x = b.q, M = 56, y = 64;
-
-	d.setFillColor(76,138,46); d.rect(0,0,612,6,'F');
-
-	d.setFont('helvetica','bold'); d.setFontSize(15);
-	d.text(nombreLocal(b.local), M, y); y += 18;
-	d.setFont('helvetica','normal'); d.setFontSize(10); d.setTextColor(110);
-	d.text('Comprobante de pago', M, y); y += 26;
-
-	d.setTextColor(20);
-	d.setFont('helvetica','bold'); d.setFontSize(11);
-	d.text(b.emp.nombre, M, y); y += 14;
-	d.setFont('helvetica','normal'); d.setFontSize(9.5); d.setTextColor(110);
-	d.text('Cédula ' + (b.emp.cedula || '—') + (b.emp.puesto ? '   |   ' + b.emp.puesto : ''), M, y); y += 13;
-	d.text('Quincena ' + b.nq + '   |   ' + diasQuincena(b.periodo, b.nq) + ' de ' + b.periodo.split('-')[0], M, y); y += 24;
-
-	d.setDrawColor(76,138,46); d.setLineWidth(1); d.line(M, y, 612-M, y); y += 22;
-
-	function fila(et, val, resta, negrita){
-		d.setFont('helvetica', negrita ? 'bold' : 'normal'); d.setFontSize(10);
-		d.setTextColor(negrita ? 20 : 70);
-		d.text(et, M, y);
-		if (resta) d.setTextColor(168,42,42);
-		d.text((resta?'-':'') + colPdf(val), 612-M, y, { align:'right' });
-		d.setTextColor(70);
-		y += 17;
-	}
-	function regla(){ d.setDrawColor(220); d.setLineWidth(.6); d.line(M, y-11, 612-M, y-11); }
-
-	fila('Salario de la quincena', x.base);
-	(x.ausencias||[]).forEach(function(l){
-		fila(detalleAusencia(l), l.dias * (x.rebajo / (x.rebajoDias||1)), true);
+/* ---------- el PDF ---------- */
+var cargandoLienzo = null;
+function cargarHtml2Canvas(){
+	if (window.html2canvas) return Promise.resolve();
+	if (cargandoLienzo) return cargandoLienzo;
+	cargandoLienzo = new Promise(function(ok, mal){
+		var s = document.createElement('script');
+		s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+		s.onload = function(){ ok(); };
+		s.onerror = function(){ cargandoLienzo = null; mal(new Error('No se pudo cargar el generador de PDF')); };
+		document.head.appendChild(s);
 	});
-	if (x.montoExtra) fila(x.horas + ' horas extra', x.montoExtra);
-	if (x.subsidio) fila('Subsidio de la empresa', x.subsidio);
-	regla(); fila('Bruto', x.bruto, false, true); y += 6;
+	return cargandoLienzo;
+}
 
-	fila('CCSS ' + D.tasas.sem + ' %', x.sem, true);
-	fila('IVM ' + D.tasas.ivm + ' %', x.ivm, true);
-	fila('Banco Popular ' + D.tasas.bp + ' %', x.bp, true);
-	if (x.renta) fila('Impuesto sobre la renta', x.renta, true);
-	if (x.adelanto) fila('Adelanto', x.adelanto, true);
-	if (x.otras) fila('Otras deducciones', x.otras, true);
-
-	y += 4; d.setDrawColor(76,138,46); d.setLineWidth(1); d.line(M, y-11, 612-M, y-11); y += 6;
-	d.setFont('helvetica','bold'); d.setFontSize(13); d.setTextColor(20);
-	d.text('Neto a pagar', M, y);
-	d.text(colPdf(x.neto), 612-M, y, { align:'right' });
-	y += 30;
-
-	/* Las vacaciones no cambian el monto de un salario fijo; van en la
-	   boleta como control para el colaborador. */
-	var vq = vacEnQuincena(b.emp, b.periodo, b.nq);
-	var vs = vacaciones(b.emp, vq.cierre);
-	d.setDrawColor(220); d.setLineWidth(.6); d.line(M, y-12, 612-M, y-12);
-	d.setFont('helvetica','bold'); d.setFontSize(10); d.setTextColor(20);
-	d.text('Vacaciones', M, y); y += 15;
-	d.setFont('helvetica','normal'); d.setFontSize(9.5); d.setTextColor(70);
-	d.text('Disfrutadas en esta quincena', M, y);
-	d.text(vq.dias ? nDias(vq.dias) + ' dias  ' + vq.detalle : 'ninguna', 612-M, y, { align:'right' });
-	y += 14;
-	d.text('Saldo acumulado al cierre', M, y);
-	d.text(nDias(vs.saldo) + ' dias', 612-M, y, { align:'right' });
-
-	d.setFont('helvetica','normal'); d.setFontSize(8); d.setTextColor(140);
-	d.text('Las deducciones de ley se calculan sobre el salario del mes y se reparten en las dos quincenas.', M, 720);
-
-	var nombre = 'boleta-' + (b.emp.nombre||'empleado').toLowerCase().replace(/[^a-z0-9]+/g,'-')
+function nombreBoleta(b){
+	return 'boleta-' + (b.emp.nombre||'empleado').toLowerCase()
+		.normalize('NFD').replace(/[̀-ͯ]/g,'')
+		.replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')
 		+ '-' + b.periodo + '-q' + b.nq + '.pdf';
-	if (descargar) d.save(nombre);
-	return { doc:d, nombre:nombre };
+}
+
+function pdfBoleta(b){
+	return cargarHtml2Canvas().then(function(){
+		var JS = window.jspdf && window.jspdf.jsPDF;
+		if (!JS) throw new Error('No se pudo cargar el generador de PDF');
+
+		/* Se dibuja fuera de la vista, a tamaño real: html2canvas copia
+		   lo que mide el elemento, no lo que se ve. */
+		var caja = document.createElement('div');
+		caja.style.cssText = 'position:fixed;left:-10000px;top:0;width:210mm;background:#fff';
+		caja.innerHTML = hojaBoleta(b);
+		document.body.appendChild(caja);
+
+		return window.html2canvas(caja.firstChild, {
+			scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false
+		}).then(function(lienzo){
+			document.body.removeChild(caja);
+			var pdf = new JS({ unit:'mm', format:'a4', orientation:'portrait' });
+			var ancho = 210, alto = lienzo.height * ancho / lienzo.width;
+			/* JPEG y no PNG: una A4 en PNG a esta resolución pesa varios
+			   megas y no se manda por WhatsApp. */
+			pdf.addImage(lienzo.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, ancho, Math.min(alto, 297));
+			pdf.save(nombreBoleta(b));
+			return true;
+		}).catch(function(e){
+			if (caja.parentNode) document.body.removeChild(caja);
+			throw e;
+		});
+	});
 }
 
 function boletasDeLaVista(){
@@ -2160,9 +2247,17 @@ function boletasDeLaVista(){
 	return lista;
 }
 
+/* Una tras otra, esperando a que cada una termine: dibujar una hoja
+   tarda lo suyo y lanzarlas todas a la vez deja PDF a medio hacer. */
 function bajarBoletas(lista, alTerminar){
-	lista.forEach(function(b,i){ setTimeout(function(){ pdfBoleta(b, true); }, i*260); });
-	setTimeout(alTerminar || function(){}, lista.length*260 + 400);
+	var i = 0;
+	function siguiente(){
+		if (i >= lista.length){ if (alTerminar) alTerminar(); return; }
+		var b = lista[i++];
+		pdfBoleta(b).then(function(){ setTimeout(siguiente, 250); })
+			.catch(function(e){ avisarFallo(e); setTimeout(siguiente, 250); });
+	}
+	siguiente();
 }
 
 /* Cerrar es el acto formal: se congela lo que se va a pagar, se generan
@@ -2387,7 +2482,7 @@ document.addEventListener('click', function(ev){
 	if (t.dataset.pdfHist){
 		var a = t.dataset.pdfHist.split('|');
 		var b = datosBoleta(a[2], a[3], a[0], Number(a[1]));
-		if (b) pdfBoleta(b, true);
+		if (b) pdfBoleta(b).catch(avisarFallo);
 		return;
 	}
 	if (t.dataset.ren){ fichaLocal(t.dataset.ren); return; }

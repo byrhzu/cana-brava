@@ -85,15 +85,24 @@ async function atender(req, env, ruta, url, quien) {
 	/* ---------- arranque del panel ---------- */
 	if (ruta === 'estado' && req.method === 'GET') {
 		var todo = await datos.cargarTodo(db);
+		todo.periodos = await datos.cargarPeriodos(db, null);
 		todo.correo = quien;
 		return json(todo);
 	}
 
-	/* ---------- un mes ---------- */
+	/* ---------- un mes suelto ---------- */
 	if (ruta === 'periodo' && req.method === 'GET') {
 		var p = url.searchParams.get('p') || '';
 		if (!/^\d{4}-\d{2}$/.test(p)) return json({ error: 'Período inválido' }, 400);
-		return json(await datos.cargarPeriodo(db, p));
+		var uno = await datos.cargarPeriodos(db, p);
+		return json(uno[p] || {});
+	}
+
+	/* ---------- restaurar una copia ---------- */
+	if (ruta === 'restaurar' && req.method === 'POST') {
+		if (!cuerpo || !Array.isArray(cuerpo.locales)) return json({ error: 'La copia no tiene forma de copia' }, 400);
+		var r = await datos.restaurar(db, cuerpo);
+		return json(Object.assign({ ok: true }, r));
 	}
 
 	/* ---------- locales ---------- */

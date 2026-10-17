@@ -52,7 +52,7 @@ export async function revisar(req, env) {
 	   que sirve igual y evita tener que crear una aplicación aparte
 	   para /api. Es el mismo token firmado por el mismo equipo. */
 	var token = req.headers.get('Cf-Access-Jwt-Assertion') || galleta(req, 'CF_Authorization');
-	if (!token) return { correo: null, motivo: 'no llego ni cabecera ni galleta', visto: Object.keys(galletas(req)) };
+	if (!token) return { correo: null, motivo: 'no llego ni cabecera ni galleta' };
 
 	var partes = token.split('.');
 	if (partes.length !== 3) return { correo: null, motivo: 'el token no tiene tres partes' };
@@ -68,11 +68,11 @@ export async function revisar(req, env) {
 	var permitidas = String(env.ACCESS_AUD || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
 	var aud = Array.isArray(cuerpo.aud) ? cuerpo.aud : [cuerpo.aud];
 	if (permitidas.length && !aud.some(function (a) { return permitidas.indexOf(a) !== -1; })) {
-		return { correo: null, motivo: 'el token es de otra aplicacion', aud: aud, esperados: permitidas };
+		return { correo: null, motivo: 'el token es de otra aplicacion' };
 	}
 
 	if (cuerpo.iss !== 'https://' + env.ACCESS_TEAM) {
-		return { correo: null, motivo: 'otro equipo', iss: cuerpo.iss, esperado: 'https://' + env.ACCESS_TEAM };
+		return { correo: null, motivo: 'otro equipo' };
 	}
 
 	var ahora = Math.floor(Date.now() / 1000);
@@ -81,7 +81,7 @@ export async function revisar(req, env) {
 
 	var llaves = await llavesDelEquipo(env.ACCESS_TEAM);
 	var jwk = llaves.find(function (k) { return k.kid === cabecera.kid; });
-	if (!jwk) return { correo: null, motivo: 'no esta la llave que firmo', kid: cabecera.kid };
+	if (!jwk) return { correo: null, motivo: 'no esta la llave que firmo' };
 
 	var llave = await crypto.subtle.importKey(
 		'jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']

@@ -36,8 +36,22 @@ function textoDeBase64url(s) {
 }
 
 /* Devuelve el correo de quien entró, o null si el token no sirve. */
+function galleta(req, nombre) {
+	var crudo = req.headers.get('cookie') || '';
+	var partes = crudo.split(';');
+	for (var i = 0; i < partes.length; i++) {
+		var p = partes[i].trim();
+		if (p.indexOf(nombre + '=') === 0) return p.slice(nombre.length + 1);
+	}
+	return null;
+}
+
 export async function quienEntra(req, env) {
-	var token = req.headers.get('Cf-Access-Jwt-Assertion');
+	/* Access pone la cabecera solo en las rutas que cubre una de sus
+	   aplicaciones. La galleta, en cambio, viaja a todo el dominio, así
+	   que sirve igual y evita tener que crear una aplicación aparte
+	   para /api. Es el mismo token firmado por el mismo equipo. */
+	var token = req.headers.get('Cf-Access-Jwt-Assertion') || galleta(req, 'CF_Authorization');
 	if (!token) return null;
 
 	var partes = token.split('.');

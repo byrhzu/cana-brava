@@ -182,6 +182,8 @@ tbody tr.inactiva td{color:var(--tenue)}
 tbody tr.aqui td{background:var(--verde-suave)}
 tbody tr.aqui td.nombre{font-weight:600;color:var(--verde-t)}
 tbody tr.inactiva td.nombre{font-weight:400}
+.fallo{background:var(--mal-bg);color:var(--mal-tx);border-radius:var(--radio);
+	padding:.8rem 1rem;margin-bottom:var(--e4);font-size:.86rem}
 .pendientes{background:var(--esp-bg);color:var(--esp-tx);border-radius:var(--radio);padding:.8rem 1rem;margin-bottom:var(--e4)}
 .pendientes b{display:block;font-size:.86rem;margin-bottom:.25rem}
 .pendientes ul{margin:0;padding-left:1.05rem;font-size:.84rem}
@@ -324,10 +326,12 @@ tfoot td{border-top:1px solid var(--linea);font-weight:700;font-family:var(--dat
 			<button type="button" data-ir="reportes"><svg viewBox="0 0 24 24"><path d="M5 20V9M12 20V4M19 20v-7"/></svg><span>Reportes</span></button>
 			<button type="button" data-ir="ajustes"><svg viewBox="0 0 24 24"><path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2.1"/><circle cx="9" cy="17" r="2.1"/></svg><span>Ajustes</span></button>
 		</nav>
-		<div class="barra-pie">Los datos se guardan en este dispositivo.</div>
+		<div class="barra-pie" id="barra-pie"></div>
 	</aside>
 
-	<main class="lienzo" id="lienzo"></main>
+	<main class="lienzo" id="lienzo">
+		<div class="fallo" id="fallo" hidden></div>
+	</main>
 </div>
 
 <div class="velo" id="velo"></div>
@@ -346,55 +350,80 @@ tfoot td{border-top:1px solid var(--linea);font-weight:700;font-family:var(--dat
 
 /* =============================================================
    1. DATOS
-   Viven en este dispositivo. La forma ya es la de una base de datos,
-   así que mudarlos al servidor es cambiar cargar() y guardar().
+
+   Viven en el servidor. D sigue siendo el mismo objeto en memoria que
+   antes —todas las pantallas lo leen igual— pero se llena de una
+   llamada al arrancar y cada cambio se manda por su cuenta.
+
+   Nada de guardar() a ciegas: cada acción dice qué cambió, para que un
+   adelanto no reescriba la planilla entera.
    ============================================================= */
-var LLAVE = 'cb_planilla_v2';
 
-var PORDEFECTO = {
-	locales: [
-		{ id:'cbgpl', grupo:'Caña Brava',  sede:'Guápiles', activo:true },
-		{ id:'cbgua', grupo:'Caña Brava',  sede:'Guácimo',  activo:true },
-		{ id:'pbgpl', grupo:'Pollo Bravo', sede:'Guápiles', activo:true },
-		{ id:'pbgua', grupo:'Pollo Bravo', sede:'Guácimo',  activo:true }
-	],
-	empleados: [],
-	periodos: {},
-	tasas: {
-		sem:5.50, ivm:4.33, bp:1.00, patronal:26.83,
-		rentaExento:918000, vacDiasMes:1,
-		incDias:3, incPct:50,
-		insDias:0, insPct:50,
-		matPct:50,
-		tramos:[{hasta:1347000,pct:10},{hasta:2364000,pct:15},{hasta:4727000,pct:20},{hasta:1e15,pct:25}]
-	}
-};
+/* Los tramos de renta son ley, no configuración: viven acá. */
+var TRAMOS_RENTA = [
+	{ hasta:1347000, pct:10 }, { hasta:2364000, pct:15 },
+	{ hasta:4727000, pct:20 }, { hasta:1e15,    pct:25 }
+];
 
-var D;
-function cargar(){
-	try { D = JSON.parse(localStorage.getItem(LLAVE)) || null; } catch(e){ D = null; }
-	if (!D) D = JSON.parse(JSON.stringify(PORDEFECTO));
-	if (!D.tasas) D.tasas = JSON.parse(JSON.stringify(PORDEFECTO.tasas));
-	if (D.tasas.vacDiasMes == null) D.tasas.vacDiasMes = 1;
-	delete D.tasas.vacDiasAnio;
-	['incDias','incPct','insDias','insPct','matPct']
-		.forEach(function(k){ if (D.tasas[k] == null) D.tasas[k] = PORDEFECTO.tasas[k]; });
-	['incDiasPatrono','incPctPatrono','incPctCcss','insDiasPatrono','insPctIns','matPctPatrono','matPctCcss']
-		.forEach(function(k){ delete D.tasas[k]; });
+var D = { locales:[], empleados:[], periodos:{}, tasas:{ tramos:TRAMOS_RENTA } };
+var correoDeQuienEntro = '';
 
-	/* Las vacaciones eran una lista aparte; ahora son un tipo más dentro
-	   del registro único de ausencias. */
-	(D.empleados || []).forEach(function(e){
-		if (e.vacaciones && !e.ausencias){
-			e.ausencias = e.vacaciones.map(function(v){ v.tipo = v.tipo || 'vacaciones'; return v; });
-		}
-		delete e.vacaciones;
-		if (!e.ausencias) e.ausencias = [];
+function api(ruta, metodo, cuerpo){
+	return fetch('/api/' + ruta, {
+		method: metodo || 'GET',
+		credentials: 'same-origin',
+		headers: { 'content-type': 'application/json' },
+		body: cuerpo ? JSON.stringify(cuerpo) : undefined
+	}).then(function(r){
+		return r.text().then(function(t){
+			var j = null;
+			try { j = JSON.parse(t); } catch(e){}
+			/* Si la sesión venció, Cloudflare contesta con la página de
+			   login en vez de JSON. Recargar deja que haga su trabajo. */
+			if (!j){ location.reload(); throw new Error('sesion'); }
+			if (!r.ok) throw new Error(j.error || ('Error ' + r.status));
+			return j;
+		});
 	});
-	if (!D.periodos) D.periodos = {};
 }
-function guardar(){ try { localStorage.setItem(LLAVE, JSON.stringify(D)); } catch(e){} }
-cargar();
+
+/* Un aviso arriba cuando algo no se pudo guardar. Callar un error en
+   una planilla es peor que molestar. */
+function avisarFallo(e){
+	var caja = $('#fallo');
+	if (!caja) return;
+	caja.textContent = 'No se pudo guardar: ' + (e && e.message || e) + '. Revisá la conexión y volvé a intentar.';
+	caja.hidden = false;
+	clearTimeout(avisarFallo._t);
+	avisarFallo._t = setTimeout(function(){ caja.hidden = true; }, 8000);
+}
+
+/* Manda un cambio y repinta. Si falla, lo dice y recarga para no
+   quedarse mostrando algo que el servidor no aceptó. */
+function mandar(ruta, metodo, cuerpo, despues){
+	return api(ruta, metodo, cuerpo).then(function(r){
+		if (despues) despues(r);
+		pintar();
+		return r;
+	}).catch(function(e){
+		if (e && e.message === 'sesion') return;
+		avisarFallo(e);
+		recargarTodo();
+	});
+}
+
+function recargarTodo(){
+	return api('estado').then(function(j){
+		D.locales = j.locales || [];
+		D.empleados = j.empleados || [];
+		D.periodos = j.periodos || {};
+		D.tasas = j.tasas || {};
+		D.tasas.tramos = TRAMOS_RENTA;
+		correoDeQuienEntro = j.correo || '';
+		D.empleados.forEach(function(e){ if (!e.ausencias) e.ausencias = []; });
+		pintar();
+	});
+}
 
 
 /* =============================================================
@@ -1704,7 +1733,8 @@ function fichaLocal(id){
 		l.grupo = g; l.sede = sd; l.activo = $('#l-activo').value==='1';
 		delete l.nombre;
 		if (nuevo) D.locales.push(l);
-		guardar(); cerrarHoja(); pintar();
+		cerrarHoja();
+		mandar('local', 'PUT', l);
 	};
 }
 
@@ -1890,7 +1920,7 @@ function fichaEmpleado(id){
 
 	Array.prototype.forEach.call(document.querySelectorAll('#hoja-cuerpo [data-pest]'), function(b){
 		b.onclick = function(){
-			if (pestanaFicha === 'datos') { if (recoger() === true) guardar(); }
+			if (pestanaFicha === 'datos' && recoger() === true) api('empleado','PUT',e).catch(avisarFallo);
 			pestanaFicha = b.dataset.pest;
 			fichaEmpleado(e.id);
 		};
@@ -1908,7 +1938,8 @@ function fichaEmpleado(id){
 		}
 		if (r !== true){ $('#f-nombre').focus(); return; }
 		if (nuevo) D.empleados.push(e);
-		guardar(); cerrarHoja(); pintar();
+		cerrarHoja();
+		mandar('empleado', 'PUT', e);
 	};
 
 	/* vacaciones: los días se proponen solos desde las fechas */
@@ -1934,7 +1965,9 @@ function fichaEmpleado(id){
 				boleta: $('#v-boleta') ? $('#v-boleta').value.trim() : '',
 				nota: $('#v-nota').value.trim()
 			});
-			guardar(); fichaEmpleado(e.id); pintar();
+			var nueva = e.ausencias[e.ausencias.length - 1];
+			fichaEmpleado(e.id);
+			mandar('ausencia', 'PUT', { empleadoId: e.id, ausencia: nueva });
 		};
 		/* Borrar cambia saldos y montos ya calculados, así que se
 		   pregunta antes. El segundo toque es el que borra. */
@@ -1953,8 +1986,10 @@ function fichaEmpleado(id){
 					}, 4000);
 					return;
 				}
-				e.ausencias = e.ausencias.filter(function(m){ return m.id !== b.dataset.vacx; });
-				guardar(); fichaEmpleado(e.id); pintar();
+				var fuera = b.dataset.vacx;
+				e.ausencias = e.ausencias.filter(function(m){ return m.id !== fuera; });
+				fichaEmpleado(e.id);
+				mandar('ausencia/' + encodeURIComponent(fuera), 'DELETE');
 			};
 		});
 	}
@@ -2145,22 +2180,27 @@ function cerrarQuincena(){
 		/* Al cerrar se guarda el monto de cada boleta. Después puede
 		   cambiar un salario o una fecha y la cuenta daría otra cosa;
 		   el historial tiene que seguir diciendo lo que se pagó. */
-		locales.forEach(function(lid){
-			var pp = per(estado.periodo, lid);
-			pp.enviado = pp.enviado || {};
-			pp.enviado['q'+estado.q] = new Date().toISOString();
-			pp.pagado = pp.pagado || {};
-			var porEmp = {}, sumaLocal = 0;
-			lista.forEach(function(b){
-				if (b.local.id !== lid) return;
-				porEmp[b.emp.id] = b.q.neto;
-				sumaLocal += b.q.neto;
+		/* Cada local se cierra por su cuenta en el servidor, que es donde
+		   quedan congelados los montos. Las boletas se bajan después de
+		   que el cierre quedó guardado, no antes. */
+		var tareas = locales.map(function(lid){
+			var pagos = lista.filter(function(b){ return b.local.id === lid; }).map(function(b){
+				return { empleadoId: b.emp.id, neto: b.q.neto, correo: b.emp.correo || '' };
 			});
-			pp.pagado['q'+estado.q] = { total: sumaLocal, empleados: porEmp };
-			anotar(estado.periodo, lid, 'Se cerró la quincena '+estado.q+' por '+col(sumaLocal)+'.');
+			return api('cerrar', 'POST', {
+				periodo: estado.periodo, localId: lid, q: estado.q, pagos: pagos
+			});
 		});
-		guardar();
-		bajarBoletas(lista, function(){ cerrarHoja(); pintar(); });
+		Promise.all(tareas).then(function(){
+			return recargarTodo();
+		}).then(function(){
+			bajarBoletas(lista, function(){ cerrarHoja(); pintar(); });
+		}).catch(function(e){
+			if (e && e.message === 'sesion') return;
+			avisarFallo(e);
+			cerrarHoja();
+			recargarTodo();
+		});
 	};
 }
 
@@ -2220,7 +2260,9 @@ function pintar(){
 	if (estado.q !== 'mes' && !quincenaHabilitada(estado.periodo, estado.q)) estado.q = 1;
 	var ce = $('#cuenta-emp');
 	if (ce) ce.textContent = empleadosEnVista().filter(function(e){return e.activo!==false;}).length || '';
-	$('#lienzo').innerHTML = PANTALLAS[estado.pantalla]();
+	$('#lienzo').innerHTML = '<div class="fallo" id="fallo" hidden></div>' + PANTALLAS[estado.pantalla]();
+	var pie = $('#barra-pie');
+	if (pie) pie.textContent = correoDeQuienEntro || '';
 	Array.prototype.forEach.call(document.querySelectorAll('#nav button'), function(b){
 		if (b.dataset.ir===estado.pantalla) b.setAttribute('aria-current','page');
 		else b.removeAttribute('aria-current');
@@ -2314,15 +2356,14 @@ document.addEventListener('click', function(ev){
 	}
 	if (t.id==='bajar-otra-vez'){ bajarBoletas(boletasDeLaVista()); return; }
 	if (t.id==='reabrir'){
-		idsEnVista().forEach(function(lid){
-			var pp = per(estado.periodo, lid);
-			if (pp.enviado) delete pp.enviado['q'+estado.q];
-			if (pp.pagado) delete pp.pagado['q'+estado.q];
-			pp.reabierta = pp.reabierta || {};
-			pp.reabierta['q'+estado.q] = true;
-			anotar(estado.periodo, lid, 'Se reabrió la quincena '+estado.q+' para corregir.');
+		var pq = estado.periodo, qq = estado.q;
+		Promise.all(idsEnVista().map(function(lid){
+			return api('reabrir', 'POST', { periodo: pq, localId: lid, q: qq });
+		})).then(recargarTodo).catch(function(e){
+			if (e && e.message === 'sesion') return;
+			avisarFallo(e); recargarTodo();
 		});
-		guardar(); pintar(); return;
+		return;
 	}
 	if (t.id==='hoja-x'){ cerrarHoja(); return; }
 	if (t.dataset.pdfHist){
@@ -2334,7 +2375,7 @@ document.addEventListener('click', function(ev){
 	if (t.dataset.ren){ fichaLocal(t.dataset.ren); return; }
 	if (t.dataset.localToggle){
 		var l2 = D.locales.find(function(x){return x.id===t.dataset.localToggle;});
-		if (l2){ l2.activo = l2.activo===false; guardar(); pintar(); }
+		if (l2){ l2.activo = l2.activo===false; mandar('local', 'PUT', l2); }
 		return;
 	}
 	if (t.id==='nuevo-local'){ fichaLocal(null); return; }
@@ -2344,7 +2385,11 @@ document.addEventListener('click', function(ev){
 		Array.prototype.forEach.call(document.querySelectorAll('[data-tasa]'), function(el){
 			D.tasas[el.dataset.tasa] = Number(el.value) || 0;
 		});
-		estado.editando = null; guardar(); pintar(); return;
+		estado.editando = null;
+		var soloValores = {};
+		Object.keys(D.tasas).forEach(function(k){ if (k !== 'tramos') soloValores[k] = D.tasas[k]; });
+		mandar('tasas', 'PUT', soloValores);
+		return;
 	}
 	if (t.id==='exportar'){
 		var a2 = document.createElement('a');
@@ -2357,7 +2402,16 @@ document.addEventListener('click', function(ev){
 		inp.onchange = function(){
 			var f=inp.files[0]; if(!f) return;
 			var r=new FileReader();
-			r.onload=function(){ try{ D=JSON.parse(r.result); guardar(); pintar(); }catch(e){ alert('Ese archivo no se pudo leer.'); } };
+			r.onload=function(){
+				var copia;
+				try { copia = JSON.parse(r.result); } catch(e){ alert('Ese archivo no se pudo leer.'); return; }
+				if (!copia || !Array.isArray(copia.locales)){ alert('Ese archivo no es una copia de la planilla.'); return; }
+				if (!confirm('Restaurar la copia borra todo lo que hay hoy en el servidor y lo reemplaza. ¿Seguir?')) return;
+				api('restaurar','POST',copia).then(recargarTodo).catch(function(e){
+					if (e && e.message === 'sesion') return;
+					avisarFallo(e);
+				});
+			};
 			r.readAsText(f);
 		};
 		inp.click(); return;
@@ -2386,24 +2440,39 @@ document.addEventListener('input', function(ev){
 		   cada dígito. */
 		if (el._antes == null) el._antes = Number(aj['q'+estado.q][el.dataset.campo]) || 0;
 		aj['q'+estado.q][el.dataset.campo] = Number(el.value)||0;
-		guardar();
+		/* Se manda cuando deja de teclear, no en cada tecla: una llamada
+		   por monto y no una por dígito. */
 		clearTimeout(el._t);
 		el._t = setTimeout(function(){
 			var campo = el.dataset.campo, emp = fila.dataset.emp, lid = fila.dataset.local;
 			var ahora = Number(el.value) || 0, antes = el._antes;
+			var q = estado.q, periodo = estado.periodo;
 			el._antes = null;
+
 			/* Si la quincena ya se cerró alguna vez, el cambio deja rastro:
 			   es la respuesta a "¿por qué este monto no es el que pagamos?". */
-			if (pp.reabierta && pp.reabierta['q'+estado.q] && ahora !== antes){
+			var nota = null;
+			if (pp.reabierta && pp.reabierta['q'+q] && ahora !== antes){
 				var quien = D.empleados.find(function(x){ return x.id === emp; });
 				var dicho = campo === 'adelanto'
 					? function(v){ return col(v); }
 					: function(v){ return nDias(v) + ' h'; };
-				anotar(estado.periodo, lid, (quien ? quien.nombre : 'Empleado') + ': '
+				nota = (quien ? quien.nombre : 'Empleado') + ': '
 					+ (campo === 'adelanto' ? 'adelanto' : 'horas extra')
-					+ ' de ' + dicho(antes) + ' a ' + dicho(ahora) + '.');
-				guardar();
+					+ ' de ' + dicho(antes) + ' a ' + dicho(ahora) + '.';
+				anotar(periodo, lid, nota);
 			}
+
+			var caja = aj['q'+q];
+			api('ajuste', 'PUT', {
+				periodo: periodo, localId: lid, empleadoId: emp, q: q,
+				horasExtra: caja.horasExtra || 0, adelanto: caja.adelanto || 0, otras: caja.otras || 0,
+				anotar: nota
+			}).catch(function(e){
+				if (e && e.message === 'sesion') return;
+				avisarFallo(e); recargarTodo();
+			});
+
 			pintar();
 			/* Un input numérico no admite setSelectionRange: basta el foco. */
 			var nv = document.querySelector('tr[data-emp="'+emp+'"] input[data-campo="'+campo+'"]');
@@ -2428,7 +2497,14 @@ document.addEventListener('input', function(ev){
 $('#velo').onclick = cerrarHoja;
 document.addEventListener('keydown', function(e){ if (e.key==='Escape') cerrarHoja(); });
 
-pintar();
+/* Arranque: primero los datos, después la pantalla. */
+$('#lienzo').innerHTML = '<div class="vacio"><h3>Cargando…</h3></div>';
+recargarTodo().catch(function(e){
+	if (e && e.message === 'sesion') return;
+	$('#lienzo').innerHTML = '<div class="vacio"><h3>No se pudo cargar</h3>'
+		+ '<p>' + esc(e && e.message || e) + '</p>'
+		+ '<button class="bt fuerte" type="button" onclick="location.reload()">Reintentar</button></div>';
+});
 })();
 </script>
 </body>
